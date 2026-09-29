@@ -22,12 +22,13 @@ const source = \`
   }
 \`;
 
-// One context, reused: the digest cache is what makes the second render cheap.
+// One context, reused: the digest cache makes the second render cheap.
 const context = await EvaluationContext.create();
 
 for (const height of [10, 20, 30]) {
   const result = await render(source, { params: { height }, context });
-  await writeFile(\`part-\${height}.stl\`, toBinarySTL(result.parts[0].concrete));
+  const stl = toBinarySTL(result.parts[0].concrete);
+  await writeFile(\`part-\${height}.stl\`, stl);
   context.collect(result.parts.map((part) => part.node));
 }
 

@@ -557,6 +557,6 @@ export const CONSTANTS = { pi: Math.PI, e: Math.E };
 
 /**
  * Type names are ordinary identifiers that stand for themselves, so `type = number` in a
- * param block needs no keyword and no quoting — the same trade Terraform makes.
+ * param block needs no keyword and no quoting — the same trade HCL makes.
  */
 export const TYPE_NAMES = ['number', 'string', 'bool', 'vector', 'list', 'angle'];

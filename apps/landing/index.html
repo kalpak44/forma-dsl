@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>forma-dsl — a declarative language for solid geometry</title>
-<meta name="description" content="Write a 3D model as text: parameters, blocks and expressions in a Terraform-flavoured syntax, solved by the Manifold CSG kernel in WebAssembly. Runs unchanged in Node and in the browser.">
+<title>forma-dsl - a declarative language for solid geometry</title>
+<meta name="description" content="Write a 3D model as text: parameters, blocks and expressions in an HCL-like syntax, solved by the Manifold CSG kernel in WebAssembly. Runs unchanged in Node and in the browser.">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0b0e13" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f1ece1" media="(prefers-color-scheme: light)">
 <link rel="canonical" href="https://kalpak44.github.io/forma-dsl/">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="forma-dsl — a declarative language for solid geometry">
+<meta property="og:title" content="forma-dsl - a declarative language for solid geometry">
 <meta property="og:description" content="Write a 3D model as text. Parametric blocks, reusable components, and a live preview solved by Manifold in WebAssembly.">
 <meta property="og:url" content="https://kalpak44.github.io/forma-dsl/">
 
@@ -67,10 +67,10 @@
         <div class="eyebrow"><span class="label">Declarative solid modelling</span></div>
         <h1 class="display">A model is<br><em>a document</em><br><span class="thin">you can diff.</span></h1>
         <p class="lede">
-          forma-dsl describes geometry the way Terraform describes infrastructure: declare
-          <strong>parameters</strong>, nest <strong>blocks</strong>, reuse
+          forma-dsl writes geometry as configuration, in an HCL-like syntax you can already
+          read: declare <strong>parameters</strong>, nest <strong>blocks</strong>, reuse
           <strong>components</strong>. The document is solved by the Manifold CSG kernel
-          compiled to WebAssembly — unchanged in Node and in the browser.
+          compiled to WebAssembly - unchanged in Node and in the browser.
         </p>
         <div class="actions">
           <a class="btn primary" href="app/">
@@ -91,9 +91,9 @@
         <div class="cap"><span>Sheet 01</span><span>forma-dsl</span></div>
         <dl>
           <dt>Package</dt><dd><em>npm i forma-dsl</em></dd>
-          <dt>Version</dt><dd data-fill="version">—</dd>
+          <dt>Version</dt><dd data-fill="version">-</dd>
           <dt>Kernel</dt><dd>Manifold · WASM</dd>
-          <dt>Runtime deps</dt><dd data-fill="deps">—</dd>
+          <dt>Runtime deps</dt><dd data-fill="deps">-</dd>
           <dt>Output</dt><dd>Mesh · binary STL</dd>
           <dt>Licence</dt><dd>MIT</dd>
         </dl>
@@ -110,7 +110,7 @@
       </div>
       <p class="lede reveal" style="margin-bottom: 28px">
         Nothing here is a recording. The source types itself, and the solid beside it is the
-        real library compiling that text in your browser — the same code the editor runs.
+        real library compiling that text in your browser - the same code the editor runs.
       </p>
 
       <div class="demo reveal">
@@ -131,8 +131,8 @@
             <div class="dock-row">
               <span class="status busy" id="status" role="status">waiting</span>
               <div class="grow"></div>
-              <span class="stat">tris <b id="tris">—</b></span>
-              <span class="stat">solve <b id="ms">—</b></span>
+              <span class="stat">tris <b id="tris">-</b></span>
+              <span class="stat">solve <b id="ms">-</b></span>
             </div>
             <!-- Real controls, built from the parameters the typed document declares. The
                  demo drags one itself; so can you. -->
@@ -164,7 +164,7 @@
         <div class="spec">
           <span class="n">03</span>
           <h3>Content-addressed geometry</h3>
-          <p>Every node carries a 128-bit digest of its content. A component used twenty times is one node, evaluated once — and an edit re-solves only what changed.</p>
+          <p>Every node carries a 128-bit digest of its content. A component used twenty times is one node, evaluated once - and an edit re-solves only what changed.</p>
         </div>
         <div class="spec">
           <span class="n">04</span>
@@ -194,8 +194,38 @@
       </div>
       <div class="install reveal">
         <div>
-          <p>Install it, write a document, and hand the parts to a viewer or a slicer. One context is reused across renders: the digest cache is what makes the second one cheap.</p>
-          <p><a href="docs/">The reference manual</a> covers every declaration, block, function and error, each with usage and troubleshooting — and <a href="app/">the editor</a> runs the whole thing in the browser with no install at all.</p>
+          <p>Install it, write a document, and hand the parts to a viewer or a slicer. One
+            context is reused across renders: the digest cache is what makes the second one
+            cheap, and <code>collect</code> is what keeps a long run bounded.</p>
+
+          <p class="lead-in">Three calls carry most of the work:</p>
+          <ul>
+            <li>
+              <code>render(source, options)</code>
+              <b>Compiles a document and evaluates one model into parts, each carrying a mesh
+                for a renderer and the solid it came from.</b>
+            </li>
+            <li>
+              <code>describeParameters(source)</code>
+              <b>Reads the declared inputs without solving anything. It is how the editor
+                builds its controls, and how a build script knows what it may pass.</b>
+            </li>
+            <li>
+              <code>toBinarySTL(part.concrete)</code>
+              <b>A buffer a slicer will open, written straight to disk or handed to the
+                browser as a download.</b>
+            </li>
+          </ul>
+
+          <p>The same document renders in CI. There is no browser to drive and no display to
+            fake: the kernel is WebAssembly, so a part that comes out of your laptop comes
+            out of a runner too, and a pull request can check the geometry rather than the
+            code that produced it.</p>
+
+          <p><a href="docs/">The reference manual</a> covers every declaration, block,
+            function and error, each with usage and troubleshooting - and
+            <a href="app/">the editor</a> runs the whole thing in the browser with no install
+            at all.</p>
         </div>
         <div class="copy-wrap">
           <button class="copy" id="copy" type="button" data-copy="quickstart">copy</button>

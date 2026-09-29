@@ -6,9 +6,9 @@
 A declarative DSL for 3D modeling and scene composition, with reusable components and live
 previews.
 
-Models are written as text — blocks, attributes and expressions in a Terraform-flavored
-syntax — parsed and solved by the [Manifold](https://github.com/elalish/manifold) CSG kernel
-compiled to WebAssembly. It runs unchanged in Node and in the browser.
+Models are written as text — blocks, attributes and expressions in an HCL-like syntax —
+parsed and solved by the [Manifold](https://github.com/elalish/manifold) CSG kernel compiled
+to WebAssembly. It runs unchanged in Node and in the browser.
 
 ```bash
 npm install forma-dsl
