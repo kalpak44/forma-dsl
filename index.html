@@ -31,6 +31,8 @@
     border-radius: 6px; padding: 5px 10px; font: inherit; cursor: pointer;
   }
   button:hover, select:hover { border-color: var(--accent); }
+  header a { color: var(--muted); text-decoration: none; }
+  header a:hover { color: var(--accent); }
   label.toggle { display: flex; align-items: center; gap: 6px; color: var(--muted); cursor: pointer; }
   .sr-only {
     position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -75,6 +77,8 @@
     <label class="sr-only" for="example">Load an example</label>
     <select id="example"><option value="">Load an example…</option></select>
     <div class="grow"></div>
+    <!-- Built into dist/docs/ by scripts/build-docs.mjs, so this is dead during `npm run dev`. -->
+    <a href="docs/">Docs</a>
     <label class="toggle"><input type="checkbox" id="edges"> edges</label>
     <button id="frame">Fit view</button>
     <button id="export">Export STL</button>
