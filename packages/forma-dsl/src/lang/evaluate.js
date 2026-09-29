@@ -3,7 +3,7 @@
 
 import { parse } from './parser.js';
 import { FormaError } from './lexer.js';
-import { BLOCKS, FUNCTIONS, CONSTANTS, TYPE_NAMES, Args } from './builtins.js';
+import { BLOCKS, FUNCTIONS, CONSTANTS, TYPE_NAMES, Args, quoteAll } from './builtins.js';
 import { GeometryNode } from '../core/node.js';
 import { Transform } from '../values/transform.js';
 
@@ -208,13 +208,8 @@ export class Evaluator {
 
     const variables = {};
     for (const [name, declaration] of program.params) {
-      const supplied = params[name];
       const fallback = declaration.attributes.find((a) => a.name === 'default');
-      const value = supplied !== undefined
-        ? supplied
-        : fallback
-          ? this.expression(fallback.value, root)
-          : undefined;
+      const value = this.paramValue(params[name], fallback, root);
       if (value === undefined) {
         if (requireParams) {
           throw new FormaError(`param "${name}" has no default and no value was supplied`, declaration.loc);
@@ -231,6 +226,21 @@ export class Evaluator {
 
     /** @type {Scope} The document-level scope: constants, type names, params and locals. */
     this.root = root;
+  }
+
+  /**
+   * Settles one declared param: what the caller gave, or what the declaration defaults to,
+   * or nothing at all — which is the caller's problem to report, since a document param and
+   * a component param say different things about it.
+   *
+   * @param {unknown} supplied What was passed in, or undefined.
+   * @param {{ value: Expression } | undefined} fallback The `default` attribute, if declared.
+   * @param {Scope} scope Where to evaluate that default.
+   * @returns {unknown} The value, or undefined when there is none.
+   */
+  paramValue(supplied, fallback, scope) {
+    if (supplied !== undefined) return supplied;
+    return fallback ? this.expression(fallback.value, scope) : undefined;
   }
 
   // --- expressions ----------------------------------------------------------------
@@ -382,22 +392,10 @@ export class Evaluator {
     switch (op) {
       case '==': return deepEqual(left, right);
       case '!=': return !deepEqual(left, right);
-      case '+':
-        if (typeof left === 'string' || typeof right === 'string') return formatValue(left) + formatValue(right);
-        if (Array.isArray(left) && Array.isArray(right)) return zip(left, right, (a, b) => a + b, node.loc);
-        return arithmetic(op, left, right, node.loc);
-      case '-':
-        if (Array.isArray(left) && Array.isArray(right)) return zip(left, right, (a, b) => a - b, node.loc);
-        return arithmetic(op, left, right, node.loc);
-      case '*':
-        // A vector times a scalar is the common case in a model; both orders read naturally.
-        if (Array.isArray(left) && typeof right === 'number') return left.map((v) => v * right);
-        if (typeof left === 'number' && Array.isArray(right)) return right.map((v) => v * left);
-        if (Array.isArray(left) && Array.isArray(right)) return zip(left, right, (a, b) => a * b, node.loc);
-        return arithmetic(op, left, right, node.loc);
-      case '/':
-        if (Array.isArray(left) && typeof right === 'number') return left.map((v) => v / right);
-        return arithmetic(op, left, right, node.loc);
+      case '+': return add(left, right, node.loc);
+      case '-': return subtract(left, right, node.loc);
+      case '*': return multiply(left, right, node.loc);
+      case '/': return divide(left, right, node.loc);
       case '%': return arithmetic(op, left, right, node.loc);
       case '<': case '<=': case '>': case '>=': return compare(op, left, right, node.loc);
       default: throw new FormaError(`unknown operator ${op}`, node.loc);
@@ -668,11 +666,7 @@ export class Evaluator {
     for (const param of declaration.body.params) {
       declared.add(param.name);
       const fallback = param.attributes.find((a) => a.name === 'default');
-      const value = supplied[param.name] !== undefined
-        ? supplied[param.name]
-        : fallback
-          ? this.expression(fallback.value, inner)
-          : undefined;
+      const value = this.paramValue(supplied[param.name], fallback, inner);
       if (value === undefined) {
         throw new FormaError(`${block.type}: "${param.name}" has no default and was not given`, block.loc);
       }
@@ -681,7 +675,8 @@ export class Evaluator {
 
     const unknown = Object.keys(supplied).filter((k) => !declared.has(k));
     if (unknown.length) {
-      throw new FormaError(`${block.type}: unknown param${unknown.length > 1 ? 's' : ''} ${unknown.map((u) => `"${u}"`).join(', ')}`, block.loc);
+      const plural = unknown.length > 1 ? 's' : '';
+      throw new FormaError(`${block.type}: unknown param${plural} ${quoteAll(unknown)}`, block.loc);
     }
 
     this.depth++;
@@ -795,6 +790,68 @@ function deepEqual(a, b) {
 function zip(a, b, f, loc) {
   if (a.length !== b.length) throw new FormaError(`cannot combine vectors of length ${a.length} and ${b.length}`, loc);
   return a.map((v, i) => f(v, b[i]));
+}
+
+/**
+ * `+`: string concatenation when either side is text, componentwise on two lists, and
+ * ordinary addition otherwise.
+ *
+ * @param {unknown} left The left operand.
+ * @param {unknown} right The right operand.
+ * @param {import('../index.js').SourceLocation} loc Where the operator was.
+ * @returns {unknown} The result.
+ * @throws {FormaError} On operands it does not accept.
+ */
+function add(left, right, loc) {
+  if (typeof left === 'string' || typeof right === 'string') return formatValue(left) + formatValue(right);
+  if (Array.isArray(left) && Array.isArray(right)) return zip(left, right, (a, b) => a + b, loc);
+  return arithmetic('+', left, right, loc);
+}
+
+/**
+ * `-`: componentwise on two lists, ordinary subtraction otherwise.
+ *
+ * @param {unknown} left The left operand.
+ * @param {unknown} right The right operand.
+ * @param {import('../index.js').SourceLocation} loc Where the operator was.
+ * @returns {unknown} The result.
+ * @throws {FormaError} On operands it does not accept.
+ */
+function subtract(left, right, loc) {
+  if (Array.isArray(left) && Array.isArray(right)) return zip(left, right, (a, b) => a - b, loc);
+  return arithmetic('-', left, right, loc);
+}
+
+/**
+ * `*`: a vector times a scalar in either order — the common case in a model — componentwise
+ * on two lists, and ordinary multiplication otherwise.
+ *
+ * @param {unknown} left The left operand.
+ * @param {unknown} right The right operand.
+ * @param {import('../index.js').SourceLocation} loc Where the operator was.
+ * @returns {unknown} The result.
+ * @throws {FormaError} On operands it does not accept.
+ */
+function multiply(left, right, loc) {
+  if (Array.isArray(left) && typeof right === 'number') return left.map((v) => v * right);
+  if (typeof left === 'number' && Array.isArray(right)) return right.map((v) => v * left);
+  if (Array.isArray(left) && Array.isArray(right)) return zip(left, right, (a, b) => a * b, loc);
+  return arithmetic('*', left, right, loc);
+}
+
+/**
+ * `/`: a vector by a scalar, or ordinary division. Unlike `*` there is no scalar-over-vector
+ * case, because dividing a number by a vector is not a thing a model means.
+ *
+ * @param {unknown} left The left operand.
+ * @param {unknown} right The right operand.
+ * @param {import('../index.js').SourceLocation} loc Where the operator was.
+ * @returns {unknown} The result.
+ * @throws {FormaError} On operands it does not accept, or division by zero.
+ */
+function divide(left, right, loc) {
+  if (Array.isArray(left) && typeof right === 'number') return left.map((v) => v / right);
+  return arithmetic('/', left, right, loc);
 }
 
 /**

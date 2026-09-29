@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import globals from 'globals';
 import jsdoc from 'eslint-plugin-jsdoc';
+import sonarjs from 'eslint-plugin-sonarjs';
 
 /**
  * JSDoc rules, applied to the library and the editor alike.
@@ -59,9 +60,28 @@ const shared = {
 };
 
 export default [
-  { ignores: ['dist/**', '**/node_modules/**', '**/*.d.ts'] },
+  { ignores: ['dist/**', 'coverage/**', '**/node_modules/**', '**/*.d.ts'] },
 
   js.configs.recommended,
+
+  // SonarSource's own rules, which is what SonarCloud runs against this JavaScript. Having
+  // them here means a cognitive-complexity or nested-ternary finding fails `npm run lint`
+  // on a laptop, rather than surfacing as a quality gate on a pull request with no local
+  // way to reproduce it.
+  {
+    files: ['packages/*/src/**/*.js', 'apps/*/src/**/*.js', 'apps/docs/*.mjs', '**/test/**/*.js'],
+    ...sonarjs.configs.recommended,
+  },
+
+  {
+    // These tests assert through `close`/`closeAll`, which wrap `assert.ok` with a floating
+    // point tolerance. The rule only recognises assertion calls written directly in the test
+    // body, so it reads every one of them as assertion-free. Inlining the comparisons to
+    // satisfy it would mean repeating the tolerance at every call site, which is the thing
+    // the helpers exist to avoid.
+    files: ['**/test/**/*.js'],
+    rules: { 'sonarjs/assertions-in-tests': 'off' },
+  },
 
   {
     // The library is meant to run unchanged in a browser and in Node, so it is linted

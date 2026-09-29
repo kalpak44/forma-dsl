@@ -48,6 +48,26 @@ function fmix(h) {
 }
 
 /**
+ * Packs the bytes after the last whole block into four words, little-endian.
+ *
+ * Byte `i` of the tail belongs to word `i >> 2` at shift `(i & 3) * 8` — which is what
+ * MurmurHash3's fallthrough spells out one case at a time. The arithmetic is identical;
+ * only the shape differs, and the digests it produces are asserted to be unchanged.
+ *
+ * @param {Uint8Array} bytes The whole input.
+ * @param {number} tail Offset of the first trailing byte.
+ * @param {number} rem How many trailing bytes there are, 0 to 15.
+ * @returns {number[]} The four words.
+ */
+function foldTail(bytes, tail, rem) {
+  const k = [0, 0, 0, 0];
+  for (let i = 0; i < rem; i++) {
+    k[i >> 2] ^= bytes[tail + i] << ((i & 3) * 8);
+  }
+  return k;
+}
+
+/**
  * MurmurHash3 x86_128 over a byte array.
  *
  * Chosen because it is 32-bit throughout, so it runs identically everywhere without BigInt.
@@ -82,34 +102,17 @@ export function digestBytes(bytes) {
     h4 = rotl(h4, 13); h4 = (h4 + h1) | 0; h4 = (mul(h4, 5) + 0x32ac3b17) | 0;
   }
 
-  // The trailing bytes that did not fill a 16-byte block, folded in a word at a time. The
-  // fallthrough shape is MurmurHash3's own; departing from it changes every digest.
-  let k1 = 0, k2 = 0, k3 = 0, k4 = 0;
+  // The trailing bytes that did not fill a 16-byte block, folded in a word at a time.
   const tail = blocks << 4;
   const rem = len & 15;
+  const k = foldTail(bytes, tail, rem);
 
-  if (rem >= 15) k4 ^= bytes[tail + 14] << 16;
-  if (rem >= 14) k4 ^= bytes[tail + 13] << 8;
-  if (rem >= 13) k4 ^= bytes[tail + 12];
-  if (rem >= 13) { k4 = mul(k4, C4); k4 = rotl(k4, 18); k4 = mul(k4, C1); h4 ^= k4; }
-
-  if (rem >= 12) k3 ^= bytes[tail + 11] << 24;
-  if (rem >= 11) k3 ^= bytes[tail + 10] << 16;
-  if (rem >= 10) k3 ^= bytes[tail + 9] << 8;
-  if (rem >= 9) k3 ^= bytes[tail + 8];
-  if (rem >= 9) { k3 = mul(k3, C3); k3 = rotl(k3, 17); k3 = mul(k3, C4); h3 ^= k3; }
-
-  if (rem >= 8) k2 ^= bytes[tail + 7] << 24;
-  if (rem >= 7) k2 ^= bytes[tail + 6] << 16;
-  if (rem >= 6) k2 ^= bytes[tail + 5] << 8;
-  if (rem >= 5) k2 ^= bytes[tail + 4];
-  if (rem >= 5) { k2 = mul(k2, C2); k2 = rotl(k2, 16); k2 = mul(k2, C3); h2 ^= k2; }
-
-  if (rem >= 4) k1 ^= bytes[tail + 3] << 24;
-  if (rem >= 3) k1 ^= bytes[tail + 2] << 16;
-  if (rem >= 2) k1 ^= bytes[tail + 1] << 8;
-  if (rem >= 1) k1 ^= bytes[tail];
-  if (rem >= 1) { k1 = mul(k1, C1); k1 = rotl(k1, 15); k1 = mul(k1, C2); h1 ^= k1; }
+  // Each word is mixed only if the tail reached it: k1 from one byte, k2 from five, and so
+  // on. That is MurmurHash3's own fallthrough, written as the condition it encodes.
+  if (rem >= 1) { let x = mul(k[0], C1); x = rotl(x, 15); h1 ^= mul(x, C2); }
+  if (rem >= 5) { let x = mul(k[1], C2); x = rotl(x, 16); h2 ^= mul(x, C3); }
+  if (rem >= 9) { let x = mul(k[2], C3); x = rotl(x, 17); h3 ^= mul(x, C4); }
+  if (rem >= 13) { let x = mul(k[3], C4); x = rotl(x, 18); h4 ^= mul(x, C1); }
 
   h1 ^= len; h2 ^= len; h3 ^= len; h4 ^= len;
   h1 = (h1 + h2) | 0; h1 = (h1 + h3) | 0; h1 = (h1 + h4) | 0;
