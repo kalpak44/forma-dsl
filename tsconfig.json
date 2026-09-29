@@ -1,0 +1,15 @@
+{
+  "//": "Only to check that the published declarations compile and describe the real API. No JavaScript is type-checked and nothing is emitted.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "verbatimModuleSyntax": true
+  },
+  "include": ["src/index.d.ts", "test/types.check.ts"]
+}

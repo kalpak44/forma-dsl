@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>forma-dsl</title>
+<meta name="description" content="A declarative DSL for 3D modeling and scene composition, with reusable components and a live browser preview solved by the Manifold CSG kernel.">
+<meta name="color-scheme" content="dark">
+<!-- Inlined so the page costs no extra request and never logs a 404 for a missing icon. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1117'/%3E%3Cpath d='M16 5l9 5.2v10.6L16 26l-9-5.2V10.2z' fill='none' stroke='%2382aaff' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
   :root {
     --bg: #0d1117; --panel: #12161c; --line: #222a35; --text: #d6deeb;
@@ -28,6 +32,10 @@
   }
   button:hover, select:hover { border-color: var(--accent); }
   label.toggle { display: flex; align-items: center; gap: 6px; color: var(--muted); cursor: pointer; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
 
   main { display: grid; grid-template-columns: minmax(360px, 44%) minmax(0, 1fr); min-height: 0; }
   .pane { display: grid; grid-template-rows: minmax(0, 1fr) auto; min-width: 0; min-height: 0; border-right: 1px solid var(--line); }
@@ -44,6 +52,15 @@
   .status.ok { color: var(--ok); } .status.error { color: var(--err); } .status.busy { color: var(--accent); }
   #parts { color: var(--muted); font-size: 12px; margin-top: 2px; }
 
+  #fatal {
+    position: fixed; inset: 0 0 auto 0; z-index: 10; padding: 14px 18px;
+    background: #2a141a; color: var(--err); border-bottom: 1px solid var(--err);
+    font-family: ui-monospace, Menlo, monospace;
+  }
+  /* Styled on an inner element, not on `noscript` itself: with scripting enabled the UA
+     stylesheet hides the element, and a `display` rule here would fight it. */
+  .noscript-note { padding: 16px 18px; color: var(--err); }
+
   #params { display: grid; gap: 7px; margin-top: 10px; max-height: 26vh; overflow: auto; }
   .param { display: grid; grid-template-columns: 8.5rem 3.5rem 1fr; align-items: center; gap: 10px; }
   .param-name { color: var(--accent); font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
@@ -55,12 +72,17 @@
 <body>
   <header>
     <div class="brand">forma<span>-dsl</span></div>
+    <label class="sr-only" for="example">Load an example</label>
     <select id="example"><option value="">Load an example…</option></select>
     <div class="grow"></div>
     <label class="toggle"><input type="checkbox" id="edges"> edges</label>
     <button id="frame">Fit view</button>
     <button id="export">Export STL</button>
   </header>
+
+  <div id="fatal" hidden role="alert"></div>
+
+  <noscript><div class="noscript-note">forma-dsl parses and solves models in the browser, so it needs JavaScript enabled.</div></noscript>
 
   <main>
     <section class="pane">

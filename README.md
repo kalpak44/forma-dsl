@@ -1,9 +1,11 @@
 # forma-dsl
 
+[![CI](https://github.com/kalpak44/forma-dsl/actions/workflows/ci.yml/badge.svg)](https://github.com/kalpak44/forma-dsl/actions/workflows/ci.yml)
+
 A declarative DSL for 3D modeling and scene composition, reusable components, and live previews.
 
-Models are written as text — blocks, attributes and expressions in a Terraform-flavoured
-syntax — parsed in the browser and solved by the [Manifold](https://github.com/elalish/manifold)
+Models are written as text — blocks, attributes and expressions in a Terraform-flavored
+syntax - parsed in the browser and solved by the [Manifold](https://github.com/elalish/manifold)
 CSG kernel compiled to WebAssembly. The editor ships with it: type, and the solid updates.
 
 ```hcl
@@ -43,17 +45,70 @@ model "hex_key_holder" {
 ```bash
 npm install
 npm run dev      # editor at http://localhost:5173
-npm test         # language and geometry tests
 npm run build    # static bundle in dist/
+npm run check    # everything CI runs: lint, types, tests, build, package contents
 ```
 
+Individually:
+
+| Script | What it does |
+| --- | --- |
+| `npm test` | Language, geometry, cache, value and export tests |
+| `npm run test:coverage` | The same, with Node's coverage reporter |
+| `npm run lint` | ESLint over `src/`, `web/`, `test/` and `scripts/` |
+| `npm run typecheck` | Checks the published declarations against a usage file |
+| `npm run check:package` | Asserts the npm tarball holds the library and nothing else |
+
 The build is a static site — no server, no backend. Everything, including the geometry
-kernel, runs in the browser.
+kernel, runs in the browser. Set `VITE_BASE` when it will be served from a subdirectory:
+`VITE_BASE=/forma-dsl/ npm run build`. The included Pages workflow does this on every push
+to `main`.
+
+## Using it from Node
+
+`src/` is the library; the editor is one consumer of it. It ships with hand-written
+TypeScript declarations, so the API is typed from either language.
+
+```bash
+npm install forma-dsl
+```
+
+```js
+import { render, toBinarySTL, EvaluationContext } from 'forma-dsl';
+import { writeFile } from 'node:fs/promises';
+
+const source = `
+  param height { type = number  default = 20  min = 8  max = 40 }
+  model "riser" {
+    extrude {
+      height = var.height
+      rounded_rect { size = [40, 20]  radius = 4  center = true }
+    }
+  }
+`;
+
+// One context, reused: the digest cache is what makes the second render of a changed
+// document cheap, and a fresh context starts empty every time.
+const context = await EvaluationContext.create();
+
+for (const height of [10, 20, 30]) {
+  const result = await render(source, { params: { height }, context });
+  await writeFile(`part-${height}.stl`, toBinarySTL(result.parts[0].concrete));
+  // Free what this tree can no longer reach, so a long run stays bounded.
+  context.collect(result.parts.map((part) => part.node));
+}
+
+context.dispose();
+```
+
+`describeParameters(source)` returns what a document declares — name, type, bounds,
+description, and whether a value is required — which is everything needed to build controls
+for it without rendering anything.
 
 ## The language
 
 A document is a list of top-level blocks. Geometry is composed by **nesting blocks**: a
-block's children are its operands, and several children in a row are implicitly unioned.
+block's children are its operands, and several children in a row are implicitly union.
 
 ### Top-level blocks
 
@@ -134,9 +189,14 @@ IEEE bits of every number rather than from a hash the runtime seeds per process,
 the same in every browser and every run.
 
 Nodes are the only thing that reaches the kernel, and every result is memoized by digest.
+A context is meant to outlive a single render — that is what makes an edit cheap, since only
+the subtrees whose content actually changed are re-evaluated. Typing a digit into a
+dimension re-solves that wall and nothing else.
+
 WebAssembly objects are not garbage-collected, so an `EvaluationContext` owns everything it
-produced and `dispose()` frees it; the editor disposes the previous render after the next
-one succeeds.
+produced. `collect(roots)` frees what the current tree can no longer reach, keeping a
+recently-used tail so an undone edit still hits the cache, and `dispose()` frees the lot.
+The editor keeps one context for the life of the page and collects after each render.
 
 ## Layout
 
@@ -146,19 +206,15 @@ src/
   core/      geometry node IR, content digest, evaluation cache, WASM kernel loader
   values/    vectors, angles, affine transforms
   export/    render mesh and binary STL
+  index.js   the public API, and index.d.ts describing it
 web/         editor, viewer and examples
-test/        language and geometry tests
+test/        language, geometry, cache, value, parameter and export tests
+scripts/     maintenance checks run by CI
 ```
 
 `src/` is the library and has one runtime dependency, `manifold-3d`. The editor's
-dependencies — CodeMirror, three.js, Vite — are dev-only and are not needed to use the
-language from Node.
-
-## Credits
-
-The geometry node model, the content-addressed evaluation cache and the declarative
-modeling approach are a rewrite of [Cadova](https://github.com/tomasf/Cadova) by Tomas
-Franzén, MIT licensed. Geometry is solved by [Manifold](https://github.com/elalish/manifold).
+dependencies — CodeMirror, three.js, Vite — are dev-only and are not installed when the
+package is consumed from Node. `npm run check:package` keeps that true.
 
 ## License
 

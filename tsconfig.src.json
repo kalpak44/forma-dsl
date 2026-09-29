@@ -1,0 +1,21 @@
+{
+  "//": "Checks the JSDoc in src/ against the implementation and against src/index.d.ts. Not strict: the AST and the attribute values are genuinely dynamic, and demanding a full type model for them would mean annotating around the language rather than documenting it. What this does catch is JSDoc that has stopped being true \u2014 a wrong type, a renamed field, a method that no longer exists.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2022"
+    ],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "src/**/*.js",
+    "src/**/*.d.ts",
+    "types/**/*.d.ts"
+  ]
+}
