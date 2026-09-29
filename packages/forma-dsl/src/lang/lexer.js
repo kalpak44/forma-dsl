@@ -54,6 +54,13 @@ const isIdentPart = (c) => /[A-Za-z0-9_-]/.test(c);
 const isDigit = (c) => c >= '0' && c <= '9';
 
 /**
+ * @param {string} c A single character.
+ * @returns {boolean} Whether it is whitespace that carries no meaning. A newline does carry
+ *   meaning — it ends an attribute — so it is deliberately not here.
+ */
+const isSpace = (c) => c === ' ' || c === '\t' || c === '\r';
+
+/**
  * Walks the source once, keeping the cursor and the accumulated tokens together.
  *
  * A class rather than one long function because the four scanners below — comments,
@@ -128,25 +135,51 @@ class Lexer {
    * @throws {FormaError} On any character that cannot begin a token.
    */
   run() {
-    while (!this.done) {
-      const c = this.peek();
-
-      if (c === '\n') { this.sawNewline = true; this.advance(); continue; }
-      if (c === ' ' || c === '\t' || c === '\r') { this.advance(); continue; }
-
-      if (c === '#' || (c === '/' && this.peek(1) === '/')) { this.skipLineComment(); continue; }
-      if (c === '/' && this.peek(1) === '*') { this.skipBlockComment(); continue; }
-
-      if (c === '"') { this.readString(); continue; }
-      if (isDigit(c) || (c === '.' && isDigit(this.peek(1)))) { this.readNumber(); continue; }
-      if (isIdentStart(c)) { this.readIdentifier(); continue; }
-      if (this.readPunctuation()) continue;
-
-      throw new FormaError(`unexpected character ${JSON.stringify(c)}`, this.here());
-    }
+    while (!this.done) this.step();
 
     this.tokens.push({ type: 'eof', value: null, loc: this.here(), nlBefore: this.sawNewline });
     return this.tokens;
+  }
+
+  /**
+   * Consumes whatever begins at the cursor, in the one order the grammar allows: a comment
+   * before the division it starts with, a number before the name a bare `e` would become.
+   *
+   * @returns {void}
+   * @throws {FormaError} On a character that cannot begin a token.
+   */
+  step() {
+    const c = this.peek();
+
+    if (c === '\n') { this.sawNewline = true; this.advance(); return; }
+    if (isSpace(c)) { this.advance(); return; }
+
+    if (this.startsLineComment(c)) { this.skipLineComment(); return; }
+    if (c === '/' && this.peek(1) === '*') { this.skipBlockComment(); return; }
+
+    if (c === '"') { this.readString(); return; }
+    if (this.startsNumber(c)) { this.readNumber(); return; }
+    if (isIdentStart(c)) { this.readIdentifier(); return; }
+    if (this.readPunctuation()) return;
+
+    throw new FormaError(`unexpected character ${JSON.stringify(c)}`, this.here());
+  }
+
+  /**
+   * @param {string | undefined} c The character at the cursor.
+   * @returns {boolean} Whether a line comment starts here, in either spelling.
+   */
+  startsLineComment(c) {
+    return c === '#' || (c === '/' && this.peek(1) === '/');
+  }
+
+  /**
+   * @param {string | undefined} c The character at the cursor.
+   * @returns {boolean} Whether a number starts here. A leading `.` counts only when a digit
+   *   follows it, so `.5` is a number and `.x` is punctuation.
+   */
+  startsNumber(c) {
+    return isDigit(c) || (c === '.' && isDigit(this.peek(1)));
   }
 
   /** @returns {void} */
@@ -185,10 +218,7 @@ class Lexer {
 
     while (!this.done && this.peek() !== '"') {
       if (this.peek() === '\\') {
-        const next = this.peek(1);
-        if (!(next in ESCAPES)) throw new FormaError(`unknown escape \\${next}`, this.here());
-        text += ESCAPES[next];
-        this.advance(2);
+        text += this.readEscape();
         continue;
       }
 
@@ -209,6 +239,19 @@ class Lexer {
     // An empty string still needs one part, or it would carry no value at all.
     if (text || parts.length === 0) parts.push({ kind: 'text', value: text });
     this.push('string', parts, loc);
+  }
+
+  /**
+   * Reads one backslash escape and returns what it stands for.
+   *
+   * @returns {string} The character the escape denotes.
+   * @throws {FormaError} On an escape that is not one of the six the language defines.
+   */
+  readEscape() {
+    const next = this.peek(1);
+    if (!(next in ESCAPES)) throw new FormaError(`unknown escape \\${next}`, this.here());
+    this.advance(2);
+    return ESCAPES[next];
   }
 
   /**
@@ -242,25 +285,42 @@ class Lexer {
     const loc = this.here();
     const start = this.i;
 
-    while (!this.done && isDigit(this.peek())) this.advance();
+    this.readDigits();
     if (this.peek() === '.' && isDigit(this.peek(1))) {
       this.advance();
-      while (!this.done && isDigit(this.peek())) this.advance();
+      this.readDigits();
     }
-
-    if (this.peek() === 'e' || this.peek() === 'E') {
-      // `2e` and `2emm` are not numbers with exponents; back out so the `e` can start a name.
-      const save = this.i;
-      this.advance();
-      if (this.peek() === '+' || this.peek() === '-') this.advance();
-      if (isDigit(this.peek())) {
-        while (!this.done && isDigit(this.peek())) this.advance();
-      } else {
-        this.i = save;
-      }
-    }
+    this.readExponent();
 
     this.push('number', Number(this.source.slice(start, this.i)), loc);
+  }
+
+  /**
+   * Consumes a run of digits, which may be empty.
+   *
+   * @returns {void}
+   */
+  readDigits() {
+    while (!this.done && isDigit(this.peek())) this.advance();
+  }
+
+  /**
+   * Consumes an exponent if there is a complete one.
+   *
+   * `2e` and `2emm` are not numbers with exponents, so a partial match rewinds and lets the
+   * `e` start a name instead.
+   *
+   * @returns {void}
+   */
+  readExponent() {
+    if (this.peek() !== 'e' && this.peek() !== 'E') return;
+
+    const save = this.i;
+    this.advance();
+    if (this.peek() === '+' || this.peek() === '-') this.advance();
+
+    if (isDigit(this.peek())) this.readDigits();
+    else this.i = save;
   }
 
   /** @returns {void} */
