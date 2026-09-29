@@ -2,21 +2,23 @@ import { fileURLToPath } from 'node:url';
 
 import { defineConfig } from 'vite';
 
-export default defineConfig({
-  // GitHub Pages serves the project from a subdirectory, so the base has to be settable
-  // without editing this file. Deploys pass VITE_BASE=/forma-dsl/; local dev needs nothing.
-  base: process.env.VITE_BASE ?? '/',
+export default defineConfig(({ command }) => ({
+  // The editor is served from /app/ under whatever base the deploy passes: Pages serves the
+  // project from a subdirectory, so VITE_BASE=/forma-dsl/ makes this /forma-dsl/app/. `npm
+  // run dev` serves the editor alone at the root, where that prefix would be a 404.
+  base: command === 'serve' ? '/' : `${process.env.VITE_BASE ?? '/'}app/`,
 
   // The kernel is a WASM module loaded at runtime, so it must be copied verbatim rather
   // than inlined as a data URL.
   assetsInclude: ['**/*.wasm'],
 
   build: {
-    // The published site is one artifact: the editor at the root and the manual under
-    // /docs/, which the docs workspace writes here afterwards. Outside this workspace, so
-    // `emptyOutDir` has to be explicit — Vite will not clear a directory above its root
-    // without being told to.
-    outDir: fileURLToPath(new URL('../../dist', import.meta.url)),
+    // The published site is one artifact: the landing page at the root, the editor here
+    // under /app/, and the manual under /docs/. Outside this workspace, so `emptyOutDir`
+    // has to be explicit — Vite will not clear a directory above its root without being
+    // told to. Only this app's own directory is cleared; the landing page owns dist/ and
+    // builds first.
+    outDir: fileURLToPath(new URL('../../dist/app', import.meta.url)),
     emptyOutDir: true,
 
     target: 'es2022',
@@ -39,4 +41,4 @@ export default defineConfig({
   },
 
   server: { port: 5173 },
-});
+}));

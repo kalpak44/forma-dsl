@@ -408,7 +408,8 @@ function shell({ file, title, html, headings }) {
   <a class="brand" href="${linkBetween(file, 'README.md')}">forma<span>-dsl</span></a>
   <span class="tag">docs</span>
   <div class="grow"></div>
-  <a href="${BASE}">Editor</a>
+  <a href="${BASE}">Home</a>
+  <a href="${BASE}app/">Editor</a>
   <a href="https://github.com/kalpak44/forma-dsl">GitHub</a>
 </header>
 

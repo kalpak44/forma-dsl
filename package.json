@@ -12,10 +12,11 @@
     "node": ">=20.19.0"
   },
   "scripts": {
-    "dev": "npm run dev -w @forma-dsl/editor",
-    "build": "npm run build -w @forma-dsl/editor && npm run build -w @forma-dsl/docs",
+    "dev": "npm run dev -w @forma-dsl/landing",
+    "dev:editor": "npm run dev -w @forma-dsl/editor",
+    "build": "npm run build -w @forma-dsl/landing && npm run build -w @forma-dsl/editor && npm run build -w @forma-dsl/docs",
     "build:docs": "npm run build -w @forma-dsl/docs",
-    "preview": "npm run preview -w @forma-dsl/editor",
+    "preview": "npm run preview -w @forma-dsl/landing",
     "test": "npm test --workspaces --if-present",
     "test:coverage": "node -e \"require('node:fs').mkdirSync('coverage',{recursive:true})\" && node --test --experimental-test-coverage --test-coverage-lines=90 --test-coverage-branches=80 --test-coverage-functions=75 --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --test-reporter=spec --test-reporter-destination=stdout \"packages/*/test/**/*.test.js\" \"apps/*/test/**/*.test.js\"",
     "lint": "eslint .",

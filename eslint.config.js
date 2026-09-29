@@ -123,7 +123,7 @@ export default [
   },
 
   {
-    files: ['apps/editor/src/**/*.js'],
+    files: ['apps/editor/src/**/*.js', 'apps/landing/src/**/*.js'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
@@ -135,7 +135,7 @@ export default [
   },
 
   {
-    files: ['packages/forma-dsl/test/**/*.js', 'apps/editor/test/**/*.js'],
+    files: ['packages/forma-dsl/test/**/*.js', 'apps/*/test/**/*.js'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',

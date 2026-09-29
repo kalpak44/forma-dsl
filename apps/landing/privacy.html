@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy — forma-dsl</title>
+<meta name="description" content="No accounts, no cookies, no analytics and no third-party requests: what the forma-dsl site stores, which is almost nothing, and where it is hosted.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0b0e13" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f1ece1" media="(prefers-color-scheme: light)">
+<meta name="robots" content="index, follow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1117'/%3E%3Cpath d='M16 5l9 5.2v10.6L16 26l-9-5.2V10.2z' fill='none' stroke='%2382aaff' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+<!-- Before first paint, and deliberately not a module: a module is deferred, and the page
+     would paint in the wrong theme first and then correct itself in front of the reader. -->
+<script>
+  let chosen = null;
+  try { chosen = localStorage.getItem('forma:theme'); } catch { /* storage blocked */ }
+  document.documentElement.dataset.theme = chosen === 'light' || chosen === 'dark'
+    ? chosen
+    : (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+</script>
+</head>
+
+<body>
+<a class="skip" href="#content">Skip to the text</a>
+<div class="regmarks" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+<header class="site">
+  <div class="bar">
+    <a class="brand" href="./" aria-label="forma-dsl, home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4l10.4 6v12L16 28 5.6 22V10z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" opacity=".45"/><path d="M16 10l5.2 3v6L16 22l-5.2-3v-6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" style="color: var(--accent)"/></svg>
+      forma<em>-dsl</em>
+    </a>
+    <div class="grow"></div>
+    <nav class="site-nav" aria-label="Main">
+      <a href="./">Home</a>
+      <a href="docs/">Docs</a>
+      <a class="hide-sm" href="https://github.com/kalpak44/forma-dsl" rel="noopener">GitHub</a>
+      <a class="cta" href="app/">Open the editor</a>
+      <button id="theme" type="button" aria-label="Switch between the dark and light theme">
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="content">
+  <article class="prose">
+    <span class="stamp">Effective 29 September 2026</span>
+    <h1>Privacy</h1>
+    <p class="lede">The short version: this site has no accounts, no cookies, no analytics
+      and no third-party requests. Nothing you write in the editor is sent anywhere, because
+      there is nowhere for it to be sent.</p>
+
+    <h2><span class="no">§ 01</span>What this covers</h2>
+    <p>This policy covers the forma-dsl website — this page, the landing page, the reference
+      manual and the browser editor — served from
+      <code>kalpak44.github.io/forma-dsl</code>. It does not cover the forma-dsl npm package
+      itself, which is a library that runs on your own machine and makes no network requests
+      of any kind.</p>
+
+    <h2><span class="no">§ 02</span>What we collect</h2>
+    <p>Nothing. There is no server of ours between you and this site, no account to create,
+      no form to fill in, no cookie set, no analytics or tag manager, no advertising, no
+      fingerprinting and no error-reporting service. The pages load only files served from
+      the same origin.</p>
+
+    <h2><span class="no">§ 03</span>What stays in your browser</h2>
+    <p>Two things are stored in your browser's <code>localStorage</code>, which is readable
+      only by this site and only on this device:</p>
+    <ul>
+      <li><code>forma:theme</code> — whether you chose the dark or the light theme.</li>
+      <li><code>forma:source</code> — the document currently open in the editor, so that
+        reloading the page does not lose your work.</li>
+    </ul>
+    <p>Neither is transmitted. Clearing your browser's site data for this origin removes
+      both, and the site keeps working without them.</p>
+
+    <h2><span class="no">§ 04</span>Your models never leave the page</h2>
+    <p>Everything the editor does — parsing, evaluating, solving the geometry with the
+      Manifold kernel compiled to WebAssembly, exporting STL — happens inside your browser
+      tab. No document, parameter or mesh is uploaded, and an exported file is written by
+      your browser directly to your downloads.</p>
+
+    <h2><span class="no">§ 05</span>Hosting</h2>
+    <p>The site is hosted on GitHub Pages. To serve you a page at all, GitHub's servers
+      necessarily receive your IP address, the URL requested and your browser's user agent,
+      and may log them. That processing is GitHub's, under the
+      <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">GitHub
+      General Privacy Statement</a>. We have no access to those logs and receive nothing
+      from them.</p>
+
+    <h2><span class="no">§ 06</span>Links away from here</h2>
+    <p>Links to GitHub, npm and other sites are ordinary links: nothing is prefetched or
+      loaded from them while you are here, and following one puts you under that site's own
+      policy.</p>
+
+    <h2><span class="no">§ 07</span>Children</h2>
+    <p>The site is not directed at children, and since it collects nothing, it collects
+      nothing from them either.</p>
+
+    <h2><span class="no">§ 08</span>Changes</h2>
+    <p>If this policy changes, the date at the top of this page changes with it, and the
+      edit is visible in the repository's history like any other change to the site.</p>
+
+    <h2><span class="no">§ 09</span>Contact</h2>
+    <p>Questions about this policy belong in
+      <a href="https://github.com/kalpak44/forma-dsl/issues" rel="noopener">the project's
+      issue tracker</a>, where the answer is useful to everyone who has the same question.</p>
+
+    <div class="callout">
+      <p style="margin:0">Because the site stores nothing about you and processes nothing on
+        a server, there is no account to access, correct or delete. The two local values in
+        § 03 are yours to clear at any time, from your own browser.</p>
+    </div>
+
+  </article>
+</main>
+
+<footer class="site">
+  <div class="colophon">
+    <span>© <span data-fill="year">2026</span> forma-dsl contributors</span>
+    <span>MIT</span>
+    <div class="grow"></div>
+    <a href="./">Home</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="terms.html">Terms</a>
+    <a href="https://github.com/kalpak44/forma-dsl" rel="noopener">GitHub</a>
+  </div>
+</footer>
+
+<script type="module" src="/src/legal.js"></script>
+</body>
+</html>
