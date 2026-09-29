@@ -39,13 +39,8 @@ class Scope {
    * @returns {unknown} Its value, or undefined if nothing binds it.
    */
   lookup(name) {
-    /** @type {Scope | null} */
-    let scope = this;
-    while (scope) {
-      if (scope.values.has(name)) return scope.values.get(name);
-      scope = scope.parent;
-    }
-    return undefined;
+    if (this.values.has(name)) return this.values.get(name);
+    return this.parent ? this.parent.lookup(name) : undefined;
   }
 
   /**
@@ -55,13 +50,8 @@ class Scope {
    * @returns {boolean} Whether anything binds it.
    */
   has(name) {
-    /** @type {Scope | null} */
-    let scope = this;
-    while (scope) {
-      if (scope.values.has(name)) return true;
-      scope = scope.parent;
-    }
-    return false;
+    if (this.values.has(name)) return true;
+    return this.parent ? this.parent.has(name) : false;
   }
 
   /**
