@@ -35,13 +35,13 @@ jobs:
       - name: Install
         run: npm ci
 
-      # `enablement` turns Pages on for the repository if it is off, so the first deploy
-      # works from a clean checkout — a fork, or this repository before anyone visited the
-      # settings page — rather than failing with "Get Pages site failed".
+      # Reads the Pages configuration; it cannot create it. Turning Pages on is a one-time
+      # admin action — Settings → Pages → Source: GitHub Actions — because creating a site
+      # needs `administration: write`, which is not a permission a workflow token can hold
+      # at all. `enablement: true` here only trades the clear "verify that the repository
+      # has Pages enabled" for an opaque "Resource not accessible by integration".
       - uses: actions/configure-pages@v6
         id: pages
-        with:
-          enablement: true
 
       # Pages serves a project site from /<repo>/, so every absolute asset URL has to carry
       # that prefix. `configure-pages` works the path out from the repository itself rather
