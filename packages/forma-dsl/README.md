@@ -1,6 +1,6 @@
 # forma-dsl
 
-[![CI](https://github.com/kalpak44/forma-dsl/actions/workflows/ci.yml/badge.svg)](https://github.com/kalpak44/forma-dsl/actions/workflows/ci.yml)
+[![Release](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml/badge.svg)](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml)
 [![npm](https://img.shields.io/npm/v/forma-dsl.svg)](https://www.npmjs.com/package/forma-dsl)
 
 A declarative DSL for 3D modeling and scene composition, with reusable components and live
