@@ -38,14 +38,17 @@ export class Stage {
 
   /**
    * @param {HTMLCanvasElement} canvas The canvas to draw into.
+   * @param {THREE.WebGLRenderer} [renderer] Where the scene is drawn. A parameter so the
+   *   scene graph can be driven without a GPU; constructing the default is what throws
+   *   when there is no WebGL, which is the signal the caller catches.
    * @throws {Error} If the browser cannot give the canvas a WebGL context.
    */
-  constructor(canvas) {
+  constructor(canvas, renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })) {
     /** @type {HTMLCanvasElement} The canvas being drawn into. */
     this.canvas = canvas;
 
     /** @type {THREE.WebGLRenderer} The renderer, transparent so the panel shows through. */
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    this.renderer = renderer;
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 
     /** @type {THREE.Scene} The scene. */

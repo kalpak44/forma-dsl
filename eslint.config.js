@@ -145,6 +145,19 @@ export default [
   },
 
   {
+    // The landing page's tests install a DOM and then drive its modules through it, so they
+    // read the same browser globals the modules do, on top of Node's own. ES2025 is for the
+    // import attribute on the package manifest the page reads its facts from.
+    files: ['apps/landing/test/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2025,
+      sourceType: 'module',
+      globals: { ...globals.node, ...globals.browser },
+    },
+    rules: shared,
+  },
+
+  {
     // Build and maintenance scripts, in any workspace: Node-only, and they exist to print
     // things.
     files: ['packages/forma-dsl/scripts/**/*.{js,mjs}', 'apps/docs/*.mjs'],
