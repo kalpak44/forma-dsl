@@ -97,14 +97,17 @@ export class Hero {
 
   /**
    * @param {HTMLCanvasElement} canvas The canvas to draw into.
+   * @param {THREE.WebGLRenderer} [renderer] Where the scene is drawn. A parameter so the
+   *   turntable can be driven without a GPU; constructing the default is what throws when
+   *   there is no WebGL, which is the signal the caller catches.
    * @throws {Error} If the browser cannot give the canvas a WebGL context.
    */
-  constructor(canvas) {
+  constructor(canvas, renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })) {
     /** @type {HTMLCanvasElement} The canvas being drawn into. */
     this.canvas = canvas;
 
     /** @type {THREE.WebGLRenderer} The renderer. Transparent, so the page paints behind it. */
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    this.renderer = renderer;
     // Beyond 1.75x costs fill rate on a background nobody is inspecting.
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
 

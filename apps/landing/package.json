@@ -17,6 +17,7 @@
     "forma-dsl": "*"
   },
   "devDependencies": {
+    "jsdom": "^29.1.1",
     "three": "^0.186.1",
     "vite": "^8.3.1"
   }

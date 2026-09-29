@@ -378,8 +378,9 @@ pre.code {
   color: var(--muted);
 }
 
+/* A stack of rows: the status line and the readouts on one, the parameter rail under it. */
 .demo-dock {
-  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  display: grid; gap: 10px;
   padding: 11px 16px; border-top: 1px solid var(--line); background: var(--panel);
   font-family: var(--font-mono); font-size: 11.5px;
 }
@@ -476,7 +477,6 @@ footer.site .colophon {
 
 /* --- demo parameter rail --------------------------------------------------------------- */
 
-.demo-dock { display: grid; gap: 10px; }
 .dock-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 
 .params { display: grid; gap: 7px; }

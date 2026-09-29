@@ -89,15 +89,17 @@ export class Demo {
    * @param {HTMLElement} elements.tris The triangle-count readout.
    * @param {HTMLElement} elements.ms The solve-time readout.
    * @param {HTMLElement} elements.replay The replay button.
+   * @param {(canvas: HTMLCanvasElement) => Stage} [createStage] How the viewport is built.
+   *   A parameter so the sequence can be driven without a GPU; the default is the real one.
    */
-  constructor(elements) {
+  constructor(elements, createStage = (canvas) => new Stage(canvas)) {
     /** @type {typeof elements} The elements the demo writes to. */
     this.el = elements;
 
     /** @type {Stage | null} The viewport, or null where WebGL is unavailable. */
     this.stage = null;
     try {
-      this.stage = new Stage(elements.canvas);
+      this.stage = createStage(elements.canvas);
     } catch {
       // A browser with no WebGL still gets the language, typed out and solved; it simply
       // has nowhere to draw the result.

@@ -4,7 +4,7 @@
  * pages alike, which is why nothing here assumes an element exists.
  */
 
-import pkg from 'forma-dsl/package.json';
+import pkg from 'forma-dsl/package.json' with { type: 'json' };
 
 /** Where the chosen theme is remembered. Shared with nothing else, hence the prefix. */
 const STORAGE_KEY = 'forma:theme';
@@ -137,7 +137,7 @@ export function initFacts() {
 export function initCopy() {
   for (const button of document.querySelectorAll('[data-copy]')) {
     button.addEventListener('click', async () => {
-      const source = document.getElementById(/** @type {string} */ (button.getAttribute('data-copy')));
+      const source = document.getElementById(/** @type {HTMLElement} */ (button).dataset.copy ?? '');
       if (!source) return;
       try {
         await navigator.clipboard.writeText(source.textContent ?? '');
