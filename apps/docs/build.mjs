@@ -1,5 +1,5 @@
 /**
- * Renders docs/ into a static site under dist/docs/.
+ * Renders content/ into a static site under the repository's dist/docs/.
  *
  * The docs are written as Markdown so they read well in the repository and on GitHub; this
  * turns the same files into the published site without a second copy of the content.
@@ -10,16 +10,27 @@
  * page on disk exactly once. A broken link fails the build rather than shipping.
  */
 import { readdir, readFile, mkdir, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { marked } from 'marked';
 
-import { BLOCKS, FUNCTIONS, CONSTANTS } from '../src/index.js';
+import { BLOCKS, FUNCTIONS, CONSTANTS } from 'forma-dsl';
 
-const DOCS = resolve('docs');
-const OUT = resolve('dist/docs');
+// Anchored to this file, not to the working directory: npm runs a workspace script from
+// that workspace, but a person debugging it runs `node apps/docs/build.mjs` from the root.
+const HERE = fileURLToPath(new URL('.', import.meta.url));
+const REPO = fileURLToPath(new URL('../../', import.meta.url));
+const DOCS = join(HERE, 'content');
+// Written into the editor's build output, so the site is one artifact: the editor at the
+// root and the manual under /docs/.
+const OUT = join(REPO, 'dist/docs');
 
-/** Where a `.md` link that points outside docs/ is sent instead. */
+/** Where a link that points outside the content tree is sent instead. */
 const REPO_BLOB = 'https://github.com/kalpak44/forma-dsl/blob/main';
+
+/** Links out of the content tree whose target is not in the repository. */
+const outside = [];
 
 /** Where the editor lives relative to the site root; deploys serve from a subdirectory. */
 const BASE = process.env.VITE_BASE ?? '/';
@@ -287,10 +298,14 @@ function rewriteHref(file, href, links) {
   const [path, fragment] = href.split('#');
   const target = relative(DOCS, resolve(DOCS, dirname(file), path));
 
-  // A link that escapes docs/ — the project README, a source file — cannot be part of the
-  // built site, so it goes to the repository instead.
+  // A link that escapes the content tree — the project README, a source file — cannot be
+  // part of the built site, so it goes to the repository instead. It is still checked: a
+  // path that no longer exists would otherwise become a 404 on GitHub that nothing here
+  // ever looks at.
   if (target.startsWith('..')) {
-    return `${REPO_BLOB}/${relative(resolve('.'), resolve(DOCS, dirname(file), path))}`;
+    const onDisk = join(DOCS, dirname(file), path);
+    if (!existsSync(onDisk)) outside.push(`${file} → ${path} (no such path in the repository)`);
+    return `${REPO_BLOB}/${relative(REPO, onDisk)}`;
   }
 
   const emitted = linkBetween(file, target) + (fragment ? `#${fragment}` : '');
@@ -449,8 +464,9 @@ async function main() {
       if (!written.has(landed)) broken.push(`${link.loc} → ${link.emitted} (resolves to ${landed}, which is not built)`);
     }
   }
-  if (broken.length) {
-    console.error(`Broken links:\n  ${broken.join('\n  ')}`);
+  if (broken.length || outside.length) {
+    if (broken.length) console.error(`Broken links:\n  ${broken.join('\n  ')}`);
+    if (outside.length) console.error(`Links out of the content tree:\n  ${outside.join('\n  ')}`);
     process.exit(1);
   }
 
@@ -459,10 +475,10 @@ async function main() {
     await mkdir(dirname(out), { recursive: true });
     await writeFile(out, shell(page));
   }
-  await writeFile(join(OUT, 'docs.css'), await readFile(resolve('scripts/docs.css'), 'utf8'));
+  await writeFile(join(OUT, 'docs.css'), await readFile(join(HERE, 'docs.css'), 'utf8'));
 
   const links = [...pages.values()].reduce((n, page) => n + page.links.length, 0);
-  console.log(`docs: ${pages.size} pages, ${links} internal links checked → ${relative(resolve('.'), OUT)}/`);
+  console.log(`docs: ${pages.size} pages, ${links} internal links checked → ${relative(REPO, OUT)}/`);
 }
 
 await main();

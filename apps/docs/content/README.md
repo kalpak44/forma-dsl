@@ -29,7 +29,7 @@ model "riser" {
 
 This reference documents every construct in the language and every function the JavaScript
 package exports. For a tour of the project itself — how to run the editor, how to consume the
-library from Node — see the [top-level README](../README.md).
+library from Node — see the [top-level README](../../../README.md).
 
 ---
 

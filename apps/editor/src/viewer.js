@@ -1,4 +1,4 @@
-/** @import { RenderedPart } from '../src/index.js' */
+/** @import { RenderedPart } from 'forma-dsl' */
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';

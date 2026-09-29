@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+
 import { defineConfig } from 'vite';
 
 export default defineConfig({
@@ -10,6 +12,13 @@ export default defineConfig({
   assetsInclude: ['**/*.wasm'],
 
   build: {
+    // The published site is one artifact: the editor at the root and the manual under
+    // /docs/, which the docs workspace writes here afterwards. Outside this workspace, so
+    // `emptyOutDir` has to be explicit — Vite will not clear a directory above its root
+    // without being told to.
+    outDir: fileURLToPath(new URL('../../dist', import.meta.url)),
+    emptyOutDir: true,
+
     target: 'es2022',
     // Shipped: the app is MIT and the stack traces a user can report are worth more than
     // the bandwidth, which is only spent when devtools is actually open.

@@ -1,0 +1,56 @@
+{
+  "name": "forma-dsl",
+  "version": "0.1.0",
+  "description": "A declarative DSL for 3D modeling and scene composition, reusable components, and live previews.",
+  "keywords": [
+    "cad",
+    "csg",
+    "3d",
+    "dsl",
+    "parametric",
+    "manifold",
+    "stl",
+    "geometry",
+    "webassembly"
+  ],
+  "homepage": "https://github.com/kalpak44/forma-dsl#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kalpak44/forma-dsl.git",
+    "directory": "packages/forma-dsl"
+  },
+  "bugs": {
+    "url": "https://github.com/kalpak44/forma-dsl/issues"
+  },
+  "author": "Pavel Usanli",
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "files": [
+    "src"
+  ],
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.src.json",
+    "check:package": "node scripts/check-package.mjs"
+  },
+  "dependencies": {
+    "manifold-3d": "^3.5.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

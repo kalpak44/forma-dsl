@@ -59,15 +59,16 @@ const shared = {
 };
 
 export default [
-  { ignores: ['dist/**', 'node_modules/**', '**/*.d.ts'] },
+  { ignores: ['dist/**', '**/node_modules/**', '**/*.d.ts'] },
 
   js.configs.recommended,
 
   {
     // The library is meant to run unchanged in a browser and in Node, so it is linted
     // against neither environment's globals — only the ones both actually provide. A
-    // `process` or a `window` creeping into src/ should fail here, not at a user's import.
-    files: ['src/**/*.js'],
+    // `process` or a `window` creeping into the package should fail here, not at a user's
+    // import.
+    files: ['packages/forma-dsl/src/**/*.js'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
@@ -83,7 +84,7 @@ export default [
   },
 
   {
-    files: ['web/**/*.js'],
+    files: ['apps/editor/src/**/*.js'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
@@ -95,7 +96,7 @@ export default [
   },
 
   {
-    files: ['test/**/*.js'],
+    files: ['packages/forma-dsl/test/**/*.js', 'apps/editor/test/**/*.js'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
@@ -105,8 +106,9 @@ export default [
   },
 
   {
-    // Build and maintenance scripts are Node-only and exist to print things.
-    files: ['scripts/**/*.{js,mjs}'],
+    // Build and maintenance scripts, in any workspace: Node-only, and they exist to print
+    // things.
+    files: ['packages/forma-dsl/scripts/**/*.{js,mjs}', 'apps/docs/*.mjs'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
@@ -116,7 +118,7 @@ export default [
   },
 
   {
-    files: ['*.config.js'],
+    files: ['**/*.config.js'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',

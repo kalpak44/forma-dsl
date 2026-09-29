@@ -1,0 +1,20 @@
+{
+  "name": "@forma-dsl/docs",
+  "version": "0.1.0",
+  "description": "The forma-dsl reference manual, and the builder that renders it.",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "forma-dsl": "*"
+  },
+  "devDependencies": {
+    "marked": "^18.0.14"
+  }
+}
