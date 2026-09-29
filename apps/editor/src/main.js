@@ -78,9 +78,25 @@ addEventListener('unhandledrejection', (event) => {
   console.error('unhandled rejection', event.reason);
 });
 
-// Vite fingerprints the wasm, so the module cannot find it by its own relative path. The
-// rejection is handled where it matters, in run(); this only keeps it from being unhandled.
-loadKernel({ locateFile: () => wasmUrl }).catch(() => {});
+/**
+ * Starts fetching the kernel now, without blocking on it.
+ *
+ * Vite fingerprints the wasm, so the module cannot find it by its own relative path. This is
+ * deliberately not awaited at the top level: the editor should paint and accept typing while
+ * several megabytes of WebAssembly arrive. A failure is handled where it matters, in run();
+ * swallowing it here only keeps it from surfacing as an unhandled rejection.
+ *
+ * @returns {Promise<void>} Resolves once the kernel is loaded, or immediately on failure.
+ */
+async function prefetchKernel() {
+  try {
+    await loadKernel({ locateFile: () => wasmUrl });
+  } catch {
+    // Reported by run(), which is where the user can be told about it.
+  }
+}
+
+void prefetchKernel();
 
 // --- viewer ---------------------------------------------------------------------------
 

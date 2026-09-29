@@ -2,6 +2,7 @@ import js from '@eslint/js';
 import globals from 'globals';
 import jsdoc from 'eslint-plugin-jsdoc';
 import sonarjs from 'eslint-plugin-sonarjs';
+import tseslint from 'typescript-eslint';
 
 /**
  * JSDoc rules, applied to the library and the editor alike.
@@ -71,6 +72,24 @@ export default [
   {
     files: ['packages/*/src/**/*.js', 'apps/*/src/**/*.js', 'apps/docs/*.mjs', '**/test/**/*.js'],
     ...sonarjs.configs.recommended,
+  },
+
+  // A third of SonarCloud's findings need type information — a sort with no comparator, a
+  // template that will interpolate `[object Object]` — and are simply invisible without it.
+  // Those are the ones that cost the most to diagnose from a dashboard, so the parser gets
+  // a program here. Tests are left out: they are not what Sonar analyses, and typing them
+  // doubles the lint for nothing.
+  {
+    files: ['packages/*/src/**/*.js', 'apps/*/src/**/*.js', 'apps/docs/*.mjs'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: { project: './tsconfig.lint.json', tsconfigRootDir: import.meta.dirname },
+    },
+    plugins: { '@typescript-eslint': tseslint.plugin },
+    rules: {
+      // Sonar reports this as "will use Object's default stringification format".
+      '@typescript-eslint/no-base-to-string': 'error',
+    },
   },
 
   {

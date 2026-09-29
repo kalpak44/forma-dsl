@@ -75,7 +75,8 @@ class Parser {
 
   /**
    * @param {TokenType} type The kind required.
-   * @param {unknown} [value] The exact value required, when it matters.
+   * @param {string} [value] The exact value required, when it matters. Always a keyword or a
+   *   piece of punctuation, which is why it can go straight into the message.
    * @returns {Token} The consumed token.
    * @throws {FormaError} If the current token is not what was required.
    */
@@ -271,17 +272,17 @@ class Parser {
   parseIf() {
     const loc = this.expect('ident', 'if').loc;
     const condition = this.parseExpression();
-    const then = this.parseBracedBody();
-    let otherwise = null;
+    const consequent = this.parseBracedBody();
+    let alternate = null;
     if (this.isIdent('else')) {
       this.next();
       if (this.isIdent('if')) {
-        otherwise = { attributes: [], params: [], locals: [], blocks: [this.parseIf()] };
+        alternate = { attributes: [], params: [], locals: [], blocks: [this.parseIf()] };
       } else {
-        otherwise = this.parseBracedBody();
+        alternate = this.parseBracedBody();
       }
     }
-    return { kind: 'if', condition, then, otherwise, loc };
+    return { kind: 'if', condition, consequent, alternate, loc };
   }
 
   // --- expressions ----------------------------------------------------------------
@@ -298,10 +299,10 @@ class Parser {
     const condition = this.parseBinary(0);
     if (this.isPunct('?') && !this.breaksLine()) {
       this.next();
-      const then = this.parseExpression();
+      const consequent = this.parseExpression();
       this.expect('punct', ':');
-      const otherwise = this.parseExpression();
-      return { kind: 'conditional', condition, then, otherwise };
+      const alternate = this.parseExpression();
+      return { kind: 'conditional', condition, consequent, alternate };
     }
     return condition;
   }

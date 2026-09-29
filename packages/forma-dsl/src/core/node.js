@@ -4,6 +4,23 @@ import { DigestWriter } from './digest.js';
 import { Transform } from '../values/transform.js';
 
 /**
+ * Orders strings by UTF-16 code unit, which is what a bare `sort()` does.
+ *
+ * Written out rather than left implicit — and deliberately *not* `localeCompare`, which is
+ * what a linter will suggest. Collation is locale-dependent, and this ordering feeds the
+ * digest: two machines with different locales would have to agree, or the cache would miss
+ * across them and a model would re-solve from scratch on someone else's laptop.
+ *
+ * @param {string} a The left string.
+ * @param {string} b The right string.
+ * @returns {number} Negative, zero or positive, as `sort` wants.
+ */
+function byCodeUnit(a, b) {
+  if (a < b) return -1;
+  return a > b ? 1 : 0;
+}
+
+/**
  * Canonically encodes an attribute value into the digest.
  *
  * Object keys are sorted, so two nodes built from the same attributes in a different source
@@ -29,7 +46,7 @@ function writeValue(writer, value) {
   } else if (value instanceof Transform) {
     writer.string('t').numbers(value.toArray());
   } else {
-    const keys = Object.keys(value).sort();
+    const keys = Object.keys(value).sort(byCodeUnit);
     writer.string('o').int(keys.length);
     for (const key of keys) {
       writer.string(key);
@@ -113,7 +130,7 @@ export class GeometryNode {
       throw new TypeError(`cannot combine 2D and 3D geometry in a ${op}`);
     }
     const ordered = op === 'union'
-      ? [...live].sort((a, b) => a.subtreeSize - b.subtreeSize || a.digest.localeCompare(b.digest))
+      ? [...live].sort((a, b) => a.subtreeSize - b.subtreeSize || byCodeUnit(a.digest, b.digest))
       : live;
     return new GeometryNode(dim, 'boolean', { op }, ordered);
   }

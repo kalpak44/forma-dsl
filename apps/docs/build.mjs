@@ -151,7 +151,7 @@ const TOKEN = new RegExp(`(${COMMENT})|(${STRING})|(${NUMBER})|(${IDENT})`, 'g')
  * @returns {string} The escaped text.
  */
 function escapeHtml(text) {
-  return text.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  return text.replaceAll(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
 
 /**
@@ -193,7 +193,7 @@ function highlight(code) {
       out += `<span class="tok-m">${escapeHtml(text)}</span>`;
     } else if (string) {
       // `${…}` inside a string is an expression, and reads much better shown as one.
-      out += `<span class="tok-s">${escapeHtml(text).replace(
+      out += `<span class="tok-s">${escapeHtml(text).replaceAll(
         /\$\{[^}]*\}/g, (splice) => `<span class="tok-i">${splice}</span>`,
       )}</span>`;
     } else if (number) {
@@ -210,6 +210,22 @@ function highlight(code) {
 // --- markdown --------------------------------------------------------------------------
 
 /**
+ * Orders strings by UTF-16 code unit, which is what a bare `sort()` does.
+ *
+ * Spelled out rather than left implicit, and deliberately not `localeCompare`: the page
+ * order decides the order pages are written and reported in, and a build should not depend
+ * on the locale of the machine running it.
+ *
+ * @param {string} a The left string.
+ * @param {string} b The right string.
+ * @returns {number} Negative, zero or positive, as `sort` wants.
+ */
+function byCodeUnit(a, b) {
+  if (a < b) return -1;
+  return a > b ? 1 : 0;
+}
+
+/**
  * GitHub's heading-id rule, so an anchor written against the rendered Markdown on GitHub
  * also resolves on the built site.
  *
@@ -218,8 +234,8 @@ function highlight(code) {
  */
 function slugify(text) {
   return text.toLowerCase().trim()
-    .replace(/[^\w\- ]+/g, '')
-    .replace(/\s+/g, '-');
+    .replaceAll(/[^\w\- ]+/g, '')
+    .replaceAll(/\s+/g, '-');
 }
 
 /**
@@ -265,7 +281,7 @@ function renderPage(file, markdown) {
       ids.add(id);
       if (depth === 1 && title === file) title = text;
       if (depth >= 2 && depth <= 3) headings.push({ id, text, depth });
-      return `<h${depth} id="${id}">${inline}<a class="anchor" href="#${id}" aria-label="Link to ${escapeHtml(text.replace(/`/g, ''))}">#</a></h${depth}>\n`;
+      return `<h${depth} id="${id}">${inline}<a class="anchor" href="#${id}" aria-label="Link to ${escapeHtml(text.replaceAll('`', ''))}">#</a></h${depth}>\n`;
     },
 
     /**
@@ -431,7 +447,7 @@ async function markdownFiles(dir) {
     if (entry.isDirectory()) return markdownFiles(full);
     return entry.name.endsWith('.md') ? [relative(DOCS, full)] : [];
   }));
-  return found.flat().sort();
+  return found.flat().sort(byCodeUnit);
 }
 
 /**
