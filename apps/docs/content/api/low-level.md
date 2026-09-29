@@ -2,7 +2,7 @@
 
 The pipeline, stage by stage, plus the registries the evaluator reads. These are exported so
 that editors, linters and tools can reach into the compiler without re-implementing it — the
-[editor](https://github.com/kalpak44/forma-dsl/blob/main/web) uses them for syntax
+[editor](../../../editor) uses them for syntax
 highlighting and inline diagnostics.
 
 ```js

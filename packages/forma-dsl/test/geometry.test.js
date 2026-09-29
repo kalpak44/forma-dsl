@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { render, toBinarySTL } from '../src/index.js';
-import { EXAMPLES } from '../web/examples.js';
 
 const close = (actual, expected, tolerance, what) =>
   assert.ok(Math.abs(actual - expected) < tolerance, `${what}: expected ~${expected}, got ${actual}`);
@@ -87,16 +86,4 @@ test('binary STL is well formed', async () => {
   assert.equal(triangles, 12, 'a cube is 12 triangles');
   assert.equal(stl.length, 84 + triangles * 50);
   r.context.dispose();
-});
-
-test('every shipped example renders', async () => {
-  for (const [name, source] of Object.entries(EXAMPLES)) {
-    const r = await render(source);
-    assert.ok(r.parts.length > 0, `${name} produced no parts`);
-    for (const part of r.parts) {
-      assert.ok(part.mesh.triangleCount > 0, `${name}: part "${part.name}" is empty`);
-      assert.ok(part.concrete.volume() > 0, `${name}: part "${part.name}" has no volume`);
-    }
-    r.context.dispose();
-  }
 });

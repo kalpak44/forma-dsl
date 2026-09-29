@@ -8,7 +8,9 @@
 import { execFileSync } from 'node:child_process';
 
 const ALLOWED_ROOT_FILES = new Set(['package.json', 'README.md', 'LICENSE']);
-const REQUIRED = ['src/index.js', 'src/index.d.ts'];
+// The README and the licence are the package's npm page and its legal terms; a publish
+// without them is a broken listing, and nothing else notices.
+const REQUIRED = ['src/index.js', 'src/index.d.ts', 'README.md', 'LICENSE'];
 
 const output = execFileSync('npm', ['pack', '--dry-run', '--json'], { encoding: 'utf8' });
 const paths = JSON.parse(output)[0].files.map((file) => file.path).sort();

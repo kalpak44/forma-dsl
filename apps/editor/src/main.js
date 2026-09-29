@@ -1,4 +1,4 @@
-/** @import { ParameterDescriptor, ParameterValue, RenderedPart, RenderResult } from '../src/index.js' */
+/** @import { ParameterDescriptor, ParameterValue, RenderedPart, RenderResult } from 'forma-dsl' */
 
 import { EditorView, basicSetup } from 'codemirror';
 import { EditorState } from '@codemirror/state';
@@ -10,8 +10,9 @@ import wasmUrl from 'manifold-3d/manifold.wasm?url';
 import { formaLanguage } from './language.js';
 import { Viewer } from './viewer.js';
 import { EXAMPLES } from './examples.js';
-import { render, describeParameters, loadKernel, toBinarySTL, FormaError } from '../src/index.js';
-import { EvaluationContext } from '../src/core/context.js';
+import {
+  render, describeParameters, loadKernel, toBinarySTL, FormaError, EvaluationContext,
+} from 'forma-dsl';
 
 /**
  * @param {string} id An element id.

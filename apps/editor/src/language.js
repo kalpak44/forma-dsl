@@ -1,6 +1,6 @@
 import { StreamLanguage, LanguageSupport, HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { tags } from '@lezer/highlight';
-import { BLOCKS, FUNCTIONS } from '../src/lang/builtins.js';
+import { BLOCKS, FUNCTIONS } from 'forma-dsl';
 
 const DECLARATIONS = new Set(['param', 'local', 'component', 'model', 'part']);
 const CONTROL = new Set(['for', 'in', 'if', 'else']);

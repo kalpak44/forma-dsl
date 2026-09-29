@@ -1,0 +1,31 @@
+{
+  "name": "@forma-dsl/editor",
+  "version": "0.1.0",
+  "description": "The browser editor for forma-dsl: type a model, watch the solid update.",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "forma-dsl": "*"
+  },
+  "devDependencies": {
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/lint": "^6.9.7",
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/theme-one-dark": "^6.1.3",
+    "@codemirror/view": "^6.43.13",
+    "@lezer/highlight": "^1.2.5",
+    "codemirror": "^6.0.2",
+    "three": "^0.180.0",
+    "vite": "^7.3.6"
+  }
+}
