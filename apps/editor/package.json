@@ -1,6 +1,5 @@
 {
   "name": "@forma-dsl/editor",
-  "version": "0.1.0",
   "description": "The browser editor for forma-dsl: type a model, watch the solid update.",
   "private": true,
   "license": "MIT",
