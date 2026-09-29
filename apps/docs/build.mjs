@@ -133,7 +133,7 @@ const STRING = String.raw`"(?:\\.|[^"\\])*"`;
 const NUMBER = String.raw`\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b`;
 
 /** A name. Hyphens are part of one, which is why `a-b` is not a subtraction. */
-const IDENT = String.raw`[A-Za-z_][A-Za-z0-9_-]*`;
+const IDENT = '[A-Za-z_][A-Za-z0-9_-]*';
 
 /**
  * One pass over a forma snippet, longest-match first.

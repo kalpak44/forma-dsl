@@ -79,24 +79,17 @@ addEventListener('unhandledrejection', (event) => {
 });
 
 /**
- * Starts fetching the kernel now, without blocking on it.
+ * Starts fetching the kernel, and tells it where Vite put the wasm.
  *
- * Vite fingerprints the wasm, so the module cannot find it by its own relative path. This is
- * deliberately not awaited at the top level: the editor should paint and accept typing while
- * several megabytes of WebAssembly arrive. A failure is handled where it matters, in run();
- * swallowing it here only keeps it from surfacing as an unhandled rejection.
+ * Vite fingerprints the wasm, so the module cannot find it by its own relative path. The
+ * promise is deliberately not awaited here: the editor should paint and accept typing while
+ * several megabytes of WebAssembly arrive. Its rejection is swallowed only so it does not
+ * surface as an unhandled rejection; a kernel that failed to load is reported by run(), which
+ * is where the user can be told about it.
  *
- * @returns {Promise<void>} Resolves once the kernel is loaded, or immediately on failure.
+ * @type {Promise<void>} Settles once the kernel has loaded, or has failed to.
  */
-async function prefetchKernel() {
-  try {
-    await loadKernel({ locateFile: () => wasmUrl });
-  } catch {
-    // Reported by run(), which is where the user can be told about it.
-  }
-}
-
-void prefetchKernel();
+const kernelPrefetch = loadKernel({ locateFile: () => wasmUrl }).then(() => {}, () => {});
 
 // --- viewer ---------------------------------------------------------------------------
 
@@ -383,8 +376,9 @@ function rebuildParameterPanel(source) {
   // where the param still exists and still has the type the value was chosen for.
   const kept = {};
   for (const d of descriptors) {
+    if (!Object.hasOwn(state.params, d.name)) continue;
     const held = state.params[d.name];
-    if (held !== undefined && matchesType(held, d.type)) kept[d.name] = held;
+    if (matchesType(held, d.type)) kept[d.name] = held;
   }
   state.params = kept;
 
@@ -439,6 +433,9 @@ function schedule(delay = TYPING_DELAY) {
  */
 async function contextForRender() {
   if (state.context && !state.context.disposed) return state.context;
+  // The prefetch is what told the kernel where the wasm lives, so let it settle first; on
+  // the happy path it is long done, and on the unhappy one create() reports the failure.
+  await kernelPrefetch;
   try {
     state.context = await EvaluationContext.create();
     return state.context;
