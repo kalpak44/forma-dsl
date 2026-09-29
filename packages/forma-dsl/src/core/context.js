@@ -233,7 +233,7 @@ export class EvaluationContext {
           case 'union': return Concrete.union(parts);
           case 'difference': return Concrete.difference(parts);
           case 'intersection': return Concrete.intersection(parts);
-          default: throw new Error(`unknown boolean operation ${props.op}`);
+          default: throw new Error(`unknown boolean operation ${JSON.stringify(props.op)}`);
         }
       }
 

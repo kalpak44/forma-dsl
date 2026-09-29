@@ -1,0 +1,20 @@
+{
+  "//": "Supplies type information to the type-aware lint rules. Not a type check: packages/forma-dsl/tsconfig.src.json is the one that checks the JSDoc against the code.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2022"
+    ],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "packages/*/src/**/*.js",
+    "apps/*/src/**/*.js",
+    "apps/docs/*.mjs"
+  ]
+}

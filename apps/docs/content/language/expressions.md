@@ -199,7 +199,7 @@ How each value renders:
 | bool | `true` / `false` |
 | list | `[1, 2, 3]` — elements joined by `, ` inside brackets, recursively |
 | `null` | the empty string |
-| object | `[object Object]` — not useful; read the fields you want instead |
+| object | `{w: 3, h: 4}` — each entry rendered by these same rules. Interpolating one is usually a mistake, but it at least names which object |
 
 A splice must contain exactly one expression; anything left over is an error:
 `trailing input in ${ }`. Errors raised inside a splice are reported at the position of the

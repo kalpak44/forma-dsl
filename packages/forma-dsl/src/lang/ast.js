@@ -100,13 +100,13 @@ export {};
  */
 
 /**
- * A `condition ? then : otherwise`.
+ * A `condition ? consequent : alternate`.
  *
  * @typedef {object} ConditionalExpression
  * @property {'conditional'} kind Discriminant.
  * @property {Expression} condition What decides.
- * @property {Expression} then The value when truthy.
- * @property {Expression} otherwise The value when not.
+ * @property {Expression} consequent The value when truthy.
+ * @property {Expression} alternate The value when not.
  * @property {SourceLocation} [loc] Where it was written.
  */
 
@@ -176,8 +176,8 @@ export {};
  * @typedef {object} IfBlock
  * @property {'if'} kind Discriminant.
  * @property {Expression} condition What decides.
- * @property {Body} then The branch taken when truthy.
- * @property {Body | null} otherwise The branch taken otherwise, if there is one.
+ * @property {Body} consequent The branch taken when truthy.
+ * @property {Body | null} alternate The branch taken otherwise, if there is one.
  * @property {SourceLocation} loc Where the `if` was.
  */
 

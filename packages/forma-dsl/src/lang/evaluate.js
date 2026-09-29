@@ -18,6 +18,9 @@ import { Transform } from '../values/transform.js';
  * @property {ScenePart[]} parts The scene parts declared below here.
  */
 
+/** Which index `.x`, `.y` and `.z` stand for when read off a list. */
+const AXES = { x: 0, y: 1, z: 2 };
+
 /** A lexical scope, chained to its parent. */
 class Scope {
   /**
@@ -303,8 +306,8 @@ export class Evaluator {
 
       case 'conditional':
         return truthy(this.expression(node.condition, scope))
-          ? this.expression(node.then, scope)
-          : this.expression(node.otherwise, scope);
+          ? this.expression(node.consequent, scope)
+          : this.expression(node.alternate, scope);
 
       case 'call': return this.call(node, scope);
 
@@ -329,8 +332,7 @@ export class Evaluator {
     if (object === null || object === undefined) {
       throw new FormaError(`cannot read "${node.property}" of nothing`, node.loc);
     }
-    const axis = { x: 0, y: 1, z: 2 }[node.property];
-    if (Array.isArray(object) && axis !== undefined) return object[axis];
+    if (Array.isArray(object) && node.property in AXES) return object[AXES[node.property]];
     if (!(node.property in object)) {
       throw new FormaError(`no attribute "${node.property}"`, node.loc);
     }
@@ -442,7 +444,7 @@ export class Evaluator {
 
     if (block.kind === 'for') return this.forBlock(block, scope);
     if (block.kind === 'if') {
-      const taken = truthy(this.expression(block.condition, scope)) ? block.then : block.otherwise;
+      const taken = truthy(this.expression(block.condition, scope)) ? block.consequent : block.alternate;
       return taken ? this.body(taken, scope) : { nodes: [], parts: [] };
     }
 
@@ -581,7 +583,7 @@ export class Evaluator {
       // An unlabelled part still needs a name to show in the viewer; its line is the one
       // thing guaranteed to differ between two of them.
       name: block.labels.length
-        ? String(this.expression(block.labels[0], scope))
+        ? formatValue(this.expression(block.labels[0], scope))
         : `part_${block.loc.line}`,
       color: args.string('color', '#b8c4d0'),
       opacity: args.number('opacity', 1),
@@ -760,7 +762,27 @@ function truthy(value) {
 function formatValue(value) {
   if (Array.isArray(value)) return `[${value.map(formatValue).join(', ')}]`;
   if (value === null || value === undefined) return '';
-  return String(value);
+  // An object reaching here is almost always a mistake in the model, so it is shown the way
+  // it was written rather than as JavaScript's `[object Object]`, which says nothing about
+  // which object went wrong.
+  if (typeof value === 'object') return `{${Object.entries(value).map(formatEntry).join(', ')}}`;
+  if (typeof value === 'string') return value;
+  // A forma expression yields a number, a string, a bool, null, a list or an object, so by
+  // here it is a number or a bool. Spelling that out keeps the coercion off `unknown`, where
+  // it could silently produce "[object Object]" for something this does not handle.
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return '';
+}
+
+/**
+ * Renders one object entry. Separate from {@link formatValue} only so the template literals
+ * do not nest.
+ *
+ * @param {[string, unknown]} entry The key and its value.
+ * @returns {string} `key: value`.
+ */
+function formatEntry([key, value]) {
+  return `${key}: ${formatValue(value)}`;
 }
 
 /**
