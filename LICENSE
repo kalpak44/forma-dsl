@@ -1,13 +1,6 @@
 MIT License
 
-Copyright (c) 2026 Pavel Usanli
-
-This project is a JavaScript rewrite of Cadova (https://github.com/tomasf/Cadova),
-a Swift library by Tomas Franzen, used under the MIT license. The geometry node
-model, the content-addressed evaluation cache and the declarative modeling approach
-are derived from that work.
-
-Copyright (c) 2024 Tomas Franzen
+Copyright (c) 2026 kalpak44
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
