@@ -123,12 +123,26 @@ const CONSTANT_NAMES = new Set([
   'number', 'string', 'bool', 'vector', 'list', 'angle',
 ]);
 
+/** A `//` or `#` line comment, or a `/* *\/` block one. */
+const COMMENT = String.raw`\/\/[^\n]*|#[^\n]*|\/\*[\s\S]*?\*\/`;
+
+/** A double-quoted string, in which a backslash escapes the next character. */
+const STRING = String.raw`"(?:\\.|[^"\\])*"`;
+
+/** A decimal number, with an optional fraction and exponent. */
+const NUMBER = String.raw`\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b`;
+
+/** A name. Hyphens are part of one, which is why `a-b` is not a subtraction. */
+const IDENT = String.raw`[A-Za-z_][A-Za-z0-9_-]*`;
+
 /**
  * One pass over a forma snippet, longest-match first.
  *
- * Comments and strings come first so a `//` inside neither is mistaken for one.
+ * Comments and strings come first so a `//` inside neither is mistaken for one. Assembled
+ * from the four parts above rather than written as one literal: each part is legible on its
+ * own, and the order they are joined in *is* the precedence rule.
  */
-const TOKEN = /(\/\/[^\n]*|#[^\n]*|\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\])*")|(\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)|([A-Za-z_][A-Za-z0-9_-]*)/g;
+const TOKEN = new RegExp(`(${COMMENT})|(${STRING})|(${NUMBER})|(${IDENT})`, 'g');
 
 /**
  * Escapes text for inclusion in HTML.
@@ -421,6 +435,78 @@ async function markdownFiles(dir) {
 }
 
 /**
+ * Asserts that the navigation names every page on disk, exactly once.
+ *
+ * Both directions matter: a page absent from the sidebar is unreachable, and a sidebar entry
+ * for a deleted page is a dead link.
+ *
+ * @param {ReadonlyArray<string>} files Every page found on disk.
+ * @param {ReadonlyArray<string>} listed Every page the navigation names.
+ * @returns {void} Exits the process if they disagree.
+ */
+function checkNavigation(files, listed) {
+  const missing = files.filter((file) => !listed.includes(file));
+  const stale = listed.filter((file) => !files.includes(file));
+  if (!missing.length && !stale.length) return;
+
+  if (missing.length) console.error(`Pages missing from the navigation in ${import.meta.filename}:\n  ${missing.join('\n  ')}`);
+  if (stale.length) console.error(`Navigation names pages that do not exist:\n  ${stale.join('\n  ')}`);
+  process.exit(1);
+}
+
+/**
+ * Resolves one link twice: as the page-and-heading it names, and as the relative path
+ * actually written into the HTML.
+ *
+ * The second is not redundant. A link can name a real heading and still be emitted at a path
+ * that resolves nowhere, which is precisely the bug a directory move introduces.
+ *
+ * @param {{ href: string, loc: string, emitted: string }} link The link.
+ * @param {Map<string, { ids: Set<string> }>} pages Every rendered page, by source path.
+ * @param {Set<string>} written Every path the site will actually serve.
+ * @returns {string[]} What is wrong with it, empty when nothing is.
+ */
+function checkLink(link, pages, written) {
+  const problems = [];
+  const [target, fragment] = link.href.split('#');
+  const destination = pages.get(target);
+
+  if (!destination) problems.push(`${link.loc} → ${link.href} (no such page)`);
+  else if (fragment && !destination.ids.has(fragment)) problems.push(`${link.loc} → ${link.href} (no such heading)`);
+
+  const path = link.emitted.split('#')[0];
+  const landed = path
+    ? relative(OUT, resolve(OUT, dirname(htmlPath(link.loc)), path))
+    : htmlPath(link.loc);            // a bare fragment stays on its own page
+  if (!written.has(landed)) problems.push(`${link.loc} → ${link.emitted} (resolves to ${landed}, which is not built)`);
+
+  return problems;
+}
+
+/**
+ * Checks every internal link on every page.
+ *
+ * Run after all pages are rendered, because a link may point at a heading on a page that had
+ * not been read yet when the link was seen.
+ *
+ * @param {Map<string, { links: Array<{ href: string, loc: string, emitted: string }> }>} pages
+ *   Every rendered page, by source path.
+ * @returns {void} Exits the process if any link is broken.
+ */
+function checkLinks(pages) {
+  const written = new Set([...pages.keys()].map(htmlPath));
+  const broken = [...pages.values()].flatMap(
+    (page) => page.links.flatMap((link) => checkLink(link, pages, written)),
+  );
+
+  if (!broken.length && !outside.length) return;
+
+  if (broken.length) console.error(`Broken links:\n  ${broken.join('\n  ')}`);
+  if (outside.length) console.error(`Links out of the content tree:\n  ${outside.join('\n  ')}`);
+  process.exit(1);
+}
+
+/**
  * Renders every page, checks the result, and writes the site.
  *
  * @returns {Promise<void>} Resolves once the site is written.
@@ -429,13 +515,7 @@ async function main() {
   const files = await markdownFiles(DOCS);
   const listed = NAV.flatMap((section) => section.pages.map(([file]) => file));
 
-  const missing = files.filter((file) => !listed.includes(file));
-  const stale = listed.filter((file) => !files.includes(file));
-  if (missing.length || stale.length) {
-    if (missing.length) console.error(`Pages missing from the navigation in ${import.meta.filename}:\n  ${missing.join('\n  ')}`);
-    if (stale.length) console.error(`Navigation names pages that do not exist:\n  ${stale.join('\n  ')}`);
-    process.exit(1);
-  }
+  checkNavigation(files, listed);
 
   const pages = new Map();
   for (const file of files) {
@@ -443,32 +523,7 @@ async function main() {
     pages.set(file, { file, ...renderPage(file, markdown) });
   }
 
-  const written = new Set([...pages.keys()].map(htmlPath));
-
-  // Checked after every page is rendered, because a link may point at a heading on a page
-  // that had not been read yet when the link was seen.
-  const broken = [];
-  for (const page of pages.values()) {
-    for (const link of page.links) {
-      const [target, fragment] = link.href.split('#');
-      const destination = pages.get(target);
-      if (!destination) broken.push(`${link.loc} → ${link.href} (no such page)`);
-      else if (fragment && !destination.ids.has(fragment)) broken.push(`${link.loc} → ${link.href} (no such heading)`);
-
-      // Resolving what is actually written into the HTML, relative to where it is written,
-      // is the only check that proves the built site is navigable.
-      const path = link.emitted.split('#')[0];
-      const landed = path
-        ? relative(OUT, resolve(OUT, dirname(htmlPath(link.loc)), path))
-        : htmlPath(link.loc);            // a bare fragment stays on its own page
-      if (!written.has(landed)) broken.push(`${link.loc} → ${link.emitted} (resolves to ${landed}, which is not built)`);
-    }
-  }
-  if (broken.length || outside.length) {
-    if (broken.length) console.error(`Broken links:\n  ${broken.join('\n  ')}`);
-    if (outside.length) console.error(`Links out of the content tree:\n  ${outside.join('\n  ')}`);
-    process.exit(1);
-  }
+  checkLinks(pages);
 
   for (const page of pages.values()) {
     const out = join(OUT, htmlPath(page.file));

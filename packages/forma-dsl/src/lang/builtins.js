@@ -6,6 +6,17 @@ import { Angle } from '../values/angle.js';
 import { FormaError } from './lexer.js';
 
 /**
+ * Renders names as a quoted, comma-separated list, for an error message that has to say
+ * which ones it means.
+ *
+ * @param {ReadonlyArray<string>} names The names.
+ * @returns {string} The list, each name in double quotes.
+ */
+export function quoteAll(names) {
+  return names.map((name) => `"${name}"`).join(', ');
+}
+
+/**
  * The evaluated attributes of one block, read with the type each one is meant to be.
  *
  * Every block reads its attributes through this, so a bad value names the block and the
@@ -128,7 +139,7 @@ export class Args {
   enum(name, allowed, fallback) {
     const value = this.string(name, fallback);
     if (!allowed.includes(value)) {
-      this.fail(name, `one of ${allowed.map((a) => `"${a}"`).join(', ')}`);
+      this.fail(name, `one of ${quoteAll(allowed)}`);
     }
     return value;
   }
@@ -177,7 +188,8 @@ export class Args {
   checkUnused() {
     const extra = Object.keys(this.values).filter((k) => !this.used.has(k));
     if (extra.length) {
-      throw new FormaError(`${this.type}: unknown attribute${extra.length > 1 ? 's' : ''} ${extra.map((e) => `"${e}"`).join(', ')}`, this.loc);
+      const plural = extra.length > 1 ? 's' : '';
+      throw new FormaError(`${this.type}: unknown attribute${plural} ${quoteAll(extra)}`, this.loc);
     }
   }
 }
