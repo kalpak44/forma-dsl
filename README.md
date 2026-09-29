@@ -74,6 +74,11 @@ kernel, runs in the browser. Set `VITE_BASE` when it will be served from a subdi
 does this on every push to `main`, publishing the editor at the root and the docs under
 `/docs/`.
 
+A fork has to turn Pages on once, under **Settings → Pages → Source: GitHub Actions**. The
+workflow cannot do it: creating a Pages site needs `administration: write`, which a workflow
+token cannot be granted. Until then the build fails at `configure-pages` with
+`Get Pages site failed`.
+
 ## Using it from Node
 
 `src/` is the library; the editor is one consumer of it. It ships with hand-written
