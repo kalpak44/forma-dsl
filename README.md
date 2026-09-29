@@ -32,20 +32,24 @@ model "riser" {
 | Package | Published | What it is |
 | --- | --- | --- |
 | [`packages/forma-dsl`](packages/forma-dsl) | [`forma-dsl`](https://www.npmjs.com/package/forma-dsl) | The language, its evaluator and the geometry kernel binding. One runtime dependency |
+| [`apps/landing`](apps/landing) | no | The landing page: a live WebGL hero, a demo that types the language and solves it, and the privacy and terms sheets |
 | [`apps/editor`](apps/editor) | no | The browser editor: CodeMirror, three.js, Vite |
 | [`apps/docs`](apps/docs) | no | The reference manual, and the builder that renders it |
 
-The editor and the docs **depend on the published entry point**, not on the library's
-sources. An export the editor needs and does not have is a failure here rather than a user's
-problem, and the docs' syntax highlighting reads the real block and function registries — so
-a new block cannot be added without the code samples learning about it.
+Every app **depends on the published entry point**, not on the library's sources. An export
+the editor needs and does not have is a failure here rather than a user's problem, and both
+the docs' syntax highlighting and the landing page's read the real block and function
+registries — so a new block cannot be added without the code samples learning about it. The
+landing page's demo goes one further and renders its examples in the browser, so a document
+it shows being typed is one the library can still solve.
 
 ## Running it
 
 ```bash
 npm install
-npm run dev      # editor at http://localhost:5173
-npm run build    # the whole site in dist/ — editor at the root, docs under /docs/
+npm run dev        # landing page at http://localhost:5174
+npm run dev:editor # editor at http://localhost:5173
+npm run build      # the whole site in dist/ — landing at the root, editor under /app/, docs under /docs/
 npm run check    # everything CI runs: lint, types, tests, build, package contents
 ```
 
@@ -87,7 +91,8 @@ git push && git push --tags
 
 Nothing publishes on a push to `main`; only a `v*` tag does.
 
-The maintenance agent cuts a tag itself at the end of a dependency sweep, so a batch of
+The [maintenance agent](.github/workflows/ai-maintenance-agent.yml) cuts a tag itself at the
+end of a dependency sweep, so a batch of
 merges produces one release rather than one per merge. `.github/` is generated — every
 workflow here, and `dependabot.yml`, are written from outside this repository and an edit
 made to them here is overwritten.

@@ -1,0 +1,496 @@
+/*
+ * The landing page reads as a drafting sheet: hairline rules, registration marks in the
+ * corners, a title block, and dimension lines between sections. Monospace carries the
+ * headings — the product is a language, so the display face is the one you write it in —
+ * and a serif carries the prose, which is what keeps it from looking like a terminal.
+ *
+ * Dark is the default and light is vellum rather than white: a drawing on warm paper.
+ * Both palettes are defined in full, so neither depends on the other being loaded.
+ */
+
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #0b0e13;
+  --bg-deep: #070910;
+  --panel: #111823;
+  --panel-2: #0e141d;
+  --line: #222d3c;
+  --line-strong: #33415a;
+  --text: #dde5f1;
+  --muted: #8493a8;
+  --accent: #82aaff;
+  --accent-dim: #4f6ea8;
+  --amber: #e9a94b;
+  --ok: #6ec49a;
+  --err: #ff6b7f;
+
+  --tok-comment: #5e6b80;
+  --tok-string: #c3e88d;
+  --tok-number: #f78c6c;
+  --tok-block: #82aaff;
+  --tok-attr: #e9a94b;
+  --tok-keyword: #c792ea;
+  --tok-func: #7fdbca;
+  --tok-const: #f07178;
+
+  --grid-fine: rgb(255 255 255 / 3.2%);
+  --grid-bold: rgb(255 255 255 / 6%);
+  --grain: 3.5%;
+  --shadow: 0 24px 60px rgb(0 0 0 / 45%);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #f1ece1;
+  --bg-deep: #e7e0d2;
+  --panel: #faf7f0;
+  --panel-2: #f5f0e5;
+  --line: #d8cfbd;
+  --line-strong: #b9ac93;
+  --text: #16202c;
+  --muted: #6a7382;
+  --accent: #2f5bd0;
+  --accent-dim: #7f97d4;
+  --amber: #a2680f;
+  --ok: #2f7d52;
+  --err: #b3283a;
+
+  --tok-comment: #8b8577;
+  --tok-string: #3f6d1f;
+  --tok-number: #a8480f;
+  --tok-block: #2f5bd0;
+  --tok-attr: #8a5a06;
+  --tok-keyword: #7b3fa8;
+  --tok-func: #0f6a6a;
+  --tok-const: #a72f3c;
+
+  --grid-fine: rgb(20 30 45 / 4.5%);
+  --grid-bold: rgb(20 30 45 / 8%);
+  --grain: 2.2%;
+  --shadow: 0 18px 44px rgb(60 48 30 / 14%);
+}
+
+/* --- base ---------------------------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Monospace for anything the machine says, a serif for anything a person wrote. No webfont:
+   a page that promises no third-party requests cannot go and make one. */
+:root {
+  --font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --font-body: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --measure: 63ch;
+  --edge: clamp(18px, 4.5vw, 64px);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 88px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16.5px/1.72 var(--font-body);
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4 { font-family: var(--font-mono); font-weight: 600; letter-spacing: -0.02em; }
+p { margin: 0 0 1.1em; }
+a { color: var(--accent); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { color: var(--text); }
+canvas { display: block; }
+
+::selection { background: var(--accent); color: var(--bg); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+.skip {
+  position: absolute; left: 12px; top: -60px; z-index: 100;
+  background: var(--panel); border: 1px solid var(--accent); color: var(--text);
+  padding: 9px 14px; font-family: var(--font-mono); font-size: 12px; text-decoration: none;
+  transition: top .18s ease;
+}
+.skip:focus { top: 12px; }
+
+/* The drafting grid and the grain are one fixed layer each, painted over everything and
+   ignored by the pointer. Together they are what keeps a flat fill from reading as a slide. */
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 2; pointer-events: none;
+  background-image:
+    linear-gradient(var(--grid-fine) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-fine) 1px, transparent 1px),
+    linear-gradient(var(--grid-bold) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-bold) 1px, transparent 1px);
+  background-size: 34px 34px, 34px 34px, 170px 170px, 170px 170px;
+  mask-image: linear-gradient(180deg, #000 0 42vh, transparent 80vh);
+}
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: 3; pointer-events: none;
+  opacity: var(--grain); mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* --- shared type ---------------------------------------------------------------------- */
+
+.label {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--muted);
+}
+
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 var(--edge); }
+
+/* A section heading is a dimension line: a number, a name, and a ticked rule running out
+   to the margin. */
+.rule { display: flex; align-items: baseline; gap: 16px; margin: 0 0 clamp(26px, 4.5vw, 48px); }
+.rule h2 { margin: 0; font-size: clamp(19px, 2.4vw, 26px); }
+.rule .no { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; color: var(--amber); }
+.rule::after {
+  content: ''; flex: 1; height: 5px; align-self: center;
+  background: repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 9px);
+}
+
+section.band { padding: clamp(64px, 9vw, 132px) 0; }
+section.band + section.band { border-top: 1px solid var(--line); }
+
+/* --- header -------------------------------------------------------------------------- */
+
+header.site {
+  position: sticky; top: 0; z-index: 30;
+  backdrop-filter: blur(14px) saturate(1.3);
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  border-bottom: 1px solid var(--line);
+}
+header.site .bar {
+  display: flex; align-items: center; gap: 18px;
+  height: 58px; max-width: 1240px; margin: 0 auto; padding: 0 var(--edge);
+}
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono); font-weight: 700; font-size: 15px; letter-spacing: -.01em;
+  color: var(--text); text-decoration: none;
+}
+.brand svg { width: 22px; height: 22px; }
+.brand em { color: var(--accent); font-style: normal; }
+.grow { flex: 1; }
+
+nav.site-nav { display: flex; align-items: center; gap: 4px; }
+nav.site-nav a {
+  font-family: var(--font-mono); font-size: 12.5px; letter-spacing: .04em;
+  color: var(--muted); text-decoration: none; padding: 7px 11px;
+  border: 1px solid transparent; transition: color .16s ease, border-color .16s ease;
+}
+nav.site-nav a:hover { color: var(--text); border-color: var(--line); }
+nav.site-nav a.cta { color: var(--text); border-color: var(--line-strong); }
+nav.site-nav a.cta:hover { border-color: var(--accent); color: var(--accent); }
+
+#theme {
+  display: grid; place-items: center; width: 34px; height: 30px; margin-left: 4px;
+  background: none; border: 1px solid var(--line); color: var(--muted); cursor: pointer;
+  transition: color .16s ease, border-color .16s ease;
+}
+#theme:hover { color: var(--amber); border-color: var(--line-strong); }
+#theme svg { width: 15px; height: 15px; }
+:root:not([data-theme='light']) #theme .sun { display: none; }
+[data-theme='light'] #theme .moon { display: none; }
+
+@media (max-width: 760px) { nav.site-nav a.hide-sm { display: none; } }
+
+/* --- hero ---------------------------------------------------------------------------- */
+
+.hero {
+  position: relative; isolation: isolate;
+  min-height: min(92vh, 860px);
+  display: grid; align-items: end;
+  padding: clamp(60px, 12vh, 140px) 0 clamp(28px, 5vh, 56px);
+  border-bottom: 1px solid var(--line);
+}
+
+/* The live scene sits behind everything, dimmed by a wash that also hides the seam where
+   the canvas stops. Its own colours come from the theme, so this only has to fade it. */
+#hero-canvas {
+  position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%;
+  opacity: 0; transition: opacity 1.4s ease .2s;
+}
+#hero-canvas.ready { opacity: 1; }
+.hero::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(58% 62% at 25% 48%, var(--bg) 0 30%, color-mix(in srgb, var(--bg) 72%, transparent) 62%, transparent 86%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bg) 62%, transparent) 0 16%, transparent 38%, var(--bg) 97%);
+}
+
+.hero-grid {
+  display: grid; gap: clamp(30px, 5vw, 60px);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+  align-items: end;
+}
+@media (max-width: 900px) { .hero-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+.eyebrow::after { content: ''; flex: 1; max-width: 120px; height: 1px; background: var(--line-strong); }
+
+h1.display {
+  margin: 0 0 22px;
+  font-size: clamp(38px, 8.2vw, 88px); line-height: .96; letter-spacing: -.045em; font-weight: 700;
+}
+h1.display em { font-style: normal; color: var(--accent); }
+h1.display .thin { font-weight: 300; color: var(--muted); }
+
+.lede {
+  max-width: 54ch; margin: 0 0 30px;
+  font-size: clamp(17px, 1.7vw, 20.5px); line-height: 1.66; color: var(--text);
+}
+.lede strong { font-weight: 400; color: var(--amber); }
+
+.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.btn {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-family: var(--font-mono); font-size: 13px; letter-spacing: .03em;
+  padding: 12px 20px; text-decoration: none; border: 1px solid var(--line-strong);
+  color: var(--text); background: color-mix(in srgb, var(--panel) 70%, transparent);
+  transition: border-color .18s ease, color .18s ease, transform .18s ease, background .18s ease;
+}
+.btn:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg-deep); font-weight: 600; }
+.btn.primary:hover { background: var(--text); border-color: var(--text); color: var(--bg-deep); }
+.btn svg { width: 15px; height: 15px; }
+
+/* The title block, as on a drawing sheet: the facts about the thing, in the corner, in a
+   ruled box. It is read from the package at build time, so it cannot go stale. */
+.titleblock {
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--panel) 82%, transparent);
+  backdrop-filter: blur(6px);
+  box-shadow: var(--shadow);
+  font-family: var(--font-mono); font-size: 12px;
+}
+.titleblock dl { display: grid; grid-template-columns: auto 1fr; margin: 0; }
+.titleblock dt {
+  padding: 9px 14px; color: var(--muted); font-size: 10.5px; letter-spacing: .14em;
+  text-transform: uppercase; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line);
+}
+.titleblock dd {
+  margin: 0; padding: 9px 14px; color: var(--text); border-bottom: 1px solid var(--line);
+}
+.titleblock dt:last-of-type, .titleblock dd:last-of-type { border-bottom: 0; }
+.titleblock dd em { font-style: normal; color: var(--accent); }
+.titleblock .cap {
+  display: flex; justify-content: space-between; gap: 10px;
+  padding: 8px 14px; border-bottom: 1px solid var(--line-strong);
+  color: var(--muted); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+}
+
+/* Registration marks, one per corner of the viewport, as on a plate ready for printing. */
+.regmarks { position: fixed; inset: 16px; z-index: 4; pointer-events: none; }
+.regmarks i {
+  position: absolute; width: 16px; height: 16px;
+  border: 0 solid var(--line-strong); opacity: .85;
+}
+.regmarks i:nth-child(1) { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
+.regmarks i:nth-child(2) { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
+.regmarks i:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
+.regmarks i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+@media (max-width: 760px) { .regmarks { display: none; } }
+
+.scroll-hint {
+  display: flex; align-items: center; gap: 10px; margin-top: clamp(30px, 6vh, 64px);
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--muted); text-decoration: none;
+}
+.scroll-hint span { display: block; width: 44px; height: 1px; background: var(--line-strong); }
+.scroll-hint:hover { color: var(--accent); }
+
+/* --- code ---------------------------------------------------------------------------- */
+
+pre, code { font-family: var(--font-mono); }
+pre.code {
+  margin: 0; padding: 18px 20px; overflow: auto;
+  background: var(--panel-2); border: 1px solid var(--line);
+  font-size: 13px; line-height: 1.68; tab-size: 2;
+}
+:not(pre) > code {
+  padding: 1px 5px; font-size: .88em;
+  background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
+}
+
+.tok-m { color: var(--tok-comment); font-style: italic; }
+.tok-s { color: var(--tok-string); }
+.tok-n { color: var(--tok-number); }
+.tok-b { color: var(--tok-block); }
+.tok-a { color: var(--tok-attr); }
+.tok-k { color: var(--tok-keyword); }
+.tok-f { color: var(--tok-func); }
+.tok-c { color: var(--tok-const); }
+.tok-i { color: var(--text); }
+
+/* --- demo ---------------------------------------------------------------------------- */
+
+.demo {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  border: 1px solid var(--line-strong); background: var(--panel-2); box-shadow: var(--shadow);
+}
+@media (max-width: 940px) { .demo { grid-template-columns: minmax(0, 1fr); } }
+
+.demo-head {
+  grid-column: 1 / -1; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+  padding: 0 10px; border-bottom: 1px solid var(--line-strong); background: var(--panel);
+}
+.demo-head .tabs { display: flex; flex-wrap: wrap; }
+.tab {
+  appearance: none; background: none; border: 0; border-bottom: 2px solid transparent;
+  padding: 13px 14px; cursor: pointer; color: var(--muted);
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: .04em;
+  transition: color .16s ease, border-color .16s ease;
+}
+.tab:hover { color: var(--text); }
+.tab[aria-selected='true'] { color: var(--accent); border-bottom-color: var(--accent); }
+
+.demo-source { position: relative; border-right: 1px solid var(--line); min-width: 0; }
+@media (max-width: 940px) { .demo-source { border-right: 0; border-bottom: 1px solid var(--line); } }
+.demo-source pre {
+  margin: 0; padding: 20px; height: 100%; min-height: 430px; max-height: 58vh; overflow: auto;
+  font-size: 12.6px; line-height: 1.66; white-space: pre; background: none; border: 0;
+}
+/* The caret only exists while something is being typed, so it is an element rather than a
+   pseudo-element on the last character. */
+.caret {
+  display: inline-block; width: 7px; height: 1.05em; vertical-align: text-bottom;
+  background: var(--accent); animation: blink 1.05s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.demo-view { position: relative; display: grid; grid-template-rows: minmax(0, 1fr) auto; min-width: 0; }
+#stage { width: 100%; height: 100%; min-height: 430px; cursor: grab; touch-action: none; }
+#stage:active { cursor: grabbing; }
+.demo-note {
+  position: absolute; top: 14px; right: 16px; z-index: 2;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted);
+}
+
+.demo-dock {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 11px 16px; border-top: 1px solid var(--line); background: var(--panel);
+  font-family: var(--font-mono); font-size: 11.5px;
+}
+.demo-dock .status { color: var(--muted); }
+.demo-dock .status.busy { color: var(--accent); }
+.demo-dock .status.ok { color: var(--ok); }
+.demo-dock .status.error { color: var(--err); }
+.demo-dock .stat { color: var(--muted); }
+.demo-dock .stat b { font-weight: 600; color: var(--text); }
+
+/* --- spec grid ------------------------------------------------------------------------ */
+
+.specs {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
+  border: 1px solid var(--line); border-bottom: 0;
+}
+.spec { padding: 26px 24px 28px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); }
+.spec:last-child { border-right: 0; }
+.spec h3 { margin: 0 0 9px; font-size: 15.5px; letter-spacing: -.01em; }
+.spec p { margin: 0; font-size: 15px; color: var(--muted); line-height: 1.65; }
+.spec .n {
+  display: block; margin-bottom: 14px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; color: var(--amber);
+}
+
+/* --- install -------------------------------------------------------------------------- */
+
+.install { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(26px, 4vw, 54px); align-items: start; }
+@media (max-width: 900px) { .install { grid-template-columns: minmax(0, 1fr); } }
+.copy-wrap { position: relative; }
+.copy {
+  position: absolute; top: 9px; right: 9px;
+  background: var(--panel); border: 1px solid var(--line); color: var(--muted); cursor: pointer;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; padding: 5px 9px;
+  transition: color .16s ease, border-color .16s ease;
+}
+.copy:hover { color: var(--accent); border-color: var(--accent); }
+.copy.done { color: var(--ok); border-color: var(--ok); }
+
+/* --- prose (privacy, terms) ------------------------------------------------------------ */
+
+.prose { max-width: var(--measure); padding: clamp(48px, 8vw, 92px) 0 clamp(64px, 9vw, 120px); }
+.prose h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.05; margin: 0 0 14px; letter-spacing: -.035em; }
+.prose h2 { font-size: 18px; margin: 2.4em 0 .7em; }
+.prose h2 .no { color: var(--amber); margin-right: 10px; font-size: 13px; }
+.prose p, .prose li { color: color-mix(in srgb, var(--text) 88%, var(--muted)); }
+.prose ul { padding-left: 1.1em; margin: 0 0 1.1em; }
+.prose li { margin-bottom: .5em; }
+.prose li::marker { color: var(--amber); }
+.prose .stamp {
+  display: inline-block; margin: 0 0 34px; padding: 6px 12px;
+  border: 1px solid var(--line); font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+}
+.prose .callout {
+  margin: 1.8em 0; padding: 16px 18px; border-left: 2px solid var(--amber);
+  background: var(--panel-2); font-size: 15.5px;
+}
+
+/* --- footer ---------------------------------------------------------------------------- */
+
+footer.site { border-top: 1px solid var(--line); background: var(--panel-2); }
+footer.site .inner {
+  display: grid; gap: clamp(26px, 4vw, 48px); grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+  max-width: 1240px; margin: 0 auto; padding: clamp(40px, 6vw, 64px) var(--edge);
+}
+@media (max-width: 860px) { footer.site .inner { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+footer.site h4 { margin: 0 0 14px; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+footer.site ul { list-style: none; margin: 0; padding: 0; }
+footer.site li { margin-bottom: 9px; }
+footer.site a { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); text-decoration: none; }
+footer.site a:hover { color: var(--accent); }
+footer.site .blurb { max-width: 34ch; margin: 12px 0 0; font-size: 14.5px; color: var(--muted); }
+footer.site .colophon {
+  border-top: 1px solid var(--line); padding: 16px var(--edge);
+  max-width: 1240px; margin: 0 auto;
+  display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center;
+  font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+}
+
+/* --- motion ----------------------------------------------------------------------------- */
+
+.reveal { opacity: 0; transform: translateY(14px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.3,1); }
+.reveal.in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .001ms !important; animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+}
+
+/* --- demo parameter rail --------------------------------------------------------------- */
+
+.demo-dock { display: grid; gap: 10px; }
+.dock-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+.params { display: grid; gap: 7px; }
+.params:empty { display: none; }
+.param {
+  display: grid; grid-template-columns: 7.5rem 3rem minmax(0, 1fr);
+  align-items: center; gap: 12px; cursor: pointer;
+}
+.param-name { color: var(--accent); font-family: var(--font-mono); font-size: 11.5px; }
+.param-value { color: var(--muted); font-family: var(--font-mono); font-size: 11.5px; text-align: right; }
+.param input[type='range'] {
+  width: 100%; accent-color: var(--accent); height: 18px; cursor: grab;
+}
+.param input[type='range']:active { cursor: grabbing; }
+/* While the demo is dragging it itself, the control glows a little so it is clear that
+   something is moving it — and that you may take it off them. */
+.param input[type='range'].auto { accent-color: var(--amber); filter: drop-shadow(0 0 5px color-mix(in srgb, var(--amber) 55%, transparent)); }
