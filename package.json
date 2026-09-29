@@ -17,7 +17,7 @@
     "build:docs": "npm run build -w @forma-dsl/docs",
     "preview": "npm run preview -w @forma-dsl/editor",
     "test": "npm test --workspaces --if-present",
-    "test:coverage": "npm run test:coverage -w forma-dsl",
+    "test:coverage": "node -e \"require('node:fs').mkdirSync('coverage',{recursive:true})\" && node --test --experimental-test-coverage --test-coverage-lines=90 --test-coverage-branches=80 --test-coverage-functions=75 --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --test-reporter=spec --test-reporter-destination=stdout \"packages/*/test/**/*.test.js\" \"apps/*/test/**/*.test.js\"",
     "lint": "eslint .",
     "typecheck": "npm run typecheck -w forma-dsl",
     "check:package": "npm run check:package -w forma-dsl",

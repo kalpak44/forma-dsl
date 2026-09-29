@@ -1,6 +1,6 @@
 # forma-dsl
 
-[![CI](https://github.com/kalpak44/forma-dsl/actions/workflows/ci.yml/badge.svg)](https://github.com/kalpak44/forma-dsl/actions/workflows/ci.yml)
+[![Release](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml/badge.svg)](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml)
 [![npm](https://img.shields.io/npm/v/forma-dsl.svg)](https://www.npmjs.com/package/forma-dsl)
 
 A declarative DSL for 3D modeling and scene composition, reusable components, and live
@@ -54,7 +54,7 @@ Individually:
 | Script | What it does |
 | --- | --- |
 | `npm test` | Every workspace's tests |
-| `npm run test:coverage` | The library's, with Node's coverage reporter |
+| `npm run test:coverage` | The same, with coverage floors and an lcov report for Sonar |
 | `npm run lint` | ESLint over every workspace |
 | `npm run typecheck` | Checks the published declarations against a usage file |
 | `npm run build:docs` | Renders the manual into `dist/docs/`, checking every cross-reference |
@@ -80,6 +80,11 @@ git push && git push --tags
 ```
 
 Nothing publishes on a push to `main`; only a `v*` tag does.
+
+The maintenance agent cuts a tag itself at the end of a dependency sweep, so a batch of
+merges produces one release rather than one per merge. `.github/` is generated — every
+workflow here, and `dependabot.yml`, are written from outside this repository and an edit
+made to them here is overwritten.
 
 ## The site
 

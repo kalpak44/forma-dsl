@@ -1,9 +1,16 @@
+# Managed by homelab-infra — terraform/github/forma-dsl/workflows/pages.yml
+# Edits made here in the target repo are overwritten by `just deploy github forma-dsl`.
+#
+# The action versions here are bumped by hand. Dependabot cannot watch this file: it only
+# scans `.github/workflows/`, and in homelab-infra this is an ordinary file under
+# `terraform/`, so `github-actions` is deliberately absent from dependabot.yml.
+#
+# The site is the editor at the root and the reference docs under /docs/. Both come out of
+# `npm run build`, so what is published is exactly what the Release check already builds on
+# every pull request — including the docs link checker, which fails the build rather than
+# shipping a dead cross-reference.
 name: Pages
 
-# The site is the editor at the root and the reference docs under /docs/. Both come out of
-# `npm run build`, so what is published is exactly what CI already builds on every pull
-# request — including the docs link checker, which fails the build rather than shipping a
-# dead cross-reference.
 on:
   push:
     branches: [main]
@@ -21,9 +28,14 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Pinned rather than `ubuntu-latest`: that label migrates to Ubuntu 26 on 19 October
+  # 2026, and a runner image changing under the build is not something CI should discover
+  # for itself. Bump it deliberately.
   build:
     name: Build
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
     steps:
       - uses: actions/checkout@v7
 
@@ -59,9 +71,12 @@ jobs:
     name: Deploy
     needs: build
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5
