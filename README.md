@@ -58,11 +58,21 @@ Individually:
 | `npm run lint` | ESLint over `src/`, `web/`, `test/` and `scripts/` |
 | `npm run typecheck` | Checks the published declarations against a usage file |
 | `npm run check:package` | Asserts the npm tarball holds the library and nothing else |
+| `npm run build:docs` | Renders `docs/` into `dist/docs/`, checking every cross-reference |
+
+## Documentation
+
+[`docs/`](docs/README.md) is the full reference for the language and the JavaScript API —
+every block, every function, every error, with usage and troubleshooting for each. It reads
+as Markdown in the repository and is published alongside the editor at `/docs/`.
+
+## How it is built
 
 The build is a static site — no server, no backend. Everything, including the geometry
 kernel, runs in the browser. Set `VITE_BASE` when it will be served from a subdirectory:
-`VITE_BASE=/forma-dsl/ npm run build`. The included Pages workflow does this on every push
-to `main`.
+`VITE_BASE=/forma-dsl/ npm run build`. The included [Pages workflow](.github/workflows/pages.yml)
+does this on every push to `main`, publishing the editor at the root and the docs under
+`/docs/`.
 
 ## Using it from Node
 
