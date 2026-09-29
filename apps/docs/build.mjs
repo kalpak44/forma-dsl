@@ -210,6 +210,22 @@ function highlight(code) {
 // --- markdown --------------------------------------------------------------------------
 
 /**
+ * Orders strings by UTF-16 code unit, which is what a bare `sort()` does.
+ *
+ * Spelled out rather than left implicit, and deliberately not `localeCompare`: the page
+ * order decides the order pages are written and reported in, and a build should not depend
+ * on the locale of the machine running it.
+ *
+ * @param {string} a The left string.
+ * @param {string} b The right string.
+ * @returns {number} Negative, zero or positive, as `sort` wants.
+ */
+function byCodeUnit(a, b) {
+  if (a < b) return -1;
+  return a > b ? 1 : 0;
+}
+
+/**
  * GitHub's heading-id rule, so an anchor written against the rendered Markdown on GitHub
  * also resolves on the built site.
  *
@@ -431,7 +447,7 @@ async function markdownFiles(dir) {
     if (entry.isDirectory()) return markdownFiles(full);
     return entry.name.endsWith('.md') ? [relative(DOCS, full)] : [];
   }));
-  return found.flat().sort();
+  return found.flat().sort(byCodeUnit);
 }
 
 /**
