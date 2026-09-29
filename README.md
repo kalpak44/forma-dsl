@@ -69,10 +69,16 @@ npm run build -w @forma-dsl/editor
 
 ## Releasing
 
+`packages/forma-dsl` is the only versioned thing here, and its version is what the npm badge
+above reads. The editor and the docs carry no `version` at all: they are `private`, never
+published, and a number nothing reads is a number that can only go stale.
+
 The library is published from a tag. [`release.yml`](.github/workflows/release.yml) verifies
 that the tag matches `packages/forma-dsl/package.json`, runs the full check, and publishes
-with [npm provenance](https://docs.npmjs.com/generating-provenance-statements) so the tarball
-is attested to this repository and this workflow run.
+through [npm trusted publishing](https://docs.npmjs.com/trusted-publishers) — npm recognises
+this repository and this workflow by name, so no token is involved, and the tarball gets a
+[provenance](https://docs.npmjs.com/generating-provenance-statements) attestation from the
+same identity.
 
 ```bash
 npm version minor -w forma-dsl     # bump, and commit the bump
