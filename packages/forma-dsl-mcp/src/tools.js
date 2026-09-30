@@ -179,8 +179,11 @@ export function formatReport(report) {
   lines.push(...problemLines(report));
 
   if (report.models) {
-    lines.push(`**Models**: ${report.models.length ? report.models.join(', ') : '_none_'}`);
-    lines.push(`**Components**: ${report.components.length ? report.components.join(', ') : '_none_'}`, '');
+    lines.push(
+      `**Models**: ${report.models.length ? report.models.join(', ') : '_none_'}`,
+      `**Components**: ${report.components.length ? report.components.join(', ') : '_none_'}`,
+      '',
+    );
   }
 
   lines.push(...parameterLines(report.parameters));
@@ -342,7 +345,7 @@ export function registerTools(server, workspace) {
           `## ${hit.title} — \`${hit.path}\``,
           hit.heading ? `_under "${hit.heading}"_` : '',
           '',
-          '> ' + hit.snippet.split('\n').join('\n> '),
+          '> ' + hit.snippet.replaceAll('\n', '\n> '),
           '',
         ].join('\n')),
         '_Read one whole with `page`._',

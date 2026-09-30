@@ -109,7 +109,7 @@ export async function readPage(path) {
 function headingAt(markdown, offset) {
   const before = markdown.slice(0, offset);
   const headings = before.match(/^#{1,4} .*$/gm);
-  return headings?.length ? headings[headings.length - 1].replace(/^#+ /, '') : '';
+  return headings?.length ? headings.at(-1).replace(/^#+ /, '') : '';
 }
 
 /**
