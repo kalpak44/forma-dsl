@@ -6,6 +6,7 @@ import { register } from 'node:module';
 import { createPage } from './dom.js';
 import { DEMOS } from '../src/demos.js';
 import { QUICKSTART } from '../src/quickstart.js';
+import { MCP_SETUP } from '../src/mcp.js';
 
 // The entries import a stylesheet, which only a bundler resolves.
 register('./vite-imports.js', import.meta.url);
@@ -47,9 +48,11 @@ test('the landing page wires the quickstart, the hero and the demo to its own ma
     console.error = complained;
   }
 
-  const quickstart = /** @type {HTMLElement} */ (page.document.querySelector('#quickstart code'));
-  assert.equal(quickstart.textContent, QUICKSTART);
-  assert.ok(quickstart.querySelectorAll('span').length > 0, 'highlighted by the demo\'s own classifier');
+  for (const [id, snippet] of [['quickstart', QUICKSTART], ['mcp-setup', MCP_SETUP]]) {
+    const block = /** @type {HTMLElement} */ (page.document.querySelector(`#${id} code`));
+    assert.equal(block.textContent, snippet, `${id} carries exactly what its module holds`);
+    assert.ok(block.querySelectorAll('span').length > 0, 'highlighted by the demo\'s own classifier');
+  }
 
   // No WebGL here, which is the path a browser without it takes: the scene is dropped and
   // the demo keeps going without a viewport.

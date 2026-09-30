@@ -11,6 +11,7 @@ import { initSite } from './site.js';
 import { Hero } from './hero.js';
 import { Demo } from './demo.js';
 import { QUICKSTART } from './quickstart.js';
+import { MCP_SETUP } from './mcp.js';
 import { segments, paint } from './highlight.js';
 
 initSite();
@@ -21,10 +22,12 @@ initSite();
  */
 const $ = (id) => document.getElementById(id);
 
-// The quickstart is highlighted with the same classifier the demo types through, so the
-// two blocks on the page cannot drift apart in colour.
-const quickstart = $('quickstart')?.querySelector('code');
-if (quickstart) paint(quickstart, segments(QUICKSTART), QUICKSTART.length);
+// Both static snippets are highlighted with the same classifier the demo types through, so
+// no code block on the page can drift apart from the others in colour.
+for (const [id, snippet] of [['quickstart', QUICKSTART], ['mcp-setup', MCP_SETUP]]) {
+  const block = $(id)?.querySelector('code');
+  if (block) paint(block, segments(snippet), snippet.length);
+}
 
 const heroCanvas = /** @type {HTMLCanvasElement | null} */ ($('hero-canvas'));
 if (heroCanvas) {

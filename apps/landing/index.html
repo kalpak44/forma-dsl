@@ -46,6 +46,7 @@
            so these are dead during `npm run dev` and only there. -->
       <a class="hide-sm" href="#demo">Demo</a>
       <a class="hide-sm" href="#reference">Reference</a>
+      <a class="hide-sm" href="#mcp">MCP</a>
       <a href="docs/">Docs</a>
       <a href="https://github.com/kalpak44/forma-dsl" rel="noopener">GitHub</a>
       <a class="cta" href="editor/">Open the editor</a>
@@ -234,6 +235,58 @@
       </div>
     </div>
   </section>
+
+  <!-- ===== mcp ======================================================================= -->
+  <section class="band" id="mcp">
+    <div class="wrap">
+      <div class="rule reveal">
+        <span class="no">§ 05</span>
+        <h2>Or describe it, and let a model write it</h2>
+      </div>
+      <div class="install reveal">
+        <div>
+          <p><a href="https://www.npmjs.com/package/forma-dsl-mcp" rel="noopener"><code>forma-dsl-mcp</code></a>
+            is a <a href="https://modelcontextprotocol.io" rel="noopener">Model Context Protocol</a>
+            server over stdio. It carries the language - the guide, the block reference, the
+            worked examples and the full manual - and it runs the geometry kernel, so the
+            model it is talking to is answered with a solved part rather than with its own
+            guess about one.</p>
+
+          <p class="lead-in">Three tools, and the measurements are the point:</p>
+          <ul>
+            <li>
+              <code>forma_write</code>
+              <b>Builds the document and, only if it renders, writes it. What comes back is a
+                table of every part with its bounding box, volume, triangle count and genus -
+                so "is this the size I asked for, and is it actually a solid?" is answered
+                before the work is handed over.</b>
+            </li>
+            <li>
+              <code>forma_read</code>
+              <b>Reads a document back and builds it, so an existing file can be measured
+                before it is edited.</b>
+            </li>
+            <li>
+              <code>forma_export_stl</code>
+              <b>Renders a part - or every part unioned - straight to binary STL.</b>
+            </li>
+          </ul>
+
+          <p>A document that does not render is refused rather than written, and a part that
+            silently solved to nothing is called out by name. Where the model guesses a block
+            or an attribute that does not exist, the refusal names every one that does.</p>
+
+          <p>Where the files go is the client's decision, not the server's: it asks over MCP's
+            <a href="https://modelcontextprotocol.io/specification/basic/roots" rel="noopener">roots</a>
+            capability and reads and writes only inside the directories it is handed.</p>
+        </div>
+        <div class="copy-wrap">
+          <button class="copy" id="copy-mcp" type="button" data-copy="mcp-setup">copy</button>
+          <pre class="code" id="mcp-setup"><code></code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 
 <footer class="site">
@@ -251,6 +304,7 @@
         <li><a href="editor/">Editor</a></li>
         <li><a href="docs/">Reference</a></li>
         <li><a href="#demo">Demo</a></li>
+        <li><a href="#mcp">MCP server</a></li>
       </ul>
     </div>
     <div>
