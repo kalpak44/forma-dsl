@@ -274,7 +274,7 @@ export function registerTools(server, workspace) {
       const groups = [...new Set(all.map((entry) => entry.group))];
       return say(`No group "${group}". The groups are ${groups.join(', ')}.`, true);
     }
-    if (group) return say(wanted.map(formatConstruct).join('\n---\n\n'));
+    if (group) return say(wanted.map((entry) => formatConstruct(entry)).join('\n---\n\n'));
 
     const lines = ['# Every construct in the language', ''];
     for (const name of new Set(all.map((entry) => entry.group))) {
