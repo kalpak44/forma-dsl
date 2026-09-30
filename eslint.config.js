@@ -123,6 +123,22 @@ export default [
   },
 
   {
+    // The MCP server is Node-only by nature — it is a process on a pipe — so unlike the
+    // library it is linted against Node's globals. `console` is allowed because stderr is
+    // where a stdio server logs; anything written to stdout would corrupt the protocol
+    // stream, and that is what `no-console`'s allow-list here is guarding.
+    files: ['packages/forma-dsl-mcp/src/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2023,
+      sourceType: 'module',
+      globals: globals.node,
+    },
+    plugins: { jsdoc },
+    settings: { jsdoc: { mode: 'typescript' } },
+    rules: { ...shared, ...jsdocRules, 'no-console': ['error', { allow: ['error'] }] },
+  },
+
+  {
     files: ['apps/editor/src/**/*.js', 'apps/landing/src/**/*.js'],
     languageOptions: {
       ecmaVersion: 2023,
@@ -135,7 +151,7 @@ export default [
   },
 
   {
-    files: ['packages/forma-dsl/test/**/*.js', 'apps/*/test/**/*.js'],
+    files: ['packages/*/test/**/*.js', 'apps/*/test/**/*.js'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
@@ -160,7 +176,7 @@ export default [
   {
     // Build and maintenance scripts, in any workspace: Node-only, and they exist to print
     // things.
-    files: ['packages/forma-dsl/scripts/**/*.{js,mjs}', 'apps/docs/*.mjs'],
+    files: ['packages/*/scripts/**/*.{js,mjs}', 'apps/docs/*.mjs'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
