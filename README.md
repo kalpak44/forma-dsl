@@ -32,16 +32,20 @@ model "riser" {
 | Package | Published | What it is |
 | --- | --- | --- |
 | [`packages/forma-dsl`](packages/forma-dsl) | [`forma-dsl`](https://www.npmjs.com/package/forma-dsl) | The language, its evaluator and the geometry kernel binding. One runtime dependency |
+| [`packages/forma-dsl-mcp`](packages/forma-dsl-mcp) | [`forma-dsl-mcp`](https://www.npmjs.com/package/forma-dsl-mcp) | An MCP server over stdio: it knows the language, solves what it writes, and produces `.forma` files |
 | [`apps/landing`](apps/landing) | no | The landing page: a live WebGL hero, a demo that types the language and solves it, and the privacy and terms sheets |
 | [`apps/editor`](apps/editor) | no | The browser editor: CodeMirror, three.js, Vite |
 | [`apps/docs`](apps/docs) | no | The reference manual, and the builder that renders it |
 
-Every app **depends on the published entry point**, not on the library's sources. An export
-the editor needs and does not have is a failure here rather than a user's problem, and both
-the docs' syntax highlighting and the landing page's read the real block and function
-registries — so a new block cannot be added without the code samples learning about it. The
-landing page's demo goes one further and renders its examples in the browser, so a document
-it shows being typed is one the library can still solve.
+Every workspace here **depends on the published entry point**, not on the library's sources.
+An export the editor needs and does not have is a failure here rather than a user's problem,
+and both the docs' syntax highlighting and the landing page's read the real block and
+function registries — so a new block cannot be added without the code samples learning about
+it. The landing page's demo goes one further and renders its examples in the browser, so a
+document it shows being typed is one the library can still solve. The MCP server holds the
+same line twice over: its block catalogue is reconciled with the registries at load time and
+the reconciliation is asserted to be empty, and every worked document it hands a model is
+rendered by its tests at both ends of every parameter's range.
 
 ## Running it
 
@@ -50,6 +54,7 @@ npm install
 npm run dev        # landing page at http://localhost:5174
 npm run dev:editor # editor at http://localhost:5173
 npm run build      # the whole site in dist/ — landing at the root, editor under /app/, docs under /docs/
+npm run mcp        # the MCP server, on stdio
 npm run check    # everything CI runs: lint, types, tests, build, package contents
 ```
 
@@ -62,7 +67,8 @@ Individually:
 | `npm run lint` | ESLint over every workspace |
 | `npm run typecheck` | Checks the published declarations against a usage file |
 | `npm run build:docs` | Renders the manual into `dist/docs/`, checking every cross-reference |
-| `npm run check:package` | Asserts the npm tarball holds the library and nothing else |
+| `npm run check:package` | Asserts each publishable tarball holds what it should and nothing else |
+| `npm run sync:reference` | Re-copies the manual into the MCP server, which bundles it |
 
 To work in one workspace, use npm's `-w`:
 
@@ -73,9 +79,10 @@ npm run build -w @forma-dsl/editor
 
 ## Releasing
 
-`packages/forma-dsl` is the only versioned thing here, and its version is what the npm badge
-above reads. The editor and the docs carry no `version` at all: they are `private`, never
-published, and a number nothing reads is a number that can only go stale.
+The two packages are the only versioned things here, and `forma-dsl`'s version is what the
+npm badge above reads. The editor, the landing page and the docs carry no `version` at all:
+they are `private`, never published, and a number nothing reads is a number that can only go
+stale.
 
 The library is published from a tag. [`release.yml`](.github/workflows/release.yml) verifies
 that the tag matches `packages/forma-dsl/package.json`, runs the full check, and publishes
@@ -88,6 +95,10 @@ same identity.
 npm version minor -w forma-dsl     # bump, and commit the bump
 git push && git push --tags
 ```
+
+`forma-dsl-mcp` versions on its own cadence — it depends on the published library by range,
+so a library release does not force one here. Its release workflow is not wired up yet;
+until it is, publish it by hand from a clean tree after `npm run check`.
 
 Nothing publishes on a push to `main`; only a `v*` tag does.
 

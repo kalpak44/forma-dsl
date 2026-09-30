@@ -17,11 +17,13 @@
     "build": "npm run build -w @forma-dsl/landing && npm run build -w @forma-dsl/editor && npm run build -w @forma-dsl/docs",
     "build:docs": "npm run build -w @forma-dsl/docs",
     "preview": "npm run preview -w @forma-dsl/landing",
+    "mcp": "node packages/forma-dsl-mcp/src/bin.js",
+    "sync:reference": "npm run sync:reference -w forma-dsl-mcp",
     "test": "npm test --workspaces --if-present",
     "test:coverage": "node -e \"require('node:fs').mkdirSync('coverage',{recursive:true})\" && node --test --experimental-test-coverage --test-coverage-lines=90 --test-coverage-branches=80 --test-coverage-functions=75 --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --test-reporter=spec --test-reporter-destination=stdout \"packages/*/test/**/*.test.js\" \"apps/*/test/**/*.test.js\"",
     "lint": "eslint .",
     "typecheck": "npm run typecheck -w forma-dsl",
-    "check:package": "npm run check:package -w forma-dsl",
+    "check:package": "npm run check:package --workspaces --if-present",
     "check": "npm run lint && npm run typecheck && npm test && npm run build && npm run check:package"
   },
   "devDependencies": {
