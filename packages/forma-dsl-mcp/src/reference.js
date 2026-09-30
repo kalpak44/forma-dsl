@@ -68,17 +68,19 @@ const BY_PATH = new Map(PAGES.map((page) => [page.path, page]));
  * @returns {Promise<string[]>} Paths relative to the manual's root, sorted.
  */
 export async function discoverPages() {
-  /** @type {string[]} */
-  const found = [];
+  // Subdirectories are independent of each other, so they are walked together rather than
+  // one after the next; the sort at the end is what makes the result order-stable regardless.
   const walk = async (directory) => {
-    for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const entries = await readdir(directory, { withFileTypes: true });
+    const found = await Promise.all(entries.map(async (entry) => {
       const child = join(directory, entry.name);
-      if (entry.isDirectory()) await walk(child);
-      else if (entry.name.endsWith('.md')) found.push(relative(ROOT, child));
-    }
+      if (entry.isDirectory()) return walk(child);
+      return entry.name.endsWith('.md') ? [relative(ROOT, child)] : [];
+    }));
+    return found.flat();
   };
-  await walk(ROOT);
-  return found.sort((a, b) => a.localeCompare(b));
+
+  return (await walk(ROOT)).sort((a, b) => a.localeCompare(b));
 }
 
 /**
