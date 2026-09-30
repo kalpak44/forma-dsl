@@ -8,7 +8,7 @@ A declarative DSL for 3D modeling and scene composition, reusable components, an
 previews. This is the monorepo: the library, the editor that consumes it, and the reference
 manual.
 
-**[Try the editor](https://kalpak44.github.io/forma-dsl/)** ·
+**[Try the editor](https://kalpak44.github.io/forma-dsl/editor/)** ·
 **[Read the reference](https://kalpak44.github.io/forma-dsl/docs/)**
 
 ```hcl
@@ -54,7 +54,7 @@ rendered by its tests at both ends of every parameter's range.
 npm install
 npm run dev        # landing page at http://localhost:5174
 npm run dev:editor # editor at http://localhost:5173
-npm run build      # the whole site in dist/ — landing at the root, editor under /app/, docs under /docs/
+npm run build      # the whole site in dist/ — landing at the root, editor under /editor/, docs under /docs/
 npm run mcp        # the MCP server, on stdio
 npm run check    # everything CI runs: lint, types, tests, build, package contents
 ```

@@ -99,7 +99,7 @@ Hand-written TypeScript declarations ship with it, so the API is typed from eith
 
 **[The full reference](https://kalpak44.github.io/forma-dsl/docs/)** — every declaration,
 block, function and error, each with usage and troubleshooting. The
-**[editor](https://kalpak44.github.io/forma-dsl/)** runs the whole thing in the browser:
+**[editor](https://kalpak44.github.io/forma-dsl/editor/)** runs the whole thing in the browser:
 type, and the solid updates.
 
 ## How it works
