@@ -13,7 +13,7 @@ export default defineConfig({
 
   build: {
     // The landing page is the site's root, so it owns dist/ and is the one build that
-    // clears it. The editor writes dist/app/ and the manual dist/docs/ afterwards, which
+    // clears it. The editor writes dist/editor/ and the manual dist/docs/ afterwards, which
     // is why `npm run build` runs this one first.
     outDir: fileURLToPath(new URL('../../dist', import.meta.url)),
     emptyOutDir: true,
