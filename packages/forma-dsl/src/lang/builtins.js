@@ -1,3 +1,13 @@
+/**
+ * The registries: every block the language has, every function it can call, and the reader
+ * that turns a block's attributes into typed values.
+ *
+ * This is the one description of what the language contains. The editor's highlighting, the
+ * landing page's and the docs' code samples, and the MCP server's catalogue all read
+ * `BLOCKS` and `FUNCTIONS` from here rather than restating them — so a block added here is
+ * one they all learn about, and a block they claim without it existing fails their tests.
+ */
+
 /** @import { AttributeReader, BlockDefinition, Dimensionality, FunctionDefinition, SourceLocation } from '../index.js' */
 
 import { GeometryNode } from '../core/node.js';

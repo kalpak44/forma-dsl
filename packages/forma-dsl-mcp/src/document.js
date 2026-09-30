@@ -21,6 +21,19 @@ import {
 const CONTEXT_LINES = 2;
 
 /**
+ * How much geometry one document may build before the server refuses it.
+ *
+ * This server exists to build text a model wrote, which is the case the library leaves a
+ * budget off for. Nesting limits and `range` each bound one loop; only this bounds two of
+ * them nested, and that shape asks for more geometry than the process can finish — on a pipe,
+ * with no request timeout of its own, that is a server that never answers again.
+ *
+ * Set far above any honest document: the worked examples build tens of blocks. A model that
+ * reaches this has written a loop it did not mean to.
+ */
+const MAX_NODES = 50_000;
+
+/**
  * The context reused across calls, so an edit-and-recheck loop pays only for the subtrees
  * that changed.
  *
@@ -195,7 +208,7 @@ export async function checkDocument(source, options = {}) {
   /** @type {RenderResult} */
   let result;
   try {
-    result = await render(source, { model, params, context: shared });
+    result = await render(source, { model, params, context: shared, maxNodes: MAX_NODES });
   } catch (error) {
     return { ok: false, stage: 'render', ...declared, error: diagnose('render', error, source) };
   }
@@ -255,7 +268,7 @@ export async function exportStl(source, options = {}) {
   const { model = null, params = {}, part = null } = options;
 
   shared ??= await EvaluationContext.create();
-  const result = await render(source, { model, params, context: shared });
+  const result = await render(source, { model, params, context: shared, maxNodes: MAX_NODES });
 
   let solid;
   let name;

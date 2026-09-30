@@ -23,11 +23,18 @@ const PALETTE = {
 };
 
 /**
+ * @typedef {object} ShownPart
+ * @property {THREE.BufferGeometry} geometry The mesh's geometry.
+ * @property {THREE.Material} material What it is painted with.
+ * @property {THREE.LineSegments} edges The edge overlay drawn over it.
+ */
+
+/**
  * The demo's three.js side: one mesh per part, a build plate for scale, and a camera that
  * frames whatever was just solved and then drifts around it.
  */
 export class Stage {
-  /** @type {Array<{ geometry: THREE.BufferGeometry, material: THREE.Material, edges: THREE.LineSegments }>} */
+  /** @type {ShownPart[]} What is on screen now, kept so it can be disposed. */
   #parts = [];
 
   /** @type {boolean} Whether the canvas is on screen. */

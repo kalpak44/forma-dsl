@@ -1,7 +1,7 @@
 /**
  * Type declarations for forma-dsl.
  *
- * Hand-written rather than generated: the runtime is plain JavaScript, and the shapes worth
+ * Handwritten rather than generated: the runtime is plain JavaScript, and the shapes worth
  * publishing are the ones a caller actually touches. Internals that are exported only
  * because a test or the editor reaches for them are typed loosely on purpose.
  */
@@ -89,8 +89,6 @@ export interface QualityOptions {
 
 export declare function setQuality(options?: QualityOptions): Promise<void>;
 export declare function resetQuality(): Promise<void>;
-
-// --- values -----------------------------------------------------------------------------
 
 export declare class Vector {
   constructor(components: readonly number[]);
@@ -281,6 +279,15 @@ export interface EvaluatorOptions {
   context?: EvaluationContext | null;
   /** Off lets a document declaring a param with no default still be inspected. */
   requireParams?: boolean;
+  /**
+   * How many blocks may be built before evaluation gives up. Omitted, there is no limit.
+   *
+   * Nesting limits and `range` bound one loop each; only this bounds their product. Pass one
+   * when building a document you did not write.
+   */
+  maxNodes?: number | null;
+  /** Checked at every block, so a build can be abandoned before it finishes. */
+  signal?: AbortSignal | null;
 }
 
 export declare class Evaluator {
@@ -350,8 +357,6 @@ export interface FunctionDefinition {
 export declare const FUNCTIONS: Record<string, FunctionDefinition>;
 export declare const CONSTANTS: Record<string, number>;
 
-// --- export ----------------------------------------------------------------------------------
-
 export interface RenderMesh {
   /** Three vertices per triangle, expanded so hard edges stay hard. */
   positions: Float32Array;
@@ -364,14 +369,27 @@ export interface RenderMesh {
 export declare function toRenderMesh(manifold: Solid): RenderMesh;
 export declare function toBinarySTL(manifold: Solid, header?: string): Uint8Array;
 
-// --- the front door ----------------------------------------------------------------------------
-
 export interface RenderOptions {
   /** Which model to render. Defaults to the first the document declares. */
   model?: string | null;
   params?: Record<string, ParameterValue>;
   /** Reuse a context to keep its cache across renders. The caller still owns it. */
   context?: EvaluationContext | null;
+  /**
+   * How many blocks may be built before evaluation gives up. Omitted, there is no limit.
+   *
+   * Nesting limits and `range` bound one loop each; only this bounds their product, which is
+   * what a document nesting two large loops exceeds. Pass one when rendering a document you
+   * did not write.
+   */
+  maxNodes?: number | null;
+  /**
+   * Abandons the render when it fires, throwing the signal's reason.
+   *
+   * Checked at every block and between parts, so a superseded render stops before spending
+   * kernel time rather than after.
+   */
+  signal?: AbortSignal | null;
 }
 
 export interface RenderedPart extends ScenePart {

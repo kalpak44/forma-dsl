@@ -53,6 +53,19 @@ const jsdocRules = {
 };
 
 const shared = {
+  // Prose here is hand-wrapped at about 95 columns; the limit is what catches a line that ran
+  // long rather than leaving it to whoever next reads the file on half a screen. The
+  // exemptions are the lines that genuinely cannot wrap: an `@import` pragma is a single
+  // token, a URL breaks if it is split, and the block, manual and example registries are data
+  // tables whose rows are legible precisely because each record is one line.
+  'max-len': ['error', {
+    code: 110,
+    ignoreUrls: true,
+    ignoreStrings: true,
+    ignoreTemplateLiterals: true,
+    ignoreRegExpLiterals: true,
+    ignorePattern: '^/\\*\\* @import ',
+  }],
   'no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrors: 'none' }],
   'no-var': 'error',
   'prefer-const': 'error',
@@ -115,6 +128,8 @@ export default [
         TextEncoder: 'readonly',
         TextDecoder: 'readonly',
         console: 'readonly',
+        // Standard in both environments since Node 15, and what `render`'s `signal` is.
+        AbortSignal: 'readonly',
       },
     },
     plugins: { jsdoc },

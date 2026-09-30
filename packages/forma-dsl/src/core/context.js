@@ -1,3 +1,15 @@
+/**
+ * Where geometry is actually built: a node tree in, solved kernel objects out, memoized by
+ * digest.
+ *
+ * Two things earn this its own module. The cache is keyed on content rather than on object
+ * identity, so an edit that rebuilds the tree from scratch still hits every subtree it did
+ * not change — which is what makes re-solving on a keystroke affordable. And the kernel's
+ * objects are WASM allocations that no garbage collector will free, so something has to own
+ * them and let them go; that is what `dispose` and `collect` are for, and why the caller is
+ * told in `render`'s contract that the context is theirs.
+ */
+
 /** @import { CollectOptions, ContextStats, Kernel, Shape, Solid } from '../index.js' */
 /** @import { GeometryNode } from './node.js' */
 

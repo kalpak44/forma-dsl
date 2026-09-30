@@ -1,3 +1,15 @@
+/**
+ * The three.js half of the editor: solved parts in, something on screen out.
+ *
+ * Apart from `main.js` because the render loop, the camera and the build plate are one
+ * concern and the page's wiring is another. It is handed parts and knows nothing about the
+ * language that produced them.
+ *
+ * The scene is z-up rather than three.js's default y-up: these models are printed, every
+ * shape in the language builds up from z = 0, and a viewer that disagreed with the language
+ * about which way is up would make every example read wrong.
+ */
+
 /** @import { RenderedPart } from 'forma-dsl' */
 
 import * as THREE from 'three';
@@ -10,16 +22,20 @@ const EDGE_THRESHOLD = 25;
 const DEFAULT_GRID_EXTENT = 200;
 
 /**
+ * @typedef {object} ShownPart
+ * @property {THREE.BufferGeometry} geometry The mesh's geometry.
+ * @property {THREE.Material} material What it is painted with.
+ * @property {THREE.LineSegments} edges The edge overlay drawn over it.
+ */
+
+/**
  * The three.js side of the preview: one mesh per scene part, a build plate for scale, and a
  * camera that frames whatever was just rendered.
  *
  * Constructing one starts a render loop that runs for the life of the page.
  */
 export class Viewer {
-  /**
-   * @type {Array<{ geometry: THREE.BufferGeometry, material: THREE.Material, edges: THREE.LineSegments }>}
-   *   What the last {@link Viewer#show} put on screen, kept so it can be disposed.
-   */
+  /** @type {ShownPart[]} What the last {@link Viewer#show} put on screen, kept to dispose it. */
   #parts = [];
 
   /**

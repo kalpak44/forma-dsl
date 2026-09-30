@@ -239,12 +239,20 @@ function slugify(text) {
 }
 
 /**
+ * @typedef {object} RenderedPage
+ * @property {string} html The page body.
+ * @property {string} title Its first heading, or the file name if it has none.
+ * @property {Array<{ id: string, text: string, depth: number }>} headings Every heading.
+ * @property {Set<string>} ids The heading ids, for resolving a same-page anchor.
+ * @property {Array<{ href: string, loc: string, emitted: string }>} links The internal links.
+ */
+
+/**
  * Renders one page, collecting what the link checker needs.
  *
  * @param {string} file The page's path relative to docs/.
  * @param {string} markdown Its source.
- * @returns {{ html: string, title: string, headings: Array<{ id: string, text: string, depth: number }>, ids: Set<string>, links: Array<{ href: string, loc: string, emitted: string }> }}
- *   The rendered page and its headings, heading ids and internal links.
+ * @returns {RenderedPage} The rendered page and its headings, heading ids and internal links.
  */
 function renderPage(file, markdown) {
   /** @type {Array<{ id: string, text: string, depth: number }>} */

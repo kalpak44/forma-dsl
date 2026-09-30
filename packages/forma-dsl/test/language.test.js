@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Program, Evaluator, parse, tokenize, FormaError } from '../src/index.js';
+import { Program, Evaluator, parse, tokenize, FormaError, render } from '../src/index.js';
 import { GeometryNode } from '../src/core/node.js';
 import { Transform } from '../src/values/transform.js';
 import { DigestWriter } from '../src/core/digest.js';
@@ -95,4 +95,52 @@ test('range is bounded, and a backwards range is empty rather than infinite', ()
 
 test('division by zero is an error, not Infinity', () => {
   assert.throws(() => evaluate('1 / 0'), /division by zero/);
+});
+
+test('a budget refuses a document that asks for more geometry than it allows', async () => {
+  const source = `model "m" {
+    for i in range(0, 40) {
+      for j in range(0, 40) {
+        translate { offset = [i, j, 0]  box { size = 1 } }
+      }
+    }
+  }`;
+
+  await assert.rejects(
+    () => render(source, { maxNodes: 100 }),
+    (error) => error instanceof FormaError
+      && /more than 100 blocks built/.test(error.message)
+      && error.loc?.line > 0,
+  );
+});
+
+test('no budget is the default, so an existing render is unchanged', async () => {
+  const source = 'model "m" { for i in range(0, 20) { translate { offset = [i, 0, 0]  box { size = 1 } } } }';
+  const r = await render(source);
+  assert.equal(r.parts.length, 1);
+  r.context.dispose();
+});
+
+test('a budget large enough to hold the document does not fire', async () => {
+  const source = 'model "m" { for i in range(0, 5) { translate { offset = [i, 0, 0]  box { size = 1 } } } }';
+  const r = await render(source, { maxNodes: 10_000 });
+  assert.equal(r.parts.length, 1);
+  r.context.dispose();
+});
+
+test('an already-aborted signal stops the render with the caller reason', async () => {
+  const controller = new AbortController();
+  controller.abort(new Error('superseded'));
+
+  await assert.rejects(
+    () => render('model "m" { box { size = 10 } }', { signal: controller.signal }),
+    /superseded/,
+  );
+});
+
+test('a signal that never fires leaves the render alone', async () => {
+  const controller = new AbortController();
+  const r = await render('model "m" { box { size = 10 } }', { signal: controller.signal });
+  assert.equal(r.parts.length, 1);
+  r.context.dispose();
 });

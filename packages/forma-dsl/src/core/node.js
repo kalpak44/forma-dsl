@@ -1,3 +1,16 @@
+/**
+ * The geometry tree: a description of geometry that has not been built yet.
+ *
+ * A node names an operation and its children, and carries a digest of the whole subtree
+ * beneath it. Nothing here touches the kernel — that separation is the point, and the
+ * evaluation context is the other half of it.
+ *
+ * The digest is what the evaluation cache is keyed on, so everything feeding it has to be
+ * canonical: attributes in sorted order, the operands of a commutative operation ordered
+ * too, and no dependence on locale or on the order a document happened to be written in. A
+ * digest that varies across machines is a cache that silently never hits.
+ */
+
 /** @import { BooleanOp, Dimensionality } from '../index.js' */
 
 import { DigestWriter } from './digest.js';

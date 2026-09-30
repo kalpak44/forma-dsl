@@ -1,3 +1,16 @@
+/**
+ * The parser: tokens in, a syntax tree out.
+ *
+ * Recursive descent with a precedence table for the infix operators. The grammar is small
+ * enough that a generator would cost more than it saved, and writing it by hand is what lets
+ * every node carry the source position that produced it — which is the whole of how errors
+ * point at something later on.
+ *
+ * It checks shape and nothing else. Whether `cylinder` is a real block, and whether its
+ * attributes mean anything, is the evaluator's question; a document that parses is only
+ * a document spelled like forma.
+ */
+
 /** @import { SourceLocation, Token, TokenType } from '../index.js' */
 /** @import { Attribute, Block, Body, Declaration, Document, Expression, ForBlock, IfBlock, LocalDeclaration, ParamDeclaration } from './ast.js' */
 

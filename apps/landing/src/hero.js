@@ -59,15 +59,27 @@ function roundedPrism(w, d, h, r) {
 }
 
 /**
+ * @typedef {object} HeroPart
+ * @property {THREE.BufferGeometry} geometry The shape.
+ * @property {[number, number, number]} at Where it stands on the turntable.
+ * @property {number} spin How fast it turns on its own axis.
+ * @property {boolean} accent Whether it is drawn in the accent colour.
+ */
+
+/**
  * The parts on the turntable, in the order they are laid out around it.
  *
- * @returns {Array<{ geometry: THREE.BufferGeometry, at: [number, number, number], spin: number, accent: boolean }>}
- *   Each part, with where it stands and how fast it turns on its own axis.
+ * @returns {HeroPart[]} Each part, with where it stands and how fast it turns.
  */
 function makeParts() {
   return [
     { geometry: roundedPrism(30, 18, 7, 3), at: [-30, 0, 6], spin: 0.06, accent: false },
-    { geometry: new THREE.CylinderGeometry(11, 11, 15, 40, 1, true), at: [14, 8, -22], spin: -0.09, accent: true },
+    {
+      geometry: new THREE.CylinderGeometry(11, 11, 15, 40, 1, true),
+      at: [14, 8, -22],
+      spin: -0.09,
+      accent: true,
+    },
     { geometry: new THREE.TorusGeometry(13, 3.4, 12, 44), at: [34, 13, 16], spin: 0.05, accent: false },
     { geometry: new THREE.CylinderGeometry(9, 9, 6, 6), at: [-8, 5, 30], spin: 0.11, accent: true },
     { geometry: roundedPrism(16, 16, 22, 4), at: [46, 0, -26], spin: -0.04, accent: false },
@@ -189,9 +201,10 @@ export class Hero {
     const colors = PALETTE[currentTheme()];
 
     this.scene.fog = new THREE.Fog(colors.fog, RADIUS * 0.9, RADIUS * 4.4);
-    /** @type {THREE.Material & { color: THREE.Color }} */ (this.grid.material).color = new THREE.Color(colors.grid);
-    /** @type {THREE.Material} */ (this.grid.material).transparent = true;
-    /** @type {THREE.Material} */ (this.grid.material).opacity = 0.5;
+    const grid = /** @type {THREE.Material & { color: THREE.Color }} */ (this.grid.material);
+    grid.color = new THREE.Color(colors.grid);
+    grid.transparent = true;
+    grid.opacity = 0.5;
     this.key.color = new THREE.Color(colors.key);
     this.ambient.groundColor = new THREE.Color(colors.ground);
 

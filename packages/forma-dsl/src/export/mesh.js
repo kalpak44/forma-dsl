@@ -1,3 +1,12 @@
+/**
+ * Turning a solved kernel object into vertex arrays a renderer can upload.
+ *
+ * The kernel keeps an indexed mesh with vertices shared between faces, which is what makes it
+ * compact and what makes it wrong to draw directly: a shared vertex has one normal, so every
+ * flat face it touches gets smeared into its neighbours. Expanding the indices back out is
+ * the whole of what this file is for.
+ */
+
 /** @import { IndexedMesh, RenderMesh, Solid } from '../index.js' */
 
 /**

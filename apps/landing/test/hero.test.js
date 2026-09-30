@@ -126,7 +126,8 @@ test('a theme change repaints the fog, the plate, the solids and the edges', () 
   dispatchEvent(new CustomEvent('forma:theme', { detail: 'light' }));
 
   assert.notEqual(/** @type {THREE.Fog} */ (hero.scene.fog).color.getHexString(), before.fog);
-  assert.notEqual(/** @type {THREE.MeshStandardMaterial} */ (solid.material).color.getHexString(), before.solid);
+  const solidMaterial = /** @type {THREE.MeshStandardMaterial} */ (solid.material);
+  assert.notEqual(solidMaterial.color.getHexString(), before.solid);
   assert.notEqual(/** @type {THREE.LineBasicMaterial} */ (edges.material).color.getHexString(), before.edge);
 });
 

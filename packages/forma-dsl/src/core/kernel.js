@@ -1,3 +1,12 @@
+/**
+ * Loading the Manifold WASM module, and the global knobs for curve resolution.
+ *
+ * One instance per page or process. Memoized here rather than left to each caller, because
+ * two models evaluating concurrently at startup must not each start an instantiation — and
+ * because the resolution controls below are global to the module, so there is nowhere else
+ * they could honestly live.
+ */
+
 /** @import { Kernel, QualityOptions } from '../index.js' */
 
 import ManifoldModule from 'manifold-3d';

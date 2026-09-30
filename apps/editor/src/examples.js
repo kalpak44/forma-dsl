@@ -1,3 +1,12 @@
+/**
+ * The documents the editor offers from its picker.
+ *
+ * Chosen to cover the language rather than to look impressive: each one introduces something
+ * the others do not — parameters, booleans, reusable components, a lathe. They are held to
+ * being real by `test/examples.test.js`, which renders every one of them, so an example
+ * cannot go stale against a language change without the build saying so.
+ */
+
 export const EXAMPLES = {
   'Hex key holder': `// A holder with one hexagonal slot per key size.
 param height { type = number  default = 20  min = 8  max = 40  step = 1 }

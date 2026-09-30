@@ -1,3 +1,15 @@
+/**
+ * Syntax highlighting for the editor, as a CodeMirror stream tokenizer.
+ *
+ * Deliberately not a second parser. The real one already reports errors with positions, and
+ * all this needs to do is colour text and match brackets — a full grammar here would be a
+ * second place the definition of the language had to be kept true.
+ *
+ * What it must not do is guess at the vocabulary: the block and function names come from the
+ * library's own registries, so a block added to the language is highlighted without anyone
+ * remembering to add it here.
+ */
+
 import { StreamLanguage, LanguageSupport, HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { tags } from '@lezer/highlight';
 import { BLOCKS, FUNCTIONS } from 'forma-dsl';

@@ -105,8 +105,10 @@ test('STL triangles agree with the render mesh they came from', async () => {
     }
     for (let v = 0; v < 3; v++) {
       for (let axis = 0; axis < 3; axis++) {
+        const written = view.getFloat32(o + 12 + v * 12 + axis * 4, true);
+        const expected = mesh.positions[t * 9 + v * 3 + axis];
         assert.ok(
-          Math.abs(view.getFloat32(o + 12 + v * 12 + axis * 4, true) - mesh.positions[t * 9 + v * 3 + axis]) < 1e-5,
+          Math.abs(written - expected) < 1e-5,
           `triangle ${t} vertex ${v} axis ${axis} differs from the mesh`,
         );
       }
