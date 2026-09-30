@@ -534,19 +534,25 @@ async function main() {
 
   checkNavigation(files, listed);
 
-  const pages = new Map();
-  for (const file of files) {
+  // The pages do not depend on each other and `renderPage` is synchronous, so the reads run
+  // together and the map is filled in the files' order either way.
+  const rendered = await Promise.all(files.map(async (file) => {
     const markdown = await readFile(join(DOCS, file), 'utf8');
-    pages.set(file, { file, ...renderPage(file, markdown) });
-  }
+    return { file, ...renderPage(file, markdown) };
+  }));
+
+  const pages = new Map();
+  for (const page of rendered) pages.set(page.file, page);
 
   checkLinks(pages);
 
-  for (const page of pages.values()) {
+  // Each page writes to its own file, and a recursive mkdir tolerates the shared directories
+  // being created more than once, so the writes are independent too.
+  await Promise.all([...pages.values()].map(async (page) => {
     const out = join(OUT, htmlPath(page.file));
     await mkdir(dirname(out), { recursive: true });
     await writeFile(out, shell(page));
-  }
+  }));
   await writeFile(join(OUT, 'docs.css'), await readFile(join(HERE, 'docs.css'), 'utf8'));
 
   const links = [...pages.values()].reduce((n, page) => n + page.links.length, 0);

@@ -130,8 +130,13 @@ export async function searchReference(query, limit = 6) {
   /** @type {Array<{ score: number, path: string, title: string, heading: string, snippet: string }>} */
   const hits = [];
 
-  for (const page of PAGES) {
-    const markdown = await readFile(join(ROOT, page.path), 'utf8');
+  // Every page is read on every search, so the reads are independent work and belong
+  // together: awaiting them one at a time made a search wait on 28 round trips for nothing.
+  const pages = await Promise.all(
+    PAGES.map(async (page) => ({ page, markdown: await readFile(join(ROOT, page.path), 'utf8') })),
+  );
+
+  for (const { page, markdown } of pages) {
     const lower = markdown.toLowerCase();
     if (!terms.every((term) => lower.includes(term))) continue;
 
