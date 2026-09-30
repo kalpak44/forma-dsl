@@ -8,6 +8,12 @@ import { GeometryNode } from '../core/node.js';
 import { Transform } from '../values/transform.js';
 
 /**
+ * The blocks handled before the registry is consulted, so they are missing from `BLOCKS` and
+ * would otherwise be absent from the list an unknown block is measured against.
+ */
+const SPECIAL_FORMS = ['align', 'for', 'if', 'part'];
+
+/**
  * What a body produces: geometry to hand upwards, and any scene parts declared inside it.
  *
  * Parts travel separately from nodes because a part is not an operand — it is a coloured
@@ -447,7 +453,19 @@ export class Evaluator {
 
     const definition = BLOCKS[block.type];
     if (!definition) {
-      throw new FormaError(`unknown block "${block.type}"`, block.loc);
+      // The whole vocabulary, because the reader is often a program with no copy of the
+      // manual: a misspelling it cannot correct from the error costs a round trip it has no
+      // way to end. Declared components come first — they are the names this document itself
+      // introduced, and the likeliest thing a near miss was reaching for.
+      const known = [
+        ...[...this.program.components.keys()].sort((a, z) => a.localeCompare(z)),
+        ...SPECIAL_FORMS,
+        ...Object.keys(BLOCKS).sort((a, z) => a.localeCompare(z)),
+      ];
+      throw new FormaError(
+        `unknown block "${block.type}" — the blocks are ${quoteAll(known)}`,
+        block.loc,
+      );
     }
     if (block.labels.length) {
       throw new FormaError(`"${block.type}" does not take a label`, block.loc);

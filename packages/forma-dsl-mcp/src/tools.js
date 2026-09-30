@@ -1,5 +1,5 @@
 /**
- * The tools the server offers, and how their results are worded.
+ * The three tools the server offers, and how their results are worded.
  *
  * Results are Markdown rather than JSON on purpose. Everything here is read by a language
  * model deciding what to write next, and a bounding box in a table is acted on where the
@@ -34,7 +34,7 @@ const say = (text, isError = false) => ({
  *
  * A thrown error becomes a protocol-level failure, which most clients surface as "the tool
  * broke" rather than as something the model can correct. A refusal it can read — a path
- * outside the root, a part that does not exist — belongs in the result instead.
+ * outside the roots, a part that does not exist — belongs in the result instead.
  *
  * @param {() => Promise<object>} handler What to run.
  * @returns {Promise<object>} Its result, or the failure as text.
@@ -189,40 +189,30 @@ export function formatReport(report) {
   lines.push(...parameterLines(report.parameters));
 
   if (report.scene) lines.push(...sceneLines(report.scene, report.stats));
-  else if (report.ok) lines.push('_Parsed only — pass `solve: true` to build the geometry and measure it._');
 
   return lines.join('\n');
 }
 
 /**
- * Resolves the `source`-or-`path` pair every document-taking tool accepts.
+ * Resolves the `source`-or-`path` pair the export tool accepts.
  *
  * @param {Workspace} workspace Where a path is resolved.
  * @param {{ source?: string, path?: string }} args What the caller gave.
- * @returns {Promise<{ source: string, from: string }>} The document, and where it came from.
+ * @returns {Promise<string>} The document.
  * @throws {Error} If neither or both were given.
  */
 async function documentFrom(workspace, { source, path }) {
   if (source && path) throw new Error('give either "source" or "path", not both');
-  if (source) return { source, from: 'the supplied source' };
-  if (path) return { source: await workspace.read(path), from: `\`${path}\`` };
-  throw new Error('give either "source" — the document itself — or "path" to one in the workspace');
+  if (source) return source;
+  if (path) return workspace.read(path);
+  throw new Error('give either "source" — the document itself — or "path" to one already written');
 }
-
-/** The arguments shared by every tool that takes a document and may render it. */
-const DOCUMENT_ARGS = {
-  source: z.string().optional().describe('The .forma document itself.'),
-  path: z.string().optional().describe('A .forma file in the workspace, instead of `source`.'),
-  model: z.string().optional().describe('Which model to build. Defaults to the first one declared.'),
-  params: z.record(z.string(), z.any()).optional()
-    .describe('Values for the document\'s params, by name. Anything not given uses its default.'),
-};
 
 /**
  * Registers every tool on a server.
  *
  * @param {McpServer} server The server.
- * @param {Workspace} workspace The patch of filesystem the file tools may touch.
+ * @param {Workspace} workspace The patch of filesystem the tools may touch.
  * @returns {void}
  */
 export function registerTools(server, workspace) {
@@ -393,48 +383,25 @@ export function registerTools(server, workspace) {
     ].join('\n'));
   }));
 
-  // --- writing and checking ----------------------------------------------------------------
-
-  server.registerTool('forma_check', {
-    title: 'Check and measure a document',
-    description:
-      'Parses a .forma document and, unless told not to, builds one of its models with the '
-      + 'real geometry kernel. Reports any error with the line, the column and an excerpt with '
-      + 'a caret on it, and reports a successful build as a table of parts with their bounding '
-      + 'boxes, volumes, triangle counts and genus. This is how you find out whether what you '
-      + 'wrote is the size you meant, is watertight, and is not silently empty. Use it after '
-      + 'every edit.',
-    inputSchema: {
-      ...DOCUMENT_ARGS,
-      solve: z.boolean().optional()
-        .describe('Run the geometry kernel. Default true; false parses only, which is faster while drafting.'),
-    },
-    annotations: { readOnlyHint: true, openWorldHint: false },
-  }, async (args) => attempt(async () => {
-    const { source, from } = await documentFrom(workspace, args);
-    const report = await checkDocument(source, {
-      model: args.model ?? null,
-      params: args.params ?? {},
-      solve: args.solve ?? true,
-    });
-    return {
-      content: [{ type: /** @type {'text'} */ ('text'), text: `${formatReport(report)}\n\n_Checked ${from}._` }],
-      ...(report.ok ? {} : { isError: false }),
-    };
-  }));
+  // --- writing and building ----------------------------------------------------------------
 
   server.registerTool('forma_write', {
-    title: 'Write a .forma file',
+    title: 'Check, then write a .forma file',
     description:
-      'Checks a document and writes it into the workspace. The check runs first and a document '
-      + 'that does not render is refused, so a file on disk is one that works — pass '
-      + '`force: true` to write it anyway. Refuses to replace an existing file unless '
-      + '`overwrite` is set.',
+      'Builds a .forma document with the real geometry kernel and, if it renders, writes it. '
+      + 'The result is the measurement: a table of every part with its bounding box, volume, '
+      + 'triangle count and genus, or the error with the line, the column and an excerpt with '
+      + 'a caret on it. This is how you find out whether what you wrote is the size you meant, '
+      + 'is watertight, and is not silently empty. A document that does not render is refused '
+      + 'and nothing is written — pass `force: true` to write it anyway. Refuses to replace an '
+      + 'existing file unless `overwrite` is set.',
     inputSchema: {
-      path: z.string().describe('Where to write, relative to the workspace root. Must end in .forma.'),
+      path: z.string()
+        .describe('Where to write, relative to the first directory the client declared as a root. Must end in .forma.'),
       source: z.string().describe('The document.'),
-      model: z.string().optional().describe('Which model to check. Defaults to the first one.'),
-      params: z.record(z.string(), z.any()).optional().describe('Param values to check with.'),
+      model: z.string().optional().describe('Which model to build. Defaults to the first one declared.'),
+      params: z.record(z.string(), z.any()).optional()
+        .describe('Values for the document\'s params, by name. Anything not given uses its default.'),
       overwrite: z.boolean().optional().describe('Replace the file if it already exists. Default false.'),
       force: z.boolean().optional().describe('Write even if the document does not render. Default false.'),
     },
@@ -452,19 +419,23 @@ export function registerTools(server, workspace) {
 
     const written = await workspace.write(path, source, { overwrite, extension: '.forma' });
     return say([
-      `Wrote \`${written.relative}\` — ${written.bytes} bytes${written.replaced ? ', replacing what was there' : ''}.`,
+      `Wrote \`${written.relative}\` under \`${written.root}\` — ${written.bytes} bytes`
+      + `${written.replaced ? ', replacing what was there' : ''}.`,
       '',
       formatReport(report),
     ].join('\n'));
   }));
 
   server.registerTool('forma_read', {
-    title: 'Read a .forma file',
-    description: 'Reads a document from the workspace and checks it, so you see the source and '
-      + 'its current state together.',
+    title: 'Read a document back',
+    description:
+      'Reads a .forma file the client has given access to and builds it, so you see the source '
+      + 'and its current measurements together. Use it before editing something you did not '
+      + 'write in this session.',
     inputSchema: {
-      path: z.string().describe('The file, relative to the workspace root.'),
-      solve: z.boolean().optional().describe('Run the geometry kernel. Default true.'),
+      path: z.string().describe('The file, relative to the first directory the client declared as a root.'),
+      solve: z.boolean().optional()
+        .describe('Run the geometry kernel. Default true; false parses only, which is faster.'),
     },
     annotations: { readOnlyHint: true, openWorldHint: false },
   }, async ({ path, solve }) => attempt(async () => {
@@ -473,39 +444,28 @@ export function registerTools(server, workspace) {
     return say(['```hcl', source.trimEnd(), '```', '', formatReport(report)].join('\n'));
   }));
 
-  server.registerTool('forma_list', {
-    title: 'List the .forma files in the workspace',
-    description: 'Every .forma document under the workspace root, so you can find what is '
-      + 'already here instead of guessing at names.',
-    inputSchema: {},
-    annotations: { readOnlyHint: true, openWorldHint: false },
-  }, async () => attempt(async () => {
-    const files = await workspace.list('.forma');
-    if (!files.length) return say(`No .forma files under ${workspace.root}.`);
-    const plural = files.length > 1 ? 's' : '';
-    return say([
-      `# ${files.length} document${plural} under ${workspace.root}`,
-      '',
-      ...files.map((file) => `- \`${file}\``),
-    ].join('\n'));
-  }));
-
   server.registerTool('forma_export_stl', {
-    title: 'Export a model as binary STL',
+    title: 'Render and write a binary STL',
     description:
-      'Renders a document and writes one part — or every part unioned — as a binary STL into '
-      + 'the workspace. Lengths are unitless in forma and STL has no unit either; every '
-      + 'consumer treats them as millimetres.',
+      'Renders a document and writes one part — or every part unioned — as a binary STL. '
+      + 'Lengths are unitless in forma and STL has no unit either; every consumer treats them '
+      + 'as millimetres.',
     inputSchema: {
-      ...DOCUMENT_ARGS,
-      out: z.string().describe('Where to write, relative to the workspace root. Must end in .stl.'),
+      source: z.string().optional().describe('The .forma document itself.'),
+      path: z.string().optional()
+        .describe('A .forma file the client has given access to, instead of `source`.'),
+      model: z.string().optional().describe('Which model to build. Defaults to the first one declared.'),
+      params: z.record(z.string(), z.any()).optional()
+        .describe('Values for the document\'s params, by name. Anything not given uses its default.'),
+      out: z.string()
+        .describe('Where to write, relative to the first directory the client declared as a root. Must end in .stl.'),
       part: z.string().optional()
         .describe('One part by name. Omitted, a single-part model exports that part and a multi-part model exports them unioned.'),
       overwrite: z.boolean().optional().describe('Replace the file if it already exists. Default false.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   }, async (args) => attempt(async () => {
-    const { source } = await documentFrom(workspace, args);
+    const source = await documentFrom(workspace, args);
     const result = await exportStl(source, {
       model: args.model ?? null,
       params: args.params ?? {},
@@ -516,8 +476,8 @@ export function registerTools(server, workspace) {
       extension: '.stl',
     });
     return say(
-      `Wrote \`${written.relative}\` — ${written.bytes} bytes, ${result.triangles} triangles, `
-      + `from model \`${result.model}\`, part \`${result.part}\`.`,
+      `Wrote \`${written.relative}\` under \`${written.root}\` — ${written.bytes} bytes, `
+      + `${result.triangles} triangles, from model \`${result.model}\`, part \`${result.part}\`.`,
     );
   }));
 }
