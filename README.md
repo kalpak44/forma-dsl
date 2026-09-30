@@ -11,6 +11,11 @@ manual.
 **[Try the editor](https://kalpak44.github.io/forma-dsl/editor/)** ·
 **[Read the reference](https://kalpak44.github.io/forma-dsl/docs/)**
 
+![The demo typing a bracket, a flange, a component and a vase, solving each and re-solving as a slider moves](apps/docs/assets/demo.gif)
+
+The [live demo](https://kalpak44.github.io/forma-dsl/#demo) types each document out and solves
+it as it goes, then re-solves as a parameter moves — in the browser, with the same kernel.
+
 ```hcl
 param height { type = number  default = 20  min = 8  max = 40 }
 
@@ -29,12 +34,6 @@ model "riser" {
 ```
 
 ![The riser above, solved and rendered: a rounded 40 x 20 block with a 10 mm bore through the top](apps/docs/assets/example.png)
-
-The [live demo](https://kalpak44.github.io/forma-dsl/#demo) types four documents out and
-solves each one as it goes, then re-solves it as a parameter moves — in the browser, with the
-same kernel:
-
-![The demo typing a bracket, a flange, a component and a vase, solving each and re-solving as a slider moves](apps/docs/assets/demo.gif)
 
 ## Workspaces
 
