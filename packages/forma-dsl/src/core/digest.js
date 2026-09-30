@@ -1,9 +1,11 @@
-// A 128-bit content digest, computed once per node and never recomputed.
-//
-// It must be stable across runs, machines and browsers: two structurally identical trees
-// have to produce the same digest every time, or the evaluation cache silently misses and
-// a rebuilt model recomputes everything. That rules out anything seeded per process, and
-// it rules out Web Crypto, which is async and cannot be called from a constructor.
+/**
+ * A 128-bit content digest, computed once per node and never recomputed.
+ *
+ * It must be stable across runs, machines and browsers: two structurally identical trees have
+ * to produce the same digest every time, or the evaluation cache silently misses and a
+ * rebuilt model recomputes everything. That rules out anything seeded per process, and it
+ * rules out Web Crypto, which is async and cannot be called from a constructor.
+ */
 
 const C1 = 0x239b961b, C2 = 0xab0e9789, C3 = 0x38b34ae5, C4 = 0xa1e38b93;
 

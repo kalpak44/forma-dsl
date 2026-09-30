@@ -1,3 +1,12 @@
+/**
+ * Affine transforms, in the layout the kernel expects.
+ *
+ * A value type: every operation returns a new transform and none mutates the receiver, so a
+ * transform captured by a scope cannot be changed underneath it by a sibling block. That
+ * matters more than it sounds — nesting is how the language composes, and a mutable
+ * transform would make a block's meaning depend on what ran before it.
+ */
+
 /** @import { Dimensionality } from '../index.js' */
 /** @import { VectorLike } from './vector.js' */
 

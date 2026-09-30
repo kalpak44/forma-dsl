@@ -160,3 +160,22 @@ test('the shared context caches across calls', async () => {
 
   assert.ok(second.stats.cacheHits > 0, 'a repeated render should hit the digest cache');
 });
+
+test('a document asking for more geometry than the budget allows is refused, not hung', async () => {
+  // Two loops nested: `range` bounds each one on its own, and their product is what the
+  // budget is for.
+  const report = await checkDocument(`model "m" {
+    for i in range(0, 300) {
+      for j in range(0, 300) {
+        translate { offset = [i, j, 0]  box { size = 1 } }
+      }
+    }
+  }`);
+
+  assert.equal(report.ok, false);
+  assert.equal(report.stage, 'render');
+  assert.match(report.error.message, /more than 50000 blocks built/);
+  // Still a diagnostic a caller can act on, with a position and an excerpt.
+  assert.ok(report.error.line > 0);
+  assert.ok(report.error.excerpt);
+});

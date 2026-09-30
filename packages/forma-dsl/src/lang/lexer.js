@@ -1,3 +1,15 @@
+/**
+ * The lexer: source text in, a flat stream of tokens out.
+ *
+ * Strings are the one thing it does not hand on whole. A `"..."` carrying `${...}` is split
+ * here into literal runs and spliced source, because working out where a splice ends means
+ * counting braces — which is a job for something reading characters, not for a parser reading
+ * tokens.
+ *
+ * {@link FormaError} lives here rather than next to the evaluator because this is the first
+ * pass that can fail, and every later one raises the same type.
+ */
+
 /** @import { SourceLocation, Token, TokenType } from '../index.js' */
 
 /**
@@ -31,13 +43,11 @@ const PUNCTUATION = [
   '+', '-', '*', '/', '%', '!', '?', ':',
 ];
 
+/** @typedef {{ kind: 'text', value: string } | { kind: 'expr', source: string, loc: SourceLocation }} Part */
+
 /** Escapes recognised inside a string. `\$` is here so a literal `${` can be written. */
 const ESCAPES = { n: '\n', t: '\t', r: '\r', '"': '"', '\\': '\\', $: '$' };
 
-/**
- * @param {string} c A single character.
- * @returns {boolean} Whether a name may begin with it.
- */
 const isIdentStart = (c) => /[A-Za-z_]/.test(c);
 
 /**
@@ -47,10 +57,6 @@ const isIdentStart = (c) => /[A-Za-z_]/.test(c);
  */
 const isIdentPart = (c) => /[A-Za-z0-9_-]/.test(c);
 
-/**
- * @param {string} c A single character.
- * @returns {boolean} Whether it is a decimal digit.
- */
 const isDigit = (c) => c >= '0' && c <= '9';
 
 /**
@@ -212,7 +218,7 @@ class Lexer {
     const loc = this.here();
     this.advance();
 
-    /** @type {Array<{ kind: 'text', value: string } | { kind: 'expr', source: string, loc: SourceLocation }>} */
+    /** @type {Part[]} */
     const parts = [];
     let text = '';
 

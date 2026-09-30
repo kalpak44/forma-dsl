@@ -45,19 +45,56 @@ model "riser" {
 | [`apps/editor`](apps/editor) | no | The browser editor: CodeMirror, three.js, Vite |
 | [`apps/docs`](apps/docs) | no | The reference manual, and the builder that renders it |
 
-Every workspace here **depends on the published entry point**, not on the library's sources.
-An export the editor needs and does not have therefore fails in this repository rather than
-in someone's install.
+### How the pieces are kept honest
 
-The same rule governs what each one is allowed to claim about the language:
+Every workspace here **depends on the published entry point**, not on the library's sources:
+the editor imports `forma-dsl`, never `../../packages/forma-dsl/src`. An export one of them
+needs and the package does not have therefore fails in this repository rather than in
+someone's install.
 
-- The docs' syntax highlighting and the landing page's both read the real block and function
-  registries, so a new block cannot be added without the code samples learning about it.
-- The landing page renders its own examples in the browser, so a document it shows being
-  typed is one the library can still solve.
-- The MCP server reconciles its block catalogue against those registries at load time and
-  asserts the difference is empty, and its tests render every worked document it hands a
-  model at both ends of every parameter's range.
+The same rule governs what each workspace may *claim* about the language. None of them
+restates the vocabulary — each reads it from the library's own registries, and a test holds
+them to it:
+
+- **Syntax highlighting is generated, not transcribed.** The editor's
+  ([`language.js`](apps/editor/src/language.js)), the landing page's
+  ([`highlight.js`](apps/landing/src/highlight.js)) and the manual's
+  ([`build.mjs`](apps/docs/build.mjs)) all colour from `BLOCKS` and `FUNCTIONS`, so a block
+  added to the language is highlighted without anyone updating a list.
+- **Every example on the site renders.** The editor's four documents
+  ([`examples.test.js`](apps/editor/test/examples.test.js)) and the landing page's demos
+  ([`demos.test.js`](apps/landing/test/demos.test.js)) are solved by tests, so nothing shown
+  being typed is a document the library can no longer build.
+- **The MCP server's catalogue cannot drift.** It merges the registries into its own prose at
+  load time and exposes any disagreement as `catalogueDrift`, which
+  [`catalogue.test.js`](packages/forma-dsl-mcp/test/catalogue.test.js) asserts is empty. Its
+  worked examples are rendered at both ends of every parameter's range.
+- **The manual has no dead cross-references.** `npm run build` resolves all 237 internal links
+  and fails rather than publishing a broken one.
+
+## Working on it
+
+Node 22.13 or newer — the floor the published packages declare.
+
+```bash
+npm ci
+npm run check   # lint, typecheck, tests, build, package contents: the whole gate, same as CI
+```
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | the landing page, with hot reload |
+| `npm run dev:editor` | the editor |
+| `npm run mcp` | the MCP server, on stdio |
+| `npm test` | every workspace's tests |
+| `npm run test:coverage` | the same, against the thresholds CI enforces |
+| `npm run build` | the whole site into `dist/` |
+
+[CONTRIBUTING.md](CONTRIBUTING.md) has the house style, the stability policy and how a release
+is cut. [CHANGELOG.md](CHANGELOG.md) records what changed in each one.
+
+Found something exploitable? [SECURITY.md](SECURITY.md) says where to send it — please not a
+public issue.
 
 ## License
 

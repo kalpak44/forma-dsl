@@ -209,15 +209,14 @@ async function documentFrom(workspace, { source, path }) {
 }
 
 /**
- * Registers every tool on a server.
+ * The language in one page, or one section of it.
+ *
+ * Registered first because it is what the server's instructions tell a model to read first.
  *
  * @param {McpServer} server The server.
- * @param {Workspace} workspace The patch of filesystem the tools may touch.
  * @returns {void}
  */
-export function registerTools(server, workspace) {
-  // --- knowing the language ---------------------------------------------------------------
-
+function registerGuide(server) {
   server.registerTool('forma_guide', {
     title: 'The forma language in brief',
     description:
@@ -231,7 +230,18 @@ export function registerTools(server, workspace) {
     },
     annotations: { readOnlyHint: true, openWorldHint: false },
   }, async ({ section }) => attempt(async () => say(guide(section))));
+}
 
+/**
+ * What every block takes, read from the library's own registry.
+ *
+ * Names are answered in full rather than as a list, because a caller that has to guess at
+ * an attribute spends a build finding out it guessed wrong.
+ *
+ * @param {McpServer} server The server.
+ * @returns {void}
+ */
+function registerBlocks(server) {
   server.registerTool('forma_blocks', {
     title: 'Block and declaration reference',
     description:
@@ -284,7 +294,18 @@ export function registerTools(server, workspace) {
     lines.push('_Call again with `names` for the attribute tables._');
     return say(lines.join('\n'));
   }));
+}
 
+/**
+ * Every function an expression may call, and the two named constants.
+ *
+ * There are no user-defined functions in forma, so this answer is complete rather than a
+ * sample — which is worth saying, because it is what stops a caller inventing one.
+ *
+ * @param {McpServer} server The server.
+ * @returns {void}
+ */
+function registerFunctions(server) {
   server.registerTool('forma_functions', {
     title: 'Builtin functions and constants',
     description:
@@ -306,7 +327,18 @@ export function registerTools(server, workspace) {
     '',
     table(['Name', 'Value'], LANGUAGE_CONSTANTS.map((c) => [`\`${c.name}\``, c.value])),
   ].join('\n'))));
+}
 
+/**
+ * The bundled manual: search it, read a page, or list what there is.
+ *
+ * The manual ships with the package rather than being fetched, so the answers stay true to
+ * the version installed and work with no network at all.
+ *
+ * @param {McpServer} server The server.
+ * @returns {void}
+ */
+function registerReference(server) {
   server.registerTool('forma_reference', {
     title: 'The reference manual',
     description:
@@ -347,7 +379,18 @@ export function registerTools(server, workspace) {
       table(['Page', 'Title', 'About'], PAGES.map((each) => [`\`${each.path}\``, each.title, each.about])),
     ].join('\n'));
   }));
+}
 
+/**
+ * Complete documents that render, to read before writing something new.
+ *
+ * Every one is rendered by this package's tests at both ends of every parameter's range, so
+ * an example cannot teach a mistake without the build failing.
+ *
+ * @param {McpServer} server The server.
+ * @returns {void}
+ */
+function registerExamples(server) {
   server.registerTool('forma_examples', {
     title: 'Worked documents',
     description:
@@ -384,7 +427,20 @@ export function registerTools(server, workspace) {
   }));
 
   // --- writing and building ----------------------------------------------------------------
+}
 
+/**
+ * Build a document, and write it only if it built.
+ *
+ * The measurement is the point, not the file: a caller that is told the bounding box, the
+ * volume and the triangle count knows whether the model is the size that was asked for and
+ * has not silently solved to nothing. A refusal leaves nothing on disk.
+ *
+ * @param {McpServer} server The server.
+ * @param {Workspace} workspace The patch of filesystem the tool may touch.
+ * @returns {void}
+ */
+function registerWrite(server, workspace) {
   server.registerTool('forma_write', {
     title: 'Check, then write a .forma file',
     description:
@@ -425,7 +481,19 @@ export function registerTools(server, workspace) {
       formatReport(report),
     ].join('\n'));
   }));
+}
 
+/**
+ * Read a document back, with its current measurements.
+ *
+ * Source and measurements together, because editing something last touched in another
+ * session means needing both.
+ *
+ * @param {McpServer} server The server.
+ * @param {Workspace} workspace The patch of filesystem the tool may touch.
+ * @returns {void}
+ */
+function registerRead(server, workspace) {
   server.registerTool('forma_read', {
     title: 'Read a document back',
     description:
@@ -443,7 +511,19 @@ export function registerTools(server, workspace) {
     const report = await checkDocument(source, { solve: solve ?? true });
     return say(['```hcl', source.trimEnd(), '```', '', formatReport(report)].join('\n'));
   }));
+}
 
+/**
+ * Render a document and write one part, or every part unioned, as binary STL.
+ *
+ * Takes a document either as source or as a path already on disk, so a caller that has just
+ * written one does not have to hold it a second time.
+ *
+ * @param {McpServer} server The server.
+ * @param {Workspace} workspace The patch of filesystem the tool may touch.
+ * @returns {void}
+ */
+function registerExportStl(server, workspace) {
   server.registerTool('forma_export_stl', {
     title: 'Render and write a binary STL',
     description:
@@ -480,4 +560,28 @@ export function registerTools(server, workspace) {
       + `${result.triangles} triangles, from model \`${result.model}\`, part \`${result.part}\`.`,
     );
   }));
+}
+
+/**
+ * Registers every tool on a server.
+ *
+ * One function per tool, so this reads as the list of what the server offers and each tool's
+ * schema, description and handler stay together where they are edited.
+ *
+ * @param {McpServer} server The server.
+ * @param {Workspace} workspace The patch of filesystem the file tools may touch.
+ * @returns {void}
+ */
+export function registerTools(server, workspace) {
+  // Knowing the language.
+  registerGuide(server);
+  registerBlocks(server);
+  registerFunctions(server);
+  registerReference(server);
+  registerExamples(server);
+
+  // Writing and building.
+  registerWrite(server, workspace);
+  registerRead(server, workspace);
+  registerExportStl(server, workspace);
 }

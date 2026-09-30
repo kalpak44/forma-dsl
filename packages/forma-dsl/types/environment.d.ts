@@ -28,3 +28,16 @@ declare const console: {
   warn(...data: unknown[]): void;
   error(...data: unknown[]): void;
 };
+
+/**
+ * Only the members `render` and the evaluator actually use.
+ *
+ * `throwIfAborted` is what makes cancellation the caller's error rather than one invented
+ * here: it throws `reason`, which is a standard `AbortError` unless the caller supplied
+ * something of their own.
+ */
+declare class AbortSignal {
+  readonly aborted: boolean;
+  readonly reason: unknown;
+  throwIfAborted(): void;
+}

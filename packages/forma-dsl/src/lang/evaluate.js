@@ -1,3 +1,17 @@
+/**
+ * The evaluator: a parsed document in, a tree of geometry nodes out.
+ *
+ * Nothing here calls the kernel. Evaluating a model produces {@link GeometryNode}s, which
+ * describe geometry without building any, and solving those is {@link EvaluationContext}'s
+ * job. Keeping the two apart is what makes a live preview affordable — a description is
+ * cheap to rebuild on every keystroke, and a solid is not.
+ *
+ * The three things in this file fail in three different ways, which is why they are three
+ * things: {@link Program} indexes what a document declares, {@link Scope} resolves names
+ * against it, and {@link Evaluator} turns blocks into nodes. Which one raised an error is
+ * most of what tells a reader whether they made a typo or a mistake about meaning.
+ */
+
 /** @import { EvaluationContext, EvaluatorOptions, ParameterDescriptor, ParameterValue, Scene, ScenePart } from '../index.js' */
 /** @import { BinaryExpression, Block, Body, CallExpression, Document, Expression, ForBlock, IfBlock, MemberExpression, NamedDeclaration } from './ast.js' */
 
@@ -180,13 +194,13 @@ export class Evaluator {
    * or unreadable input surfaces before any geometry is built.
    *
    * @param {Program} program The program to evaluate.
-   * @param {EvaluatorOptions} [options] Params, an optional kernel context, and whether
-   *   params must all resolve.
+   * @param {EvaluatorOptions} [options] Params, an optional kernel context, whether params
+   *   must all resolve, and the budget and signal that bound the build.
    * @throws {FormaError} If a param has no default and no supplied value, unless
    *   `requireParams` is off.
    */
   constructor(program, options = {}) {
-    const { params = {}, context = null, requireParams = true } = options;
+    const { params = {}, context = null, requireParams = true, maxNodes = null, signal = null } = options;
 
     /** @type {Program} The program being evaluated. */
     this.program = program;
@@ -198,6 +212,28 @@ export class Evaluator {
     this.context = context;
     /** @type {number} How deep into component calls evaluation currently is. */
     this.depth = 0;
+
+    /**
+     * How many blocks may be built before evaluation gives up, or null for no limit.
+     *
+     * {@link MAX_DEPTH} stops a component that calls itself, and `range` caps how many values
+     * a single loop produces — but neither bounds their product. Two loops of ten thousand
+     * nested in each other is a hundred million blocks, each one a kernel allocation, and no
+     * amount of waiting finishes it.
+     *
+     * Off by default, because the embedder that controls its own input does not need it and
+     * should not have a ceiling imposed. A host that builds documents it did not write — an
+     * MCP server, a shared editor — should pass one.
+     *
+     * @type {number | null}
+     */
+    this.maxNodes = maxNodes;
+
+    /** @type {AbortSignal | null} Checked at every block, so a caller can give up mid-build. */
+    this.signal = signal;
+
+    /** @type {number} How many blocks have been built so far, counted against the budget. */
+    this.built = 0;
 
     const root = new Scope();
     // Constants and type names are in scope before any param default is read, so a default
@@ -431,9 +467,23 @@ export class Evaluator {
    * @param {Block | ForBlock | IfBlock} block The block.
    * @param {Scope} scope The enclosing scope.
    * @returns {Promise<Produced>} What it produced.
-   * @throws {FormaError} On unknown blocks, misplaced labels, or nesting past {@link MAX_DEPTH}.
+   * @throws {FormaError} On unknown blocks, misplaced labels, nesting past {@link MAX_DEPTH},
+   *   or a document that has built more blocks than the budget allows.
+   * @throws {Error} The signal's reason, if the caller has aborted.
    */
   async block(block, scope) {
+    // Both checks go here rather than at the loop, because a block is the one thing every
+    // path builds: a `for`, a component call and a plain shape all arrive through it.
+    this.signal?.throwIfAborted();
+
+    if (this.maxNodes !== null && ++this.built > this.maxNodes) {
+      throw new FormaError(
+        `more than ${this.maxNodes} blocks built — the document asks for more geometry than `
+        + 'this budget allows; narrow a loop, or raise maxNodes if it is genuinely this large',
+        block.loc,
+      );
+    }
+
     if (this.depth > MAX_DEPTH) {
       throw new FormaError(`nesting deeper than ${MAX_DEPTH} blocks — is a component using itself?`, block.loc);
     }

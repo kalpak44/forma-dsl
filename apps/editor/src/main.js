@@ -1,3 +1,16 @@
+/**
+ * The editor: what the page is wired to, and what happens between a keystroke and a render.
+ *
+ * Everything the reader touches is here — the CodeMirror instance, the controls built from
+ * whatever `param` declarations the document itself makes, the example picker and the STL
+ * download. Rendering is debounced at two different delays, because a slider produces far
+ * more events than a keyboard does and each one is a cheaper edit.
+ *
+ * The library is imported from `forma-dsl`, not from its sources, so an export this page
+ * needs and the published package does not have fails in this repository rather than in
+ * someone's install.
+ */
+
 /** @import { ParameterDescriptor, ParameterValue, RenderedPart, RenderResult } from 'forma-dsl' */
 
 import { EditorView, basicSetup } from 'codemirror';
@@ -8,10 +21,11 @@ import { oneDark } from '@codemirror/theme-one-dark';
 
 import wasmUrl from 'manifold-3d/manifold.wasm?url';
 import { formaLanguage } from './language.js';
+import { Diagnostics } from './diagnostics.js';
 import { Viewer } from './viewer.js';
 import { EXAMPLES } from './examples.js';
 import {
-  render, describeParameters, loadKernel, toBinarySTL, FormaError, EvaluationContext,
+  render, describeParameters, loadKernel, toBinarySTL, EvaluationContext,
 } from 'forma-dsl';
 
 /**
@@ -101,12 +115,20 @@ try {
   fatal(`This browser could not start WebGL, so the 3D preview is unavailable. ${error.message}`);
 }
 
+/**
+ * What the editor is underlining, and the rule for when that stops being true.
+ *
+ * Its own object rather than a field on `state`: the invariant is that nothing is shown
+ * unless it was computed against the document as it is now, and that is easier to keep when
+ * the only way to set it is through something that also knows how to drop it.
+ */
+const diagnostics = new Diagnostics();
+
 /** Everything that outlives one render. */
 const state = {
   /** @type {Record<string, ParameterValue>} Values chosen with the parameter controls. */
   params: {},
-  /** @type {Array<{ from: number, to: number, severity: string, message: string }>} */
-  lastDiagnostics: [],
+
   /** @type {number} The model's extent when the camera last framed it. */
   lastExtent: 0,
   /** @type {EvaluationContext | null} One context for the life of the page. */
@@ -119,7 +141,7 @@ const state = {
 
 // --- editor -----------------------------------------------------------------------
 
-const formaLinter = linter(() => state.lastDiagnostics, { delay: 0 });
+const formaLinter = linter(() => diagnostics.read(), { delay: 0 });
 
 const editor = new EditorView({
   parent: $('editor'),
@@ -134,6 +156,9 @@ const editor = new EditorView({
       keymap.of([{ key: 'Mod-s', preventDefault: true, run: () => { schedule(0); return true; } }]),
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
+          // Before scheduling, not after: the linter re-runs on this same change, and what it
+          // must not do is redraw the previous document's error at offsets that have moved.
+          diagnostics.invalidate();
           storage.set(STORAGE_KEY, update.state.doc.toString());
           schedule();
         }
@@ -144,24 +169,6 @@ const editor = new EditorView({
 });
 
 // --- diagnostics ------------------------------------------------------------------
-
-/**
- * Maps a FormaError's line and column onto a document offset so the editor can underline it.
- *
- * @param {Error} error The failure.
- * @returns {{ from: number, to: number, severity: string, message: string }} A CodeMirror
- *   diagnostic. An error with no position is attached to the start of the document, which is
- *   at least somewhere the reader can see it.
- */
-function diagnosticFor(error) {
-  const doc = editor.state.doc;
-  if (!(error instanceof FormaError) || !error.loc) {
-    return { from: 0, to: 0, severity: 'error', message: error.message };
-  }
-  const line = doc.line(Math.min(Math.max(error.loc.line, 1), doc.lines));
-  const from = Math.min(line.from + Math.max(error.loc.column - 1, 0), line.to);
-  return { from, to: line.to, severity: 'error', message: error.message };
-}
 
 /**
  * @param {'ok' | 'busy' | 'error'} kind Which colour to use.
@@ -179,8 +186,8 @@ function setStatus(kind, text) {
  * @returns {void}
  */
 function showError(error) {
-  state.lastDiagnostics = [diagnosticFor(error)];
-  // An empty transaction, purely to make the linter re-read `lastDiagnostics`.
+  diagnostics.fail(error, editor.state.doc);
+  // An empty transaction, purely to make the linter re-read what it now holds.
   editor.dispatch({});
   setStatus('error', error.message);
   $('problem').textContent = error.message;
@@ -189,7 +196,7 @@ function showError(error) {
 
 /** @returns {void} */
 function clearError() {
-  state.lastDiagnostics = [];
+  diagnostics.pass();
   editor.dispatch({});
   $('problem').hidden = true;
 }
@@ -410,6 +417,26 @@ function rebuildParameterPanel(source) {
 let timer = null;
 
 /**
+ * The render currently building, so a newer one can stop it.
+ *
+ * A superseded render cannot paint — the generation check sees to that — but without this it
+ * still runs to completion first, and the newer render queues behind the kernel calls it is
+ * making. Stopping it is what keeps a held-down arrow key responsive.
+ *
+ * @type {AbortController | null}
+ */
+let inFlight = null;
+
+/**
+ * How much geometry one render may build before it is refused.
+ *
+ * Nesting limits and `range` bound a single loop; only this bounds two nested in each other,
+ * which is the shape that asks for more geometry than a tab can hold. Generous enough that no
+ * honest model comes near it — the worked examples build tens of blocks, not thousands.
+ */
+const MAX_NODES = 50_000;
+
+/**
  * Asks for a render, replacing any already pending.
  *
  * @param {number} [delay] How long to wait first.
@@ -491,6 +518,13 @@ async function run() {
   // Every run gets a generation. A slow render whose source has already been edited must not
   // paint over the newer one, which is what makes fast typing flicker between states.
   const generation = ++state.generation;
+
+  // Aborted as the new generation is taken, so the old render's own catch sees that it has
+  // been superseded and reports nothing.
+  inFlight?.abort(new Error('superseded by a newer render'));
+  const controller = new AbortController();
+  inFlight = controller;
+
   setStatus('busy', 'rendering…');
 
   let context;
@@ -505,7 +539,12 @@ async function run() {
   if (generation !== state.generation) return;
 
   try {
-    const result = await render(source, { params: state.params, context });
+    const result = await render(source, {
+      params: state.params,
+      context,
+      maxNodes: MAX_NODES,
+      signal: controller.signal,
+    });
     // A superseded render still leaves its work in the cache, which the newer one is likely
     // to want; it just must not paint, and must not collect against a stale tree.
     if (generation !== state.generation) return;
@@ -522,6 +561,8 @@ async function run() {
   } catch (error) {
     if (generation !== state.generation) return;
     showError(error);
+  } finally {
+    if (inFlight === controller) inFlight = null;
   }
 }
 

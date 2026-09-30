@@ -1,3 +1,13 @@
+/**
+ * The package's public surface: what a consumer may import, and the two calls that do the
+ * work.
+ *
+ * Everything under `src/` is reachable only through this file, and that is what the rest of
+ * the repository is held to: the editor, the landing page and the MCP server all import
+ * `forma-dsl` rather than its sources. An export one of them needs and this file does not
+ * name therefore fails here, rather than in someone's install.
+ */
+
 /** @import { ParameterDescriptor, RenderOptions, RenderResult, RenderedPart, Solid } from './index.js' */
 
 export { Program, Evaluator } from './lang/evaluate.js';
@@ -27,19 +37,21 @@ import { toRenderMesh } from './export/mesh.js';
  * how much a reused context holds.
  *
  * @param {string} source The document.
- * @param {RenderOptions} [options] Which model, what parameters, and a context to reuse.
+ * @param {RenderOptions} [options] Which model, what parameters, a context to reuse, and the
+ *   budget and signal that bound the build.
  * @returns {Promise<RenderResult>} The parts, with both kernel objects and meshes.
- * @throws {Error} On any syntax, evaluation or geometry failure. A context created here is
+ * @throws {Error} On any syntax, evaluation or geometry failure, on a document that exceeds
+ *   `maxNodes`, or with the signal's reason if the caller aborted. A context created here is
  *   disposed before the error propagates; one the caller supplied is left alone, since the
  *   caller may still want it.
  */
 export async function render(source, options = {}) {
-  const { model = null, params = {}, context = null } = options;
+  const { model = null, params = {}, context = null, maxNodes = null, signal = null } = options;
 
   const started = Date.now();
   const program = Program.parse(source);
   const owned = context ?? await EvaluationContext.create();
-  const evaluator = new Evaluator(program, { params, context: owned });
+  const evaluator = new Evaluator(program, { params, context: owned, maxNodes, signal });
 
   try {
     const scene = await evaluator.model(model);
@@ -47,6 +59,10 @@ export async function render(source, options = {}) {
     /** @type {RenderedPart[]} */
     const parts = [];
     for (const part of scene.parts) {
+      // Between parts as well as inside the evaluator: solving is where the time actually
+      // goes, so a caller that gave up during the first part should not pay for the rest.
+      signal?.throwIfAborted();
+
       // Checked before solving rather than after: a 2D part is going to be refused either
       // way, and there is no reason to spend the kernel call first.
       if (part.node.dim !== 3) {
