@@ -87,3 +87,40 @@ test('binary STL is well formed', async () => {
   assert.equal(stl.length, 84 + triangles * 50);
   r.context.dispose();
 });
+
+test('an unknown block names every block there is', async () => {
+  // The reader is often a program with no copy of the manual, so the refusal has to carry
+  // the vocabulary: a model reaching for "frustum" can only find `cone` if the error says so.
+  await assert.rejects(
+    render('model "m" { part "p" { frustum { radius = 4  height = 9 } } }'),
+    (error) => {
+      assert.match(error.message, /unknown block "frustum"/);
+      assert.match(error.message, /the blocks are/);
+      assert.match(error.message, /"cone"/);
+      // The forms handled before the registry is consulted belong in the list too, or a
+      // model reaching for "repeat" never discovers `for`.
+      assert.match(error.message, /"for"/);
+      assert.match(error.message, /"part"/);
+      return true;
+    },
+  );
+});
+
+test('a component this document declared is offered before the builtins', async () => {
+  await assert.rejects(
+    render(`component "leg" { cylinder { radius = 1  height = 5 } }
+            model "m" { part "p" { legs { } } }`),
+    /unknown block "legs" — the blocks are "leg"/,
+  );
+});
+
+test('an unknown attribute names the ones the block does read', async () => {
+  await assert.rejects(
+    render('model "m" { part "p" { rotate { degrees = 45  box { size = 1 } } } }'),
+    /rotate: unknown attribute "degrees" — rotate reads "x", "y", "z"/,
+  );
+  await assert.rejects(
+    render('model "m" { part "p" { cone { bottom_radius = 4  height = 9 } } }'),
+    /cone reads .*"top_radius"/,
+  );
+});

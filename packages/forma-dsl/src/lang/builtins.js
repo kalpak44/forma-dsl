@@ -177,10 +177,17 @@ export class Args {
   }
 
   /**
-   * Rejects anything the block did not read.
+   * Rejects anything the block did not read, and says what it would have read instead.
    *
    * A misspelled attribute is otherwise silent, and the model renders subtly wrong with
-   * nothing to point at.
+   * nothing to point at. Naming the alternatives matters as much as the refusal: the reader
+   * is often a program with no copy of the manual, and an error that says only what is wrong
+   * leaves it guessing at spellings. What it read is tracked already, so the list costs
+   * nothing to produce.
+   *
+   * A block that branches on which of two spellings it was given — `radius` against
+   * `diameter` — only reads one of them, so the list is what this call would accept and not
+   * always the whole set.
    *
    * @returns {void}
    * @throws {FormaError} If any attribute went unread.
@@ -189,7 +196,12 @@ export class Args {
     const extra = Object.keys(this.values).filter((k) => !this.used.has(k));
     if (extra.length) {
       const plural = extra.length > 1 ? 's' : '';
-      throw new FormaError(`${this.type}: unknown attribute${plural} ${quoteAll(extra)}`, this.loc);
+      const reads = [...this.used].sort((a, z) => a.localeCompare(z));
+      const instead = reads.length ? ` — ${this.type} reads ${quoteAll(reads)}` : '';
+      throw new FormaError(
+        `${this.type}: unknown attribute${plural} ${quoteAll(extra)}${instead}`,
+        this.loc,
+      );
     }
   }
 }

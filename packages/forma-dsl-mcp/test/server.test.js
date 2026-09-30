@@ -2,46 +2,85 @@
  * The server driven the way a client drives it.
  *
  * These go through a real MCP client over a linked in-memory transport rather than calling
- * the handlers directly, so the schemas, the result shapes and the resource templates are
+ * the handlers directly, so the schemas, the result shapes and the roots handshake are
  * exercised as well as the logic behind them. A tool that registers but cannot be called is
  * exactly the failure a direct test would miss.
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { createRequire } from 'node:module';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { ListRootsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 import { Workspace } from '../src/workspace.js';
-import { createServer } from '../src/server.js';
+import { VERSION, createServer } from '../src/server.js';
 import { disposeSharedContext } from '../src/document.js';
+
+const MANIFEST = createRequire(import.meta.url)('../package.json');
 
 test.after(() => disposeSharedContext());
 
 /**
- * A client connected to a server rooted at a throwaway directory.
+ * A client that declares throwaway directories as its roots, connected to a server that was
+ * given no workspace of its own — so the directories come over the wire, as they do in life.
  *
  * @param {import('node:test').TestContext} t The test, used to register the cleanup.
- * @returns {Promise<{ client: Client, root: string }>} The pair.
+ * @param {number} [count] How many roots the client declares.
+ * @returns {Promise<{ client: Client, roots: string[], setRoots: (next: string[]) => Promise<void> }>}
+ *   The client, the directories it declared, and a way to change them.
  */
-async function connect(t) {
-  const root = await mkdtemp(join(tmpdir(), 'forma-mcp-server-'));
-  const workspace = await Workspace.open(root);
-  const server = createServer(workspace);
-  const client = new Client({ name: 'test', version: '0' });
-  const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
+async function connect(t, count = 1) {
+  const roots = await Promise.all(Array.from(
+    { length: count },
+    () => mkdtemp(join(tmpdir(), 'forma-mcp-server-')),
+  ));
 
+  let declared = roots;
+  const client = new Client(
+    { name: 'test', version: '0' },
+    { capabilities: { roots: { listChanged: true } } },
+  );
+  client.setRequestHandler(ListRootsRequestSchema, () => ({
+    roots: declared.map((root) => ({ uri: pathToFileURL(root).href, name: root })),
+  }));
+
+  await link(t, client, createServer());
+  t.after(() => Promise.all(roots.map((root) => rm(root, { recursive: true, force: true }))));
+
+  /**
+   * @param {string[]} next What the client should declare from now on.
+   * @returns {Promise<void>} Once the server has been told.
+   */
+  const setRoots = async (next) => {
+    declared = next;
+    await client.sendRootsListChanged();
+    await client.ping(); // Flushes the notification, which is one-way and otherwise unordered.
+  };
+
+  return { client, roots, setRoots };
+}
+
+/**
+ * Joins a client to a server over a linked pair, and closes both when the test ends.
+ *
+ * @param {import('node:test').TestContext} t The test.
+ * @param {Client} client The client.
+ * @param {import('@modelcontextprotocol/sdk/server/mcp.js').McpServer} server The server.
+ * @returns {Promise<void>} Once both ends are connected.
+ */
+async function link(t, client, server) {
+  const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
   await Promise.all([client.connect(clientSide), server.connect(serverSide)]);
   t.after(async () => {
     await client.close();
     await server.close();
-    await rm(root, { recursive: true, force: true });
   });
-
-  return { client, root };
 }
 
 /**
@@ -68,27 +107,343 @@ model "bracket" {
 }
 `;
 
-test('the handshake carries instructions that say to check before claiming', async (t) => {
+test('the handshake says to build before claiming, and whose decision the destination is', async (t) => {
   const { client } = await connect(t);
 
-  assert.match(client.getInstructions(), /forma_check/);
+  assert.match(client.getInstructions(), /forma_guide/);
+  assert.match(client.getInstructions(), /forma_write/);
+  assert.match(client.getInstructions(), /MCP roots/);
   assert.equal(client.getServerVersion().name, 'forma-dsl');
+  // The two were written out separately once and drifted five releases apart, so the
+  // handshake is held to the manifest rather than to a number typed beside it.
+  assert.equal(client.getServerVersion().version, MANIFEST.version);
+  assert.equal(VERSION, MANIFEST.version);
 });
 
 test('every tool is listed with a description and a schema', async (t) => {
   const { client } = await connect(t);
   const { tools } = await client.listTools();
 
-  const names = tools.map((tool) => tool.name).sort();
-  assert.deepEqual(names, [
-    'forma_blocks', 'forma_check', 'forma_examples', 'forma_export_stl',
-    'forma_functions', 'forma_guide', 'forma_list', 'forma_read',
-    'forma_reference', 'forma_write',
+  assert.deepEqual(tools.map((tool) => tool.name).sort(), [
+    'forma_blocks', 'forma_examples', 'forma_export_stl', 'forma_functions',
+    'forma_guide', 'forma_read', 'forma_reference', 'forma_write',
   ]);
   for (const tool of tools) {
     assert.ok(tool.description?.length > 40, `${tool.name} needs a description worth reading`);
     assert.equal(tool.inputSchema.type, 'object');
   }
+
+  // Prompts went with forma_check, which the workflows they narrated were built around.
+  await assert.rejects(() => client.listPrompts());
+});
+
+test('writing reports the measured size of what the document builds', async (t) => {
+  const { client, roots } = await connect(t);
+
+  const written = await client.callTool({
+    name: 'forma_write',
+    arguments: { path: 'parts/bracket.forma', source: BRACKET },
+  });
+
+  assert.notEqual(written.isError, true);
+  const report = text(written);
+  assert.match(report, /Wrote `parts\/bracket\.forma` under/);
+  assert.ok(report.includes(roots[0]), 'the destination is named, since the client chose it');
+  assert.match(report, /# Document is valid/);
+  assert.match(report, /\| `height` \| number \| 20 \| no \| 10 … 40 \|/);
+  assert.match(report, /40 × 20 × 20/);
+});
+
+test('params are applied to the build, not just reported', async (t) => {
+  const { client } = await connect(t);
+
+  const taller = text(await client.callTool({
+    name: 'forma_write',
+    arguments: { path: 'tall.forma', source: BRACKET, params: { height: 40 } },
+  }));
+
+  assert.match(taller, /40 × 20 × 40/);
+});
+
+test('a broken document comes back with the line, the column and an excerpt, and is not written', async (t) => {
+  const { client } = await connect(t);
+
+  const refused = await client.callTool({
+    name: 'forma_write',
+    arguments: {
+      path: 'bad.forma',
+      source: 'model "m" { part "p" { box { size = [1, 1, 1]  colour = "red" } } }',
+    },
+  });
+
+  assert.equal(refused.isError, true);
+  assert.match(text(refused), /# Document has a problem/);
+  assert.match(text(refused), /unknown attribute "colour"/);
+  assert.match(text(refused), /\^/);
+  assert.match(text(refused), /Nothing was written/);
+
+  const missing = await client.callTool({ name: 'forma_read', arguments: { path: 'bad.forma' } });
+  assert.equal(missing.isError, true);
+});
+
+test('a part that solved to nothing is called out rather than passed off', async (t) => {
+  const { client } = await connect(t);
+
+  const report = text(await client.callTool({
+    name: 'forma_write',
+    arguments: {
+      path: 'empty.forma',
+      source: 'model "m" { part "p" { extrude { height = 0  rect { size = [4, 4] } } } }',
+    },
+  }));
+
+  assert.match(report, /solved to nothing/);
+});
+
+test('force writes a document that does not render', async (t) => {
+  const { client } = await connect(t);
+  const source = 'model "m" { part "p" { circle { radius = 2 } } }';
+
+  const refused = await client.callTool({
+    name: 'forma_write',
+    arguments: { path: 'flat.forma', source },
+  });
+  assert.equal(refused.isError, true);
+
+  const forced = await client.callTool({
+    name: 'forma_write',
+    arguments: { path: 'flat.forma', source, force: true },
+  });
+  assert.notEqual(forced.isError, true);
+  assert.match(text(forced), /Wrote `flat\.forma`/);
+});
+
+test('a written document can be read back, checked, and refused a second write', async (t) => {
+  const { client } = await connect(t);
+  await client.callTool({ name: 'forma_write', arguments: { path: 'a.forma', source: BRACKET } });
+
+  const read = text(await client.callTool({ name: 'forma_read', arguments: { path: 'a.forma' } }));
+  assert.match(read, /param height/);
+  assert.match(read, /# Document is valid/);
+
+  const again = await client.callTool({
+    name: 'forma_write',
+    arguments: { path: 'a.forma', source: BRACKET },
+  });
+  assert.equal(again.isError, true);
+  assert.match(text(again), /already exists/);
+
+  const forced = await client.callTool({
+    name: 'forma_write',
+    arguments: { path: 'a.forma', source: BRACKET, overwrite: true },
+  });
+  assert.match(text(forced), /replacing what was there/);
+});
+
+test('reading a document that is not there is reported, not thrown', async (t) => {
+  const { client } = await connect(t);
+
+  const missing = await client.callTool({ name: 'forma_read', arguments: { path: 'gone.forma' } });
+  assert.equal(missing.isError, true);
+  assert.match(text(missing), /no file at "gone\.forma"/);
+});
+
+test('a path outside the client\'s root is refused, not followed', async (t) => {
+  const { client } = await connect(t);
+
+  const escaped = await client.callTool({
+    name: 'forma_write',
+    arguments: { path: '../escaped.forma', source: BRACKET },
+  });
+
+  assert.equal(escaped.isError, true);
+  assert.match(text(escaped), /outside the workspace root/);
+});
+
+test('a relative path lands in the first root, and a later one is reached by naming it', async (t) => {
+  const { client, roots } = await connect(t, 2);
+
+  const first = await client.callTool({
+    name: 'forma_write',
+    arguments: { path: 'here.forma', source: BRACKET },
+  });
+  assert.ok(text(first).includes(roots[0]));
+
+  const second = await client.callTool({
+    name: 'forma_write',
+    arguments: { path: join(roots[1], 'there.forma'), source: BRACKET },
+  });
+  assert.notEqual(second.isError, true);
+  assert.ok(text(second).includes(roots[1]));
+
+  const read = await client.callTool({
+    name: 'forma_read',
+    arguments: { path: join(roots[1], 'there.forma') },
+  });
+  assert.match(text(read), /param height/);
+});
+
+test('the roots are re-read when the client says they changed', async (t) => {
+  const { client, roots, setRoots } = await connect(t, 2);
+
+  const before = await client.callTool({
+    name: 'forma_write',
+    arguments: { path: 'moved.forma', source: BRACKET },
+  });
+  assert.ok(text(before).includes(roots[0]));
+
+  await setRoots([roots[1]]);
+
+  const after = await client.callTool({
+    name: 'forma_write',
+    arguments: { path: 'moved.forma', source: BRACKET },
+  });
+  assert.ok(text(after).includes(roots[1]), 'the second write follows the client to its new root');
+
+  const gone = await client.callTool({
+    name: 'forma_write',
+    arguments: { path: join(roots[0], 'stale.forma'), source: BRACKET },
+  });
+  assert.equal(gone.isError, true);
+  assert.match(text(gone), /outside the workspace root/);
+});
+
+test('a checked document exports as STL', async (t) => {
+  const { client } = await connect(t);
+
+  const exported = await client.callTool({
+    name: 'forma_export_stl',
+    arguments: { source: BRACKET, out: 'out/bracket.stl' },
+  });
+
+  assert.notEqual(exported.isError, true);
+  assert.match(text(exported), /Wrote `out\/bracket\.stl`.*triangles/s);
+
+  const wrongExtension = await client.callTool({
+    name: 'forma_export_stl',
+    arguments: { source: BRACKET, out: 'out/bracket.obj' },
+  });
+  assert.equal(wrongExtension.isError, true);
+  assert.match(text(wrongExtension), /must end in \.stl/);
+});
+
+test('exporting reads the document back off disk when given a path', async (t) => {
+  const { client } = await connect(t);
+  await client.callTool({ name: 'forma_write', arguments: { path: 'b.forma', source: BRACKET } });
+
+  const exported = await client.callTool({
+    name: 'forma_export_stl',
+    arguments: { path: 'b.forma', out: 'b.stl' },
+  });
+
+  assert.notEqual(exported.isError, true);
+  assert.match(text(exported), /from model `bracket`, part `body`/);
+});
+
+test('exporting insists on exactly one of source and path', async (t) => {
+  const { client } = await connect(t);
+
+  const neither = await client.callTool({ name: 'forma_export_stl', arguments: { out: 'a.stl' } });
+  assert.equal(neither.isError, true);
+  assert.match(text(neither), /give either "source".*or "path"/s);
+
+  const both = await client.callTool({
+    name: 'forma_export_stl',
+    arguments: { source: BRACKET, path: 'a.forma', out: 'a.stl' },
+  });
+  assert.equal(both.isError, true);
+  assert.match(text(both), /not both/);
+});
+
+test('exporting a part that does not exist names the ones that do', async (t) => {
+  const { client } = await connect(t);
+
+  const wrong = await client.callTool({
+    name: 'forma_export_stl',
+    arguments: { source: BRACKET, out: 'a.stl', part: 'lid' },
+  });
+
+  assert.equal(wrong.isError, true);
+  assert.match(text(wrong), /no part named "lid".*"body"/s);
+});
+
+// The document a model converges on when asked for "a tree" with no documentation in front
+// of it — three corrections, each one dictated by the error the previous attempt returned.
+// Kept here so the walkthrough in the README stays true rather than aspirational.
+const TREE = `param trunk_height { type = number  default = 30  min = 10  max = 60 }
+param canopy_layers { type = number  default = 3  min = 1  max = 6 }
+
+local canopy_base = trunk_height * 0.7
+
+model "tree" {
+  part "trunk" {
+    color = "#6b4423"
+    cone { radius = 4  top_radius = 2.5  height = var.trunk_height }
+  }
+
+  part "canopy" {
+    color = "#2f7d32"
+    for i in range(var.canopy_layers) {
+      translate {
+        offset = [0, 0, canopy_base + i * 8]
+        cone { radius = 14 - i * 3  top_radius = 0  height = 14 }
+      }
+    }
+  }
+}`;
+
+test('the wrong guesses on the way to a tree each name their own correction', async (t) => {
+  const { client } = await connect(t);
+
+  /**
+   * @param {string} source What to try.
+   * @returns {Promise<string>} What came back.
+   */
+  const attempt = async (source) => text(await client.callTool({
+    name: 'forma_write',
+    arguments: { path: 'tree.forma', source, overwrite: true },
+  }));
+
+  // A block that does not exist comes back with every block that does.
+  const guessedBlock = await attempt('model "t" { part "p" { frustum { radius = 4 } } }');
+  assert.match(guessedBlock, /unknown block "frustum"/);
+  assert.match(guessedBlock, /"cone"/);
+
+  // An attribute that does not exist comes back with the ones the block reads.
+  const guessedAttribute = await attempt(
+    'model "t" { part "p" { cone { bottom_radius = 4  height = 9 } } }',
+  );
+  assert.match(guessedAttribute, /cone reads .*"top_radius"/);
+});
+
+test('the tree a model arrives at builds, measures and exports', async (t) => {
+  const { client } = await connect(t);
+
+  const written = text(await client.callTool({
+    name: 'forma_write',
+    arguments: { path: 'tree.forma', source: TREE },
+  }));
+
+  assert.match(written, /# Document is valid/);
+  assert.match(written, /28 × 28 × 51/);
+  // Both parts are plain solids: a canopy that came out with a hole through it is the
+  // failure a picture would hide and the genus will not.
+  assert.doesNotMatch(written, /solved to nothing/);
+  assert.match(written, /\| `trunk` \| #6b4423 \|.*\| 0 \|/);
+  assert.match(written, /\| `canopy` \| #2f7d32 \|.*\| 0 \|/);
+
+  // A param drives the shape rather than decorating it.
+  const taller = text(await client.callTool({
+    name: 'forma_write',
+    arguments: { path: 'tall.forma', source: TREE, params: { trunk_height: 60 } },
+  }));
+  assert.match(taller, /28 × 28 × 72/);
+
+  const exported = text(await client.callTool({
+    name: 'forma_export_stl',
+    arguments: { path: 'tree.forma', out: 'tree.stl' },
+  }));
+  assert.match(exported, /Wrote `tree\.stl`.*triangles/s);
 });
 
 test('the guide comes back whole, or one section at a time', async (t) => {
@@ -144,179 +499,6 @@ test('the manual can be listed, searched and read', async (t) => {
   assert.equal(missing.isError, true);
 });
 
-test('checking reports the measured size of what a document builds', async (t) => {
-  const { client } = await connect(t);
-
-  const report = text(await client.callTool({
-    name: 'forma_check',
-    arguments: { source: BRACKET },
-  }));
-
-  assert.match(report, /# Document is valid/);
-  assert.match(report, /\| `height` \| number \| 20 \| no \| 10 … 40 \|/);
-  assert.match(report, /40 × 20 × 20/);
-
-  const taller = text(await client.callTool({
-    name: 'forma_check',
-    arguments: { source: BRACKET, params: { height: 40 } },
-  }));
-  assert.match(taller, /40 × 20 × 40/);
-});
-
-test('a broken document comes back with the line, the column and an excerpt', async (t) => {
-  const { client } = await connect(t);
-
-  const report = text(await client.callTool({
-    name: 'forma_check',
-    arguments: { source: 'model "m" { part "p" { box { size = [1, 1, 1]  colour = "red" } } }' },
-  }));
-
-  assert.match(report, /# Document has a problem/);
-  assert.match(report, /unknown attribute "colour"/);
-  assert.match(report, /\^/);
-});
-
-test('a part that solved to nothing is called out rather than passed off', async (t) => {
-  const { client } = await connect(t);
-
-  const report = text(await client.callTool({
-    name: 'forma_check',
-    arguments: { source: 'model "m" { part "p" { extrude { height = 0  rect { size = [4, 4] } } } }' },
-  }));
-
-  assert.match(report, /solved to nothing/);
-});
-
-test('writing checks first, and refuses a document that does not render', async (t) => {
-  const { client } = await connect(t);
-
-  const refused = await client.callTool({
-    name: 'forma_write',
-    arguments: { path: 'bad.forma', source: 'model "m" { part "p" { circle { radius = 2 } } }' },
-  });
-  assert.equal(refused.isError, true);
-  assert.match(text(refused), /Nothing was written/);
-
-  const empty = await client.callTool({ name: 'forma_list', arguments: {} });
-  assert.match(text(empty), /No \.forma files/);
-
-  const written = await client.callTool({
-    name: 'forma_write',
-    arguments: { path: 'parts/bracket.forma', source: BRACKET },
-  });
-  assert.notEqual(written.isError, true);
-  assert.match(text(written), /Wrote `parts\/bracket\.forma`/);
-
-  const listed = text(await client.callTool({ name: 'forma_list', arguments: {} }));
-  assert.match(listed, /parts\/bracket\.forma/);
-});
-
-test('a written document can be read back, checked, and refused a second write', async (t) => {
-  const { client } = await connect(t);
-  await client.callTool({ name: 'forma_write', arguments: { path: 'a.forma', source: BRACKET } });
-
-  const read = text(await client.callTool({ name: 'forma_read', arguments: { path: 'a.forma' } }));
-  assert.match(read, /param height/);
-  assert.match(read, /# Document is valid/);
-
-  const again = await client.callTool({
-    name: 'forma_write',
-    arguments: { path: 'a.forma', source: BRACKET },
-  });
-  assert.equal(again.isError, true);
-  assert.match(text(again), /already exists/);
-
-  const forced = await client.callTool({
-    name: 'forma_write',
-    arguments: { path: 'a.forma', source: BRACKET, overwrite: true },
-  });
-  assert.match(text(forced), /replacing what was there/);
-});
-
-test('a path outside the root is refused, not followed', async (t) => {
-  const { client } = await connect(t);
-
-  const escaped = await client.callTool({
-    name: 'forma_write',
-    arguments: { path: '../escaped.forma', source: BRACKET },
-  });
-
-  assert.equal(escaped.isError, true);
-  assert.match(text(escaped), /outside the workspace root/);
-});
-
-test('a checked document exports as STL', async (t) => {
-  const { client } = await connect(t);
-
-  const exported = await client.callTool({
-    name: 'forma_export_stl',
-    arguments: { source: BRACKET, out: 'out/bracket.stl' },
-  });
-
-  assert.notEqual(exported.isError, true);
-  assert.match(text(exported), /Wrote `out\/bracket\.stl`.*triangles/s);
-
-  const wrongExtension = await client.callTool({
-    name: 'forma_export_stl',
-    arguments: { source: BRACKET, out: 'out/bracket.obj' },
-  });
-  assert.equal(wrongExtension.isError, true);
-  assert.match(text(wrongExtension), /must end in \.stl/);
-});
-
-test('a tool that takes a document insists on exactly one of source and path', async (t) => {
-  const { client } = await connect(t);
-
-  const neither = await client.callTool({ name: 'forma_check', arguments: {} });
-  assert.equal(neither.isError, true);
-  assert.match(text(neither), /give either "source".*or "path"/s);
-
-  const both = await client.callTool({
-    name: 'forma_check',
-    arguments: { source: BRACKET, path: 'a.forma' },
-  });
-  assert.equal(both.isError, true);
-  assert.match(text(both), /not both/);
-});
-
-test('resources list and read, including the templated ones', async (t) => {
-  const { client } = await connect(t);
-
-  const { resources } = await client.listResources();
-  const uris = resources.map((resource) => resource.uri);
-  assert.ok(uris.includes('forma://guide'));
-  assert.ok(uris.includes('forma://reference/errors.md'));
-  assert.ok(uris.includes('forma://example/parametric-plate'));
-
-  const guide = await client.readResource({ uri: 'forma://guide' });
-  assert.match(guide.contents[0].text, /Z is up/);
-
-  const catalogue = await client.readResource({ uri: 'forma://catalogue' });
-  const parsed = JSON.parse(catalogue.contents[0].text);
-  assert.ok(parsed.blocks.some((block) => block.name === 'extrude'));
-  assert.ok(parsed.functions.some((fn) => fn.name === 'range'));
-
-  const page = await client.readResource({ uri: 'forma://reference/reference/param.md' });
-  assert.match(page.contents[0].text, /# `param`/);
-});
-
-test('the prompts describe a workflow that ends in a check', async (t) => {
-  const { client } = await connect(t);
-
-  const { prompts } = await client.listPrompts();
-  assert.deepEqual(prompts.map((prompt) => prompt.name).sort(), ['model_a_part', 'review_a_document']);
-
-  const prompt = await client.getPrompt({
-    name: 'model_a_part',
-    arguments: { part: 'a wall bracket', constraints: 'fits a 35 mm pipe', path: 'bracket.forma' },
-  });
-  const body = prompt.messages[0].content.text;
-  assert.match(body, /a wall bracket/);
-  assert.match(body, /fits a 35 mm pipe/);
-  assert.match(body, /forma_check/);
-  assert.match(body, /bracket\.forma/);
-});
-
 test('blocks can be asked for one group at a time', async (t) => {
   const { client } = await connect(t);
 
@@ -369,6 +551,27 @@ test('a search that matches nothing says so rather than returning an empty page'
   assert.match(nothing, /Nothing in the manual matches/);
 });
 
+test('resources list and read, including the templated ones', async (t) => {
+  const { client } = await connect(t);
+
+  const { resources } = await client.listResources();
+  const uris = resources.map((resource) => resource.uri);
+  assert.ok(uris.includes('forma://guide'));
+  assert.ok(uris.includes('forma://reference/errors.md'));
+  assert.ok(uris.includes('forma://example/parametric-plate'));
+
+  const guide = await client.readResource({ uri: 'forma://guide' });
+  assert.match(guide.contents[0].text, /Z is up/);
+
+  const catalogue = await client.readResource({ uri: 'forma://catalogue' });
+  const parsed = JSON.parse(catalogue.contents[0].text);
+  assert.ok(parsed.blocks.some((block) => block.name === 'extrude'));
+  assert.ok(parsed.functions.some((fn) => fn.name === 'range'));
+
+  const page = await client.readResource({ uri: 'forma://reference/reference/param.md' });
+  assert.match(page.contents[0].text, /# `param`/);
+});
+
 test('an example resource that does not exist fails rather than returning nothing', async (t) => {
   const { client } = await connect(t);
 
@@ -378,36 +581,35 @@ test('an example resource that does not exist fails rather than returning nothin
   await assert.rejects(() => client.readResource({ uri: 'forma://example/nope' }));
 });
 
-test('the review prompt names the failures that are silent', async (t) => {
+test('the templated resources complete their arguments', async (t) => {
   const { client } = await connect(t);
 
-  const prompt = await client.getPrompt({
-    name: 'review_a_document',
-    arguments: { path: 'bracket.forma' },
+  const page = await client.complete({
+    ref: { type: 'ref/resource', uri: 'forma://reference/{+path}' },
+    argument: { name: 'path', value: 'reference/' },
   });
-  const body = prompt.messages[0].content.text;
+  assert.ok(page.completion.values.includes('reference/param.md'));
+  assert.ok(page.completion.values.every((value) => value.startsWith('reference/')));
 
-  assert.match(body, /bracket\.forma/);
-  assert.match(body, /silently dropped/);
-  assert.match(body, /ends of their declared ranges/);
+  const example = await client.complete({
+    ref: { type: 'ref/resource', uri: 'forma://example/{name}' },
+    argument: { name: 'name', value: 'para' },
+  });
+  assert.deepEqual(example.completion.values, ['parametric-plate']);
 });
 
-test('reading a document that is not there is reported, not thrown', async (t) => {
-  const { client } = await connect(t);
+test('a workspace can be supplied instead of asking the client for one', async (t) => {
+  // The embedding path: something that already knows where the files live and has no client
+  // to ask. It must not consult the roots at all.
+  const directory = await mkdtemp(join(tmpdir(), 'forma-mcp-given-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
 
-  const missing = await client.callTool({ name: 'forma_read', arguments: { path: 'gone.forma' } });
-  assert.equal(missing.isError, true);
-  assert.match(text(missing), /no file at "gone\.forma"/);
-});
+  const client = new Client({ name: 'test', version: '0' });
+  await link(t, client, createServer(await Workspace.open(directory)));
 
-test('exporting a part that does not exist names the ones that do', async (t) => {
-  const { client } = await connect(t);
-
-  const wrong = await client.callTool({
-    name: 'forma_export_stl',
-    arguments: { source: BRACKET, out: 'a.stl', part: 'lid' },
-  });
-
-  assert.equal(wrong.isError, true);
-  assert.match(text(wrong), /no part named "lid".*"body"/s);
+  const written = text(await client.callTool({
+    name: 'forma_write',
+    arguments: { path: 'given.forma', source: BRACKET },
+  }));
+  assert.ok(written.includes(directory));
 });

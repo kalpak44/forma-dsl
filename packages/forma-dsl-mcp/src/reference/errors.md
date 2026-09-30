@@ -135,11 +135,11 @@ Raised while building geometry.
 
 | Message | Cause |
 | --- | --- |
-| `unknown block "bloop"` | Not a builtin and not a declared component. Check the spelling against the [block list](README.md#shapes) |
+| `unknown block "bloop" — the blocks are …` | Not a builtin and not a declared component. The message lists every block there is, this document's own components first |
 | `"box" does not take a label` | Only [`part`](reference/part.md) takes a meaningful label |
 | `"box" is a shape and cannot contain other blocks` | A shape is a leaf. Usually a missing `}` swallowed the next block |
 | `"translate" needs at least one shape inside it` | An operation with nothing to act on |
-| `box: unknown attribute "colour"` | Every block rejects attributes it did not read, so a typo fails loudly |
+| `box: unknown attribute "colour" — box reads …` | Every block rejects attributes it did not read, so a typo fails loudly, and names what it would have read |
 | `attribute "size" is set twice` | The same attribute written twice in one block |
 | `box: "size" must be a number or an array of 3 numbers` | Wrong shape of value |
 | `circle: "radius" must be a finite number` | A `NaN` or `Infinity` reached the block |
@@ -149,12 +149,18 @@ Raised while building geometry.
 | `cylinder: give "radius"/"diameter", or both "bottom_radius" and "top_radius"` | One end radius on its own is ambiguous |
 | `offset: "join" must be one of "Square", "Round", "Miter"` | An enum attribute with an unrecognised value |
 
-### `box: unknown attribute "colour"`
+### `box: unknown attribute "colour" — box reads "center", "size"`
 
 Worth dwelling on, because it is the error that saves the most time. A misspelled attribute
 would otherwise be silent, and the model would render subtly wrong with nothing to point at.
 The one exception is a [`param`](reference/param.md) block, which is metadata and passes
 anything through.
+
+Both this and `unknown block` carry the alternatives, because the reader is often a program
+with no copy of this manual: an error that says only what is wrong leaves it guessing at
+spellings. A block that branches on which of two spellings it was given — `radius` against
+`diameter` — reads only one of them, so the list is what that call would accept rather than
+always the whole set.
 
 ---
 

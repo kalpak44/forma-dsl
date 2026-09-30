@@ -1,5 +1,9 @@
 /**
  * The containment rules, which are the part of this server that has to be right.
+ *
+ * The directories come from the client, so a workspace is built from a list rather than from
+ * one root, and the list can change under it. What must not change is that nothing lands
+ * outside whatever is currently in force.
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -29,14 +33,49 @@ test('a root that is not a directory is refused', async (t) => {
   await assert.rejects(() => Workspace.open(join(directory, 'nope')), /does not exist/);
 });
 
-test('a relative path resolves inside the root', async (t) => {
-  const workspace = await Workspace.open(await scratch(t));
+test('a client that declares nothing usable is told so, not left to fail on the first write', async () => {
+  const empty = new Workspace([]);
+  await assert.rejects(() => empty.roots(), /declared no workspace root/);
 
-  const resolved = await workspace.resolve('parts/bracket.forma');
-  assert.equal(resolved, join(workspace.root, 'parts', 'bracket.forma'));
+  const bogus = new Workspace(['/nowhere/at/all']);
+  await assert.rejects(() => bogus.write('a.forma', 'x'), /no usable workspace root/);
 });
 
-test('a path that climbs out of the root is refused', async (t) => {
+test('roots that do not exist are dropped rather than taking the usable ones with them', async (t) => {
+  const directory = await scratch(t);
+  const workspace = new Workspace(['/nowhere/at/all', directory]);
+
+  const roots = await workspace.roots();
+  assert.equal(roots.length, 1);
+  assert.equal(roots[0].path, directory);
+});
+
+test('a relative path resolves inside the first root', async (t) => {
+  const first = await scratch(t);
+  const second = await scratch(t);
+  const workspace = new Workspace([first, second]);
+
+  const { absolute, root } = await workspace.resolve('parts/bracket.forma');
+  assert.equal(absolute, join(first, 'parts', 'bracket.forma'));
+  assert.equal(root.path, first);
+});
+
+test('an absolute path may name any of the roots, and nothing else', async (t) => {
+  const first = await scratch(t);
+  const second = await scratch(t);
+  const undeclared = await scratch(t);
+  const workspace = new Workspace([first, second]);
+
+  const { root } = await workspace.resolve(join(second, 'bracket.forma'));
+  assert.equal(root.path, second);
+
+  await assert.rejects(
+    () => workspace.resolve(join(undeclared, 'bracket.forma')),
+    /outside the workspace roots/,
+  );
+});
+
+test('a path that climbs out of the roots is refused', async (t) => {
   const workspace = await Workspace.open(await scratch(t));
 
   await assert.rejects(() => workspace.resolve('../escape.forma'), /outside the workspace root/);
@@ -45,7 +84,7 @@ test('a path that climbs out of the root is refused', async (t) => {
   await assert.rejects(() => workspace.resolve(''), /is empty/);
 });
 
-test('a symlink pointing out of the root is refused', async (t) => {
+test('a symlink pointing out of the roots is refused', async (t) => {
   const directory = await scratch(t);
   const outside = await scratch(t);
   await mkdir(join(directory, 'inside'));
@@ -62,11 +101,36 @@ test('a symlink pointing out of the root is refused', async (t) => {
   assert.ok(await workspace.resolve('inside/kept.forma'));
 });
 
-test('writing creates the directories above it, and reports what it did', async (t) => {
-  const workspace = await Workspace.open(await scratch(t));
+test('the roots are asked for once, and again once forgotten', async (t) => {
+  const first = await scratch(t);
+  const second = await scratch(t);
+
+  let declared = [first];
+  let asked = 0;
+  const workspace = new Workspace(() => {
+    asked += 1;
+    return declared;
+  });
+
+  assert.equal((await workspace.primary()).path, first);
+  assert.equal((await workspace.primary()).path, first);
+  assert.equal(asked, 1, 'the client is not asked again on every call');
+
+  declared = [second];
+  assert.equal((await workspace.primary()).path, first, 'until it says they changed');
+
+  workspace.forget();
+  assert.equal((await workspace.primary()).path, second);
+  assert.equal(asked, 2);
+});
+
+test('writing creates the directories above it, and reports where it landed', async (t) => {
+  const directory = await scratch(t);
+  const workspace = new Workspace([directory]);
 
   const written = await workspace.write('parts/bracket.forma', 'model "m" { }');
   assert.equal(written.relative, join('parts', 'bracket.forma'));
+  assert.equal(written.root, directory);
   assert.equal(written.bytes, 13);
   assert.equal(written.replaced, false);
   assert.equal(await workspace.read('parts/bracket.forma'), 'model "m" { }');
@@ -100,13 +164,25 @@ test('reading something that is not there says so rather than throwing an ENOENT
   await assert.rejects(() => workspace.read('missing.forma'), /no file at "missing.forma"/);
 });
 
-test('listing finds documents at depth and skips the noisy directories', async (t) => {
+test('a segment that could separate, escape or terminate a path is refused', async (t) => {
   const workspace = await Workspace.open(await scratch(t));
-  await workspace.write('a.forma', 'x');
-  await workspace.write('parts/b.forma', 'x');
-  await workspace.write('notes.md', 'x');
-  await mkdir(join(workspace.root, 'node_modules'));
-  await writeFile(join(workspace.root, 'node_modules', 'c.forma'), 'x');
 
-  assert.deepEqual(await workspace.list('.forma'), ['a.forma', join('parts', 'b.forma')]);
+  // A NUL survives `resolve` and lands inside the root, so containment alone lets it through
+  // — it used to reach the filesystem and come back as an unreadable ERR_INVALID_ARG_VALUE.
+  await assert.rejects(() => workspace.resolve('a\0b.forma'), /outside the workspace root/);
+  // A backslash is a legal POSIX filename character and a separator on Windows. Refusing it
+  // costs nothing here and keeps the two platforms reading the same path the same way.
+  await assert.rejects(() => workspace.resolve('a\\b.forma'), /outside the workspace root/);
+
+  // Traversal that cancels out is still an ordinary path, and must not be caught by this.
+  const root = await workspace.primary();
+  const { absolute } = await workspace.resolve('parts/../parts/bracket.forma');
+  assert.equal(absolute, join(root.path, 'parts', 'bracket.forma'));
+});
+
+test('the same directory declared twice is one root', async (t) => {
+  const directory = await scratch(t);
+  const workspace = new Workspace([directory, directory, `${directory}/`]);
+
+  assert.equal((await workspace.roots()).length, 1);
 });

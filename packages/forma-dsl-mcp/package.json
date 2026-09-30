@@ -1,6 +1,6 @@
 {
   "name": "forma-dsl-mcp",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "description": "A stdio MCP server that knows the forma DSL and writes .forma documents that render.",
   "keywords": [
     "mcp",
@@ -41,12 +41,12 @@
   "scripts": {
     "start": "node src/bin.js",
     "test": "node --test",
-    "sync:reference": "node scripts/sync-reference.mjs",
-    "check:package": "node scripts/check-package.mjs"
+    "check:package": "node scripts/check-package.mjs",
+    "sync:reference": "node scripts/sync-reference.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.31.0",
-    "forma-dsl": "^0.1.6",
+    "forma-dsl": "^0.2.0",
     "zod": "^4.1.13"
   }
 }
