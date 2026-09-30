@@ -1,5 +1,6 @@
 # forma-dsl-mcp
 
+[![Release](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml/badge.svg)](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml)
 [![npm](https://img.shields.io/npm/v/forma-dsl-mcp.svg)](https://www.npmjs.com/package/forma-dsl-mcp)
 
 A [Model Context Protocol](https://modelcontextprotocol.io) server that knows

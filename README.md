@@ -1,7 +1,8 @@
 # forma-dsl
 
 [![Release](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml/badge.svg)](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml)
-[![npm](https://img.shields.io/npm/v/forma-dsl.svg)](https://www.npmjs.com/package/forma-dsl)
+[![forma-dsl on npm](https://img.shields.io/npm/v/forma-dsl.svg?label=forma-dsl)](https://www.npmjs.com/package/forma-dsl)
+[![forma-dsl-mcp on npm](https://img.shields.io/npm/v/forma-dsl-mcp.svg?label=forma-dsl-mcp)](https://www.npmjs.com/package/forma-dsl-mcp)
 
 A declarative DSL for 3D modeling and scene composition, reusable components, and live
 previews. This is the monorepo: the library, the editor that consumes it, and the reference
@@ -79,34 +80,41 @@ npm run build -w @forma-dsl/editor
 
 ## Releasing
 
-The two packages are the only versioned things here, and `forma-dsl`'s version is what the
-npm badge above reads. The editor, the landing page and the docs carry no `version` at all:
-they are `private`, never published, and a number nothing reads is a number that can only go
-stale.
+The two packages are the only versioned things here. The editor, the landing page and the
+docs carry no `version` at all: they are `private`, never published, and a number nothing
+reads is a number that can only go stale.
 
-The library is published from a tag. [`release.yml`](.github/workflows/release.yml) verifies
-that the tag matches `packages/forma-dsl/package.json`, runs the full check, and publishes
-through [npm trusted publishing](https://docs.npmjs.com/trusted-publishers) — npm recognises
-this repository and this workflow by name, so no token is involved, and the tarball gets a
+**Each package is published from its own tag, `<name>@<version>`**, and each gets its own
+entry on the [releases page](https://github.com/kalpak44/forma-dsl/releases).
+[`release.yml`](.github/workflows/release.yml) resolves the package from the tag, checks it
+against that package's manifest, runs the full check, and publishes through
+[npm trusted publishing](https://docs.npmjs.com/trusted-publishers) — npm recognises this
+repository and this workflow by name, so no token is involved, and the tarball gets a
 [provenance](https://docs.npmjs.com/generating-provenance-statements) attestation from the
 same identity.
 
 ```bash
-npm version minor -w forma-dsl     # bump, and commit the bump
-git push && git push --tags
+git tag -a forma-dsl@0.2.0     -m forma-dsl@0.2.0
+git tag -a forma-dsl-mcp@0.2.0 -m forma-dsl-mcp@0.2.0
+git push --follow-tags
 ```
 
-`forma-dsl-mcp` versions on its own cadence — it depends on the published library by range,
-so a library release does not force one here. Its release workflow is not wired up yet;
-until it is, publish it by hand from a clean tree after `npm run check`.
+The two versions are kept aligned even when only one of them changed, because
+`forma-dsl-mcp` depends on `forma-dsl`: a release writes the number into both manifests and
+re-points that dependency, so the published server never resolves an older copy of its own
+repository. They can still go out at different versions — a tag publishes one package and
+nothing else, and a version already on the registry is not republished.
 
-Nothing publishes on a push to `main`; only a `v*` tag does.
+npm attaches a trusted publisher only to a package that already exists, so the first version
+of each one is published by hand and everything after it goes through the workflow. A tag
+naming a package npm has never seen fails before anything is built.
 
-The [maintenance agent](.github/workflows/ai-maintenance-agent.yml) cuts a tag itself at the
-end of a dependency sweep, so a batch of
-merges produces one release rather than one per merge. `.github/` is generated — every
-workflow here, and `dependabot.yml`, are written from outside this repository and an edit
-made to them here is overwritten.
+Nothing publishes on a push to `main`; only a package tag does.
+
+The [maintenance agent](.github/workflows/ai-maintenance-agent.yml) cuts those tags itself at
+the end of a dependency sweep, so a batch of merges produces one release per package rather
+than one per merge. `.github/` is generated — every workflow here, and `dependabot.yml`, are
+written from outside this repository and an edit made to them here is overwritten.
 
 ## The site
 
