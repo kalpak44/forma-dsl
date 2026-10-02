@@ -18,6 +18,25 @@ import { PAGES, readPage, searchReference } from './reference.js';
 import { checkDocument, exportStl } from './document.js';
 
 /**
+ * What a tool that only reads what this package already carries is.
+ *
+ * All four hints are stated rather than just `readOnlyHint`, because the omitted ones are not
+ * absent: the specification gives `destructiveHint` a default of **true** and `idempotentHint`
+ * a default of **false**. A tool declaring neither is therefore advertising itself as
+ * destructive and unrepeatable — which, for a call that hands back a page of the manual, is
+ * simply untrue, and a cautious client is entitled to act on it.
+ *
+ * `openWorldHint` is false because every answer is bundled with the package. Nothing here
+ * reaches the network, so the domain is closed and stays closed offline.
+ */
+const READS_ONLY = Object.freeze({
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: false,
+});
+
+/**
  * Wraps text as a tool result.
  *
  * @param {string} text What to say.
@@ -228,7 +247,7 @@ function registerGuide(server) {
       section: z.enum(/** @type {[string, ...string[]]} */ (GUIDE_SECTIONS)).optional()
         .describe('One section, instead of the whole guide.'),
     },
-    annotations: { readOnlyHint: true, openWorldHint: false },
+    annotations: READS_ONLY,
   }, async ({ section }) => attempt(async () => say(guide(section))));
 }
 
@@ -256,7 +275,7 @@ function registerBlocks(server) {
       group: z.string().optional()
         .describe('One group, e.g. "2D shapes", "Transforms", "Refinement", "Declarations".'),
     },
-    annotations: { readOnlyHint: true, openWorldHint: false },
+    annotations: READS_ONLY,
   }, async ({ names, group }) => attempt(async () => {
     const all = [...CONSTRUCTS.values()];
 
@@ -312,7 +331,7 @@ function registerFunctions(server) {
       'Every function an expression may call, with its arity, and the two named constants. '
       + 'There are no user-defined functions in forma, so this is the complete set.',
     inputSchema: {},
-    annotations: { readOnlyHint: true, openWorldHint: false },
+    annotations: READS_ONLY,
   }, async () => attempt(async () => say([
     '# Functions',
     '',
@@ -350,7 +369,7 @@ function registerReference(server) {
       query: z.string().optional().describe('Words to search for, e.g. "revolve profile axis".'),
       page: z.string().optional().describe('One page to read, e.g. "reference/conversions.md".'),
     },
-    annotations: { readOnlyHint: true, openWorldHint: false },
+    annotations: READS_ONLY,
   }, async ({ query, page }) => attempt(async () => {
     if (page) {
       const found = await readPage(page);
@@ -400,7 +419,7 @@ function registerExamples(server) {
     inputSchema: {
       name: z.string().optional().describe('One example to read in full.'),
     },
-    annotations: { readOnlyHint: true, openWorldHint: false },
+    annotations: READS_ONLY,
   }, async ({ name }) => attempt(async () => {
     if (name) {
       const example = EXAMPLES_BY_NAME.get(name);
@@ -505,7 +524,7 @@ function registerRead(server, workspace) {
       solve: z.boolean().optional()
         .describe('Run the geometry kernel. Default true; false parses only, which is faster.'),
     },
-    annotations: { readOnlyHint: true, openWorldHint: false },
+    annotations: READS_ONLY,
   }, async ({ path, solve }) => attempt(async () => {
     const source = await workspace.read(path);
     const report = await checkDocument(source, { solve: solve ?? true });

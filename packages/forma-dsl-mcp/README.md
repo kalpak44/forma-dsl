@@ -2,6 +2,7 @@
 
 [![Release](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml/badge.svg)](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml)
 [![npm](https://img.shields.io/npm/v/forma-dsl-mcp.svg)](https://www.npmjs.com/package/forma-dsl-mcp)
+[![M8ven Score](https://m8ven.ai/badge/mcp/kalpak44-forma-dsl-16jj91)](https://m8ven.ai/mcp/kalpak44-forma-dsl-16jj91?s=readme)
 
 A [Model Context Protocol](https://modelcontextprotocol.io) server that knows
 [forma](https://www.npmjs.com/package/forma-dsl) — the declarative DSL for 3D solids — and

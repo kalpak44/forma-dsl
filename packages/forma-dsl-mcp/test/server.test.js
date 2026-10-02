@@ -613,3 +613,43 @@ test('a workspace can be supplied instead of asking the client for one', async (
   }));
   assert.ok(written.includes(directory));
 });
+
+// The four hints are not optional in the way their schema suggests. `destructiveHint`
+// defaults to true and `idempotentHint` to false, so a tool that states only `readOnlyHint`
+// is advertising itself as destructive and unrepeatable. Six of these tools did exactly that
+// until it was measured from outside, which is why the assertion is on every tool rather than
+// on the ones that happened to be wrong.
+test('every tool states all four behaviour hints rather than inheriting a default', async (t) => {
+  const { client } = await connect(t);
+  const { tools } = await client.listTools();
+
+  assert.equal(tools.length, 8, 'the server offers eight tools');
+
+  for (const tool of tools) {
+    const hints = tool.annotations ?? {};
+    for (const hint of ['readOnlyHint', 'destructiveHint', 'idempotentHint', 'openWorldHint']) {
+      assert.equal(
+        typeof hints[hint],
+        'boolean',
+        `${tool.name} must state ${hint} rather than inherit its default`,
+      );
+    }
+  }
+});
+
+test('nothing here reaches an open world, and only the two writers modify anything', async (t) => {
+  const { client } = await connect(t);
+  const { tools } = await client.listTools();
+
+  const writers = tools.filter((tool) => !tool.annotations.readOnlyHint).map((tool) => tool.name);
+  assert.deepEqual(writers.sort(), ['forma_export_stl', 'forma_write']);
+
+  // Every answer is bundled with the package, so the domain is closed even offline.
+  assert.ok(tools.every((tool) => tool.annotations.openWorldHint === false));
+
+  // A read cannot destroy anything, and asking twice must be safe.
+  for (const tool of tools.filter((each) => each.annotations.readOnlyHint)) {
+    assert.equal(tool.annotations.destructiveHint, false, `${tool.name} destroys nothing`);
+    assert.equal(tool.annotations.idempotentHint, true, `${tool.name} is safe to repeat`);
+  }
+});
