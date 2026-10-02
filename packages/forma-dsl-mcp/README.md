@@ -2,7 +2,7 @@
 
 [![Release](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml/badge.svg)](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml)
 [![npm](https://img.shields.io/npm/v/forma-dsl-mcp.svg)](https://www.npmjs.com/package/forma-dsl-mcp)
-[![M8ven Score](https://m8ven.ai/badge/mcp/kalpak44/forma-dsl)](https://m8ven.ai/mcp/kalpak44/forma-dsl?s=readme)
+[![M8ven Verified](https://m8ven.ai/api/agent-verify/badge?score=100)](https://m8ven.ai/verified/verify?id=d3529b4756004447)
 
 A [Model Context Protocol](https://modelcontextprotocol.io) server that knows
 [forma](https://www.npmjs.com/package/forma-dsl) — the declarative DSL for 3D solids — and
@@ -234,6 +234,21 @@ node packages/forma-dsl-mcp/src/bin.js     # the server, on stdio
 
 Point a client at `node /absolute/path/to/packages/forma-dsl-mcp/src/bin.js` to use the
 working tree rather than the published package.
+
+## Privacy
+
+This server makes **no network requests**. It imports no HTTP, socket or DNS module and calls
+no `fetch`; the geometry kernel is WebAssembly loaded from disk and the manual is bundled in
+this tarball, so it works with no network at all. There is no telemetry, no analytics, no
+update check and no account.
+
+It writes only inside the directories your client declares as MCP roots, never replaces a file
+unless told to, and leaves nothing elsewhere — no cache, no config, no logs.
+
+Your MCP client is a separate program with its own policy. Documents you ask a model to write
+travel wherever that client sends them, which this server neither controls nor sees.
+
+Full text: [PRIVACY.md](https://github.com/kalpak44/forma-dsl/blob/main/PRIVACY.md).
 
 ## License
 
