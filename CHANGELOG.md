@@ -12,6 +12,14 @@ Dates are the day the tag was cut.
 
 ## Unreleased
 
+### Added
+
+- `PRIVACY.md`, covering the two published packages. Neither makes a network request — no
+  HTTP, socket or DNS module is imported and `fetch` is never called, so there is no code path
+  by which anything could leave your machine — and the MCP server writes only inside the
+  directories your client declares. The website's existing policy explicitly did not cover the
+  packages, and Claude's and OpenAI's directories require one.
+
 ### Fixed
 
 - **Six of the eight MCP tools understated what they do.** The behaviour hints are not as

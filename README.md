@@ -3,7 +3,7 @@
 [![Release](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml/badge.svg)](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml)
 [![forma-dsl on npm](https://img.shields.io/npm/v/forma-dsl.svg?label=forma-dsl)](https://www.npmjs.com/package/forma-dsl)
 [![forma-dsl-mcp on npm](https://img.shields.io/npm/v/forma-dsl-mcp.svg?label=forma-dsl-mcp)](https://www.npmjs.com/package/forma-dsl-mcp)
-[![M8ven Score](https://m8ven.ai/badge/mcp/kalpak44/forma-dsl)](https://m8ven.ai/mcp/kalpak44/forma-dsl?s=readme)
+[![M8ven Verified](https://m8ven.ai/api/agent-verify/badge?score=100)](https://m8ven.ai/verified/verify?id=d3529b4756004447)
 
 A declarative DSL for 3D modeling and scene composition, reusable components, and live
 previews. This is the monorepo: the library, the editor that consumes it, and the reference
@@ -95,7 +95,8 @@ npm run check   # lint, typecheck, tests, build, package contents: the whole gat
 is cut. [CHANGELOG.md](CHANGELOG.md) records what changed in each one.
 
 Found something exploitable? [SECURITY.md](SECURITY.md) says where to send it — please not a
-public issue.
+public issue. [PRIVACY.md](PRIVACY.md) covers the published packages: neither makes a network
+request, and the MCP server writes only inside the directories your client declares.
 
 ## License
 
