@@ -3,6 +3,7 @@
 [![Release](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml/badge.svg)](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml)
 [![forma-dsl on npm](https://img.shields.io/npm/v/forma-dsl.svg?label=forma-dsl)](https://www.npmjs.com/package/forma-dsl)
 [![forma-dsl-mcp on npm](https://img.shields.io/npm/v/forma-dsl-mcp.svg?label=forma-dsl-mcp)](https://www.npmjs.com/package/forma-dsl-mcp)
+[![M8ven Score](https://m8ven.ai/badge/mcp/kalpak44-forma-dsl-16jj91)](https://m8ven.ai/mcp/kalpak44-forma-dsl-16jj91?s=readme)
 
 A declarative DSL for 3D modeling and scene composition, reusable components, and live
 previews. This is the monorepo: the library, the editor that consumes it, and the reference

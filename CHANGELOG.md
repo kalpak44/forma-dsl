@@ -28,6 +28,11 @@ Nothing yet.
 
 ### Fixed
 
+- **Six of the eight MCP tools understated what they do.** The behaviour hints are not as
+  optional as their schema suggests: `destructiveHint` defaults to **true** and
+  `idempotentHint` to **false**, so a tool declaring only `readOnlyHint` advertises itself as
+  destructive and unrepeatable. `forma_guide`, which hands back a page of bundled text, was
+  one of them. All eight now state all four, and a test asserts it.
 - **The editor showed stale errors against edited text.** A diagnostic is a pair of absolute
   offsets into the document it was computed against, and the linter kept re-serving the last
   render's diagnostics on every keystroke — so after an edit the marker was drawn wherever
