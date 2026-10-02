@@ -12,9 +12,19 @@ Dates are the day the tag was cut.
 
 ## Unreleased
 
-Nothing yet.
+### Fixed
 
-## forma-dsl 0.3.0 · forma-dsl-mcp 0.3.0 — 2026-09-30
+- **Six of the eight MCP tools understated what they do.** The behaviour hints are not as
+  optional as their schema suggests: `destructiveHint` defaults to **true** and
+  `idempotentHint` to **false**, so a tool declaring only `readOnlyHint` advertises itself as
+  destructive and unrepeatable. `forma_guide`, which hands back a page of bundled text, was
+  one of them. All eight now state all four, and two tests hold them to it.
+
+## forma-dsl 0.3.1 · forma-dsl-mcp 0.3.1 — 2026-10-02
+
+There is no 0.3.0 on the registry. The manifests carried that number briefly, but the release
+that went out bumped to 0.3.1 to take a dev-dependency update in the same cut, so 0.3.1 is the
+first version containing everything below.
 
 ### Added
 
@@ -28,11 +38,6 @@ Nothing yet.
 
 ### Fixed
 
-- **Six of the eight MCP tools understated what they do.** The behaviour hints are not as
-  optional as their schema suggests: `destructiveHint` defaults to **true** and
-  `idempotentHint` to **false**, so a tool declaring only `readOnlyHint` advertises itself as
-  destructive and unrepeatable. `forma_guide`, which hands back a page of bundled text, was
-  one of them. All eight now state all four, and a test asserts it.
 - **The editor showed stale errors against edited text.** A diagnostic is a pair of absolute
   offsets into the document it was computed against, and the linter kept re-serving the last
   render's diagnostics on every keystroke — so after an edit the marker was drawn wherever
