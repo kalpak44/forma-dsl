@@ -45,7 +45,7 @@
     "sync:reference": "node scripts/sync-reference.mjs"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.31.0",
+    "@modelcontextprotocol/sdk": "^1.32.0",
     "forma-dsl": "^0.3.3",
     "zod": "^4.1.13"
   }
