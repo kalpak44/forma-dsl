@@ -1,6 +1,6 @@
 {
   "name": "forma-dsl-mcp",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "A stdio MCP server that knows the forma DSL and writes .forma documents that render.",
   "keywords": [
     "mcp",
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.0",
-    "forma-dsl": "^0.3.5",
+    "forma-dsl": "^0.3.6",
     "zod": "^4.1.13"
   }
 }
