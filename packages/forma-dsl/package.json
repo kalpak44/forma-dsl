@@ -1,6 +1,6 @@
 {
   "name": "forma-dsl",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "A declarative DSL for 3D modeling and scene composition, reusable components, and live previews.",
   "keywords": [
     "cad",
