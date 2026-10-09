@@ -14,6 +14,6 @@
     "forma-dsl": "*"
   },
   "devDependencies": {
-    "marked": "^18.0.14"
+    "marked": "^18.1.0"
   }
 }
