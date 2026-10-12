@@ -293,8 +293,20 @@ h1.display .thin { font-weight: 300; color: var(--muted); }
   color: var(--muted); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
 }
 
+/* The grid and the grain above are fixed layers painted over the whole page, at z-index 2
+   and 3. They are what keeps a flat fill from reading as a slide, and over a background
+   that is the point - but over a panel you are meant to read, a grain at overlay blend is
+   just haze on the text. The panels below therefore sit above both of them.
+
+   Anything raised here needs a stacking context of its own, which is what `position` buys;
+   the registration marks move up to 5 so they stay the topmost decoration. */
+.demo,
+.tty-wrap,
+.copy-wrap,
+pre.code { position: relative; z-index: 4; }
+
 /* Registration marks, one per corner of the viewport, as on a plate ready for printing. */
-.regmarks { position: fixed; inset: 16px; z-index: 4; pointer-events: none; }
+.regmarks { position: fixed; inset: 16px; z-index: 5; pointer-events: none; }
 .regmarks i {
   position: absolute; width: 16px; height: 16px;
   border: 0 solid var(--line-strong); opacity: .85;
@@ -439,15 +451,18 @@ pre.code {
 
 .stack { display: grid; gap: 18px; }
 
+/* A fixed height, not a minimum: a transcript runs longer than the box, and a box that grew
+   as it typed would shove everything below it down the page. It scrolls to the newest line
+   instead, which is what a terminal does anyway. */
 .tty {
-  padding: 16px 18px; min-height: 300px;
+  padding: 16px 18px; height: 300px;
   font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7;
-  white-space: pre; overflow-x: auto;
+  white-space: pre; overflow: auto;
 }
 /* The agent transcript sits under a code block rather than beside the prose on its own, so
    it is given less height - the section is already tall. */
-.tty-short { min-height: 230px; }
-@media (max-width: 900px) { .tty { font-size: 11.5px; min-height: 260px; } .tty-short { min-height: 210px; } }
+.tty-short { height: 260px; }
+@media (max-width: 900px) { .tty { font-size: 11.5px; height: 250px; } .tty-short { height: 220px; } }
 
 .tty-line { color: var(--muted); }
 
@@ -468,6 +483,17 @@ pre.code {
 .tty-caret { color: color-mix(in srgb, var(--muted) 72%, transparent); }
 
 .copy-wrap { position: relative; }
+
+/* Which kind of block this is, so a shell line and a JavaScript file are not read as one
+   continuous thing. Sits in the gutter opposite the copy button. */
+.code-label {
+  position: absolute; top: 9px; left: 14px; z-index: 1;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em;
+  color: var(--muted); pointer-events: none;
+}
+.code-label + .copy + pre.code { padding-top: 32px; }
+/* A single command needs no room to breathe below it. */
+pre.code.one-line { padding-bottom: 14px; }
 .copy {
   position: absolute; top: 9px; right: 9px;
   background: var(--panel); border: 1px solid var(--line); color: var(--muted); cursor: pointer;

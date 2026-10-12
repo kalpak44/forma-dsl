@@ -10,11 +10,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { render, Program, describeParameters, excerpt, FormaError } from 'forma-dsl';
+import {
+  render, Program, describeParameters, excerpt, FormaError, GeometryNode, toBinarySTL,
+} from 'forma-dsl';
 
 import { createPage } from './dom.js';
 import { BROKEN, CLI_SESSION, Console, HEIGHT, RISER, TRIANGLES } from '../src/console.js';
-import { MCP_SESSION } from '../src/mcp.js';
+import { EXPORT_HEIGHT, MCP_SESSION, TREE_V1, TREE_V2 } from '../src/mcp.js';
 
 test('the riser the terminal renders still builds, with the triangles it claims', async () => {
   const result = await render(RISER, { params: { height: HEIGHT } });
@@ -82,20 +84,86 @@ test('the CLI session only ever runs forma', () => {
   }
 });
 
-test('the refusal the agent session shows is the one the evaluator really raises', async () => {
-  const claimed = MCP_SESSION[1].output
-    .filter((line) => line.tone === 'bad')
+/**
+ * Pulls the measured rows out of one beat's table.
+ *
+ * @param {number} beat Which beat of the agent session.
+ * @returns {Array<{ part: string, size: string, volume: string, triangles: string }>} The rows.
+ */
+function rows(beat) {
+  return MCP_SESSION[beat].output
     .map((line) => line.text)
-    .join(' ');
+    .filter((text) => text.startsWith('| ') && !text.includes('Part   |'))
+    .map((text) => text.split('|').map((cell) => cell.trim()))
+    .map(([, part, size, volume, triangles]) => ({ part, size, volume, triangles }));
+}
 
-  await assert.rejects(
-    () => render('model "m" { cylinder { radius = 5  height = 10  sides = 6 } }'),
-    (error) => {
-      const real = error.message.replace(/ \(line \d+, column \d+\)$/, '');
-      assert.equal(claimed, real, 'the page quotes a message the language no longer raises');
-      return true;
-    },
-  );
+/**
+ * Measures a document the way the MCP server does, so the table can be compared to it.
+ *
+ * @param {string} source The document.
+ * @param {Record<string, number>} [params] Values for its params.
+ * @returns {Promise<Array<{ part: string, size: string, volume: string, triangles: string }>>}
+ *   One row per part, spelled as the transcript spells them.
+ */
+async function measure(source, params = {}) {
+  const result = await render(source, { params });
+  try {
+    return result.parts.map((part) => {
+      const box = part.concrete.boundingBox();
+      const size = box.max.map((high, axis) => Number((high - box.min[axis]).toFixed(4)));
+      return {
+        part: part.name,
+        size: size.join(' × '),
+        volume: String(Number(part.concrete.volume().toFixed(4))),
+        triangles: String(part.concrete.numTri()),
+      };
+    });
+  } finally {
+    result.context.dispose();
+  }
+}
+
+test('the first table is what the kernel really measures for the document it wrote', async () => {
+  assert.deepEqual(rows(0), await measure(TREE_V1));
+});
+
+test('the edited table is what the kernel really measures after the edit', async () => {
+  assert.deepEqual(rows(1), await measure(TREE_V2));
+});
+
+test('the edit changes the canopy and leaves the trunk alone, as the transcript claims', () => {
+  const [beforeTrunk, beforeCanopy] = rows(0);
+  const [afterTrunk, afterCanopy] = rows(1);
+
+  assert.deepEqual(afterTrunk, beforeTrunk, 'the trunk was not what the second prompt asked about');
+  assert.notDeepEqual(afterCanopy, beforeCanopy, 'the canopy was');
+});
+
+test('the byte counts are the documents own length', () => {
+  const written = MCP_SESSION
+    .flatMap((beat) => beat.output)
+    .map((line) => line.text)
+    .filter((text) => text.includes('`tree.forma`'));
+
+  assert.ok(written[0].includes(`${TREE_V1.length} bytes`));
+  assert.ok(written[1].includes(`${TREE_V2.length} bytes`));
+});
+
+test('the export beat reports the STL the library really produces', async () => {
+  const claimed = MCP_SESSION[2].output.map((line) => line.text).join(' ');
+  const result = await render(TREE_V2, { params: { height: EXPORT_HEIGHT } });
+
+  try {
+    const union = GeometryNode.union(result.parts.map((part) => part.node));
+    const solid = await result.context.evaluate(union);
+    const bytes = toBinarySTL(solid);
+
+    assert.ok(claimed.includes(`${bytes.length} bytes`), `claimed ${claimed}`);
+    assert.ok(claimed.includes(`${solid.numTri()} triangles`));
+  } finally {
+    result.context.dispose();
+  }
 });
 
 test('a reader who asked for no motion gets the whole transcript at once', () => {

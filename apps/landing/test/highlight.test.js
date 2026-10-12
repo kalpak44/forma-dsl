@@ -6,7 +6,7 @@ import { BLOCKS, FUNCTIONS } from 'forma-dsl';
 import { createPage } from './dom.js';
 import { segments, paint } from '../src/highlight.js';
 import { DEMOS } from '../src/demos.js';
-import { QUICKSTART } from '../src/quickstart.js';
+import { QUICKSTART_CODE } from '../src/quickstart.js';
 
 /**
  * @param {string} code The snippet.
@@ -27,7 +27,7 @@ test('the segments concatenate back to the source', () => {
   for (const demo of DEMOS) {
     assert.equal(segments(demo.source).map((s) => s.text).join(''), demo.source);
   }
-  assert.equal(segments(QUICKSTART).map((s) => s.text).join(''), QUICKSTART);
+  assert.equal(segments(QUICKSTART_CODE).map((s) => s.text).join(''), QUICKSTART_CODE);
   assert.deepEqual(segments(''), []);
 });
 
