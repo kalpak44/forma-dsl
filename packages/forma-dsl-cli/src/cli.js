@@ -40,6 +40,7 @@ Render options
   -m, --model <name>      which model to build. Defaults to the first declared
       --part <name>       one part by name. Defaults to the only part, or every part union
   -p, --param <name=val>  a value for one declared param. Repeatable
+      --params <file>     a JSON object of values, by name. -p wins over it
       --segments <n>      a fixed segment count for every curve
       --min-angle <deg>   smallest angle between adjacent segments of a curve
       --min-edge <n>      smallest length a curve segment may be shortened to
@@ -61,6 +62,7 @@ const OPTIONS = {
   model: { type: 'string', short: 'm' },
   part: { type: 'string' },
   param: { type: 'string', short: 'p', multiple: true },
+  params: { type: 'string' },
   segments: { type: 'string' },
   'min-angle': { type: 'string' },
   'min-edge': { type: 'string' },
@@ -174,6 +176,41 @@ async function readSource(file) {
 }
 
 /**
+ * Reads a JSON object of parameter values.
+ *
+ * A file rather than a flag per value is what a build matrix wants: the values a variant
+ * needs are a thing you generate, commit and diff, and a shell loop assembling forty `-p`
+ * flags is a worse version of that file.
+ *
+ * Held to an object on purpose. A JSON array or a bare number parses but names nothing, and
+ * `params` the language understands are named.
+ *
+ * @param {string} path The file, which must sit inside the working directory.
+ * @returns {Promise<Record<string, ParameterValue>>} The values, by name.
+ * @throws {UsageError} If it cannot be read, is not JSON, or is not an object.
+ */
+async function parameterFile(path) {
+  let text;
+  try {
+    text = await readFile(await containedPath(path, true), 'utf8');
+  } catch (error) {
+    throw new UsageError(`cannot read ${path}: ${error.message}`);
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch (error) {
+    throw new UsageError(`${path} is not valid JSON: ${error.message}`);
+  }
+
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new UsageError(`${path} must hold a JSON object of name/value pairs`);
+  }
+  return parsed;
+}
+
+/**
  * Where an STL goes when `--out` was not given: beside the document, named after it.
  *
  * @param {string} file The document's path.
@@ -261,7 +298,12 @@ async function renderCommand(file, source, flags, io) {
   try {
     const result = await render(source, {
       model: flags.model ?? null,
-      params: Object.fromEntries((flags.param ?? []).map(parameter)),
+      // The file first, so a `-p` on the command line overrides it. A matrix keeps the
+      // values it shares in the file and varies the one that differs on the line.
+      params: {
+        ...(flags.params ? await parameterFile(flags.params) : {}),
+        ...Object.fromEntries((flags.param ?? []).map(parameter)),
+      },
       maxNodes: numeric(flags['max-nodes'], '--max-nodes') ?? null,
       context,
     });
