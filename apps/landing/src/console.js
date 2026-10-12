@@ -197,6 +197,9 @@ export class Console {
       : `tty-line tty-${tone}`;
     line.textContent = text;
     this.root.append(line);
+    // The transcript is taller than the box it plays in, so the box follows the newest line
+    // rather than growing and shoving the rest of the page down as it types.
+    this.root.scrollTop = this.root.scrollHeight;
     return line;
   }
 
