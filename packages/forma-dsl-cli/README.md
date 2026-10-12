@@ -36,11 +36,73 @@ tree - is refused with exit code 2.
 | `-m, --model <name>` | which model to build. Defaults to the first declared |
 | `--part <name>` | one part by name. Defaults to the only part, or every part unioned |
 | `-p, --param <name=val>` | a value for one declared param. Repeatable |
+| `--params <file>` | a JSON object of values by name. `-p` wins over it |
 | `--segments <n>` | a fixed segment count for every curve |
 | `--min-angle <deg>` | smallest angle between adjacent segments of a curve |
 | `--min-edge <n>` | smallest length a curve segment may be shortened to |
 | `--max-nodes <n>` | refuse a document that would build more blocks than this |
 | `-q, --quiet` | do not print the summary |
+
+## Passing parameters
+
+Three ways, and they compose.
+
+**One at a time, on the command line.** A value is JSON where it parses as JSON, and the
+string as written otherwise - so there is no second layer of quoting to get wrong:
+
+```bash
+forma render part.forma -p count=6 -p center=true -p size=[10,20] -p label=M6
+```
+
+| Written | Arrives as |
+| --- | --- |
+| `-p count=6` | the number `6` |
+| `-p center=true` | the boolean `true` |
+| `-p size=[10,20]` | the list `[10, 20]` |
+| `-p label=M6` | the string `"M6"` |
+
+**From a file.** `--params` takes a JSON object of values by name - the thing you commit and
+diff, rather than assemble in a shell loop:
+
+```json
+{
+  "height": 36,
+  "label": "M6",
+  "center": true
+}
+```
+
+```bash
+forma render riser.forma --params params.json -o riser.stl
+```
+
+It has to be a JSON **object**. An array or a bare number parses but names nothing, and is
+refused with exit code 2 rather than quietly contributing nothing. Like every other path, it
+must resolve inside the directory the command runs in.
+
+**Both.** `-p` wins over `--params`, which is what a build matrix wants: the values every
+variant shares live in the file, and the one that varies goes on the line.
+
+```bash
+for h in 8 20 40; do
+  forma render riser.forma --params shared.json -p "height=$h" -o "build/riser-$h.stl"
+done
+```
+
+And the document will tell you what it takes, so the first `params.json` need not be written
+by hand:
+
+```bash
+forma params riser.forma --json | jq 'map({(.name): .default}) | add' > params.json
+```
+
+```json
+{
+  "height": 20,
+  "label": "A",
+  "center": false
+}
+```
 
 ## In a pipeline
 
@@ -57,13 +119,13 @@ that does not build, and `2` for a mistake in the invocation itself.
 A failure is reported where an editor and a CI annotation can both find it:
 
 ```
-riser.forma:7:23: size must be positive
- 5 |   part "body" {
- 6 |     extrude {
- 7 |       rect { size = [-40, 20] }
-   |                     ^
- 8 |     }
- 9 |   }
+riser.forma:7:7: rounded_rect: unknown attribute "corner_radius" - rounded_rect reads "center", "radius", "segments", "size"
+5 |     extrude {
+6 |       height = var.height
+7 |       rounded_rect { size = [40, 20]  corner_radius = 4 }
+  |       ^
+8 |     }
+9 |   }
 ```
 
 Build a matrix of variants from what the document itself declares:

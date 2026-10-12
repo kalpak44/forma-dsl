@@ -103,6 +103,69 @@ test('a param given on the command line changes the solid', async () => {
   assert.notDeepEqual(tall, short);
 });
 
+test('--params reads a JSON object of values by name', async () => {
+  const { dir, file, out } = await fixture();
+  await writeFile(join(dir, 'params.json'), JSON.stringify({ height: 39 }));
+  const io = streams();
+
+  assert.equal(await run(['render', file, '-o', out, '--params', 'params.json'], io.io), 0);
+  const fromFile = await readFile(out);
+
+  await run(['render', file, '-o', out, '-p', 'height=39'], streams().io);
+  assert.deepEqual(fromFile, await readFile(out), 'the file and the flag mean the same thing');
+});
+
+test('-p overrides a value the params file supplies', async () => {
+  const { dir, file, out } = await fixture();
+  await writeFile(join(dir, 'params.json'), JSON.stringify({ height: 39 }));
+
+  await run(['render', file, '-o', out, '--params', 'params.json', '-p', 'height=12'], streams().io);
+  const overridden = await readFile(out);
+
+  await run(['render', file, '-o', out, '-p', 'height=12'], streams().io);
+  assert.deepEqual(overridden, await readFile(out), 'the flag won, so this is a height of 12');
+
+  await run(['render', file, '-o', out, '--params', 'params.json'], streams().io);
+  assert.notDeepEqual(overridden, await readFile(out), 'and 39 is a different solid');
+});
+
+test('a params file that is not an object is refused, whatever else it is', async () => {
+  const { dir, file, out } = await fixture();
+
+  for (const [name, content] of [['arr.json', '[1, 2]'], ['num.json', '7'], ['null.json', 'null']]) {
+    await writeFile(join(dir, name), content);
+    const io = streams();
+
+    assert.equal(await run(['render', file, '-o', out, '--params', name], io.io), 2);
+    assert.match(io.stderr, /must hold a JSON object of name\/value pairs/);
+  }
+});
+
+test('a params file that is not JSON says so, naming the file', async () => {
+  const { dir, file, out } = await fixture();
+  await writeFile(join(dir, 'bad.json'), '{ oops }');
+  const io = streams();
+
+  assert.equal(await run(['render', file, '-o', out, '--params', 'bad.json'], io.io), 2);
+  assert.match(io.stderr, /bad\.json is not valid JSON/);
+});
+
+test('a params file outside the working directory is refused, like any other path', async () => {
+  const { file, out } = await fixture();
+  const io = streams();
+
+  assert.equal(await run(['render', file, '-o', out, '--params', '/etc/hosts'], io.io), 2);
+  assert.match(io.stderr, /outside the working directory/);
+});
+
+test('a missing params file is reported rather than ignored', async () => {
+  const { file, out } = await fixture();
+  const io = streams();
+
+  assert.equal(await run(['render', file, '-o', out, '--params', 'nope.json'], io.io), 2);
+  assert.match(io.stderr, /cannot read nope\.json/);
+});
+
 test('a param value is JSON where it parses as JSON, and a string otherwise', async () => {
   const { file, out } = await fixture();
   const io = streams();

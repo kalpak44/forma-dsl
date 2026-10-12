@@ -13,6 +13,23 @@ Dates are the day the tag was cut.
 
 ## Unreleased
 
+### Added
+
+- **`forma render --params <file>`** takes a JSON object of parameter values by name. A build
+  matrix wants the values a variant needs to be a thing it can generate, commit and diff, and
+  a shell loop assembling forty `-p` flags is a worse version of that file. `-p` still wins
+  where both name the same param, so the values every variant shares live in the file and the
+  one that varies goes on the line. The file must be a JSON object: an array or a bare number
+  parses but names nothing, and is refused rather than contributing silently. It is held to
+  the same working-directory confinement as the document and the output.
+
+### Fixed
+
+- The CLI's documented error example was one the language does not raise. A negative `rect`
+  size renders an empty solid rather than failing, so `size must be positive` was a message
+  invented to illustrate the format. Replaced with a real one, which is a better example
+  anyway: an unknown attribute, answered with every attribute that block does read.
+
 ### Breaking
 
 - **The `forma` command only reads a document, and writes its STL, inside the directory it is
