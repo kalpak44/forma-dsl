@@ -1,4 +1,4 @@
-# Managed by homelab-infra - terraform/github/forma-dsl/workflows/ai-maintenance-agent.yml
+# Managed by homelab-infra — terraform/github/forma-dsl/workflows/ai-maintenance-agent.yml
 # Edits made here in the target repo are overwritten by `just deploy github forma-dsl`.
 #
 # Codex CLI driving DeepSeek, with the gh CLI, in two modes. On a schedule it sweeps the
@@ -7,7 +7,7 @@
 # classifies it, fixes the cause, and drives the work that run existed to do through to
 # completion rather than stopping at a green re-run.
 #
-# The policy is the prompt in .github/agent-prompts/, not bash - this file only decides
+# The policy is the prompt in .github/agent-prompts/, not bash — this file only decides
 # whether there is work and hands the agent its context. There is no matrix and no
 # auto-merge: the agent reviews the final combined change and requires successful CI.
 #
@@ -20,7 +20,7 @@ on:
   schedule:
     - cron: "0 6 * * *" # 06:00 UTC daily
   workflow_dispatch:
-  # By display name - `workflows` takes no wildcard and omitting it makes the file
+  # By display name — `workflows` takes no wildcard and omitting it makes the file
   # unparseable, so every pipeline that may wake the agent is named here and a name no
   # workflow in this repository uses simply never matches. This workflow is deliberately
   # absent: a failed repair must not trigger another one.
@@ -206,7 +206,7 @@ jobs:
       PR_CHECK_WORKFLOW: ${{ vars.PR_CHECK_WORKFLOW }}
       # The agent reads the quality gate from SonarCloud's API rather than guessing at it:
       # sonar-scanner exits 3 for any gate that is not OK, so the CI log names no rule.
-      # Costs no new credential - these are the ones the pipeline already uses.
+      # Costs no new credential — these are the ones the pipeline already uses.
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
       SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
@@ -214,7 +214,7 @@ jobs:
       # The manifests holding the versions a release bumps, space separated. A list rather
       # than one path: a workspace publishes more than one package, and the root manifest
       # is private and carries no version at all.
-      PACKAGE_MANIFESTS: packages/forma-dsl/package.json packages/forma-dsl-mcp/package.json
+      PACKAGE_MANIFESTS: packages/forma-dsl/package.json packages/forma-dsl-cli/package.json packages/forma-dsl-mcp/package.json
 
       # Where the agent records the release it wants cut. A file, not stdout: the step
       # after this one is bash, and it must not have to parse prose. A literal path, not
@@ -236,7 +236,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
           # The PAT, not the default GITHUB_TOKEN: this credential is what `git push`
-          # uses, and GitHub starts no workflow run for a GITHUB_TOKEN push - a fix would
+          # uses, and GitHub starts no workflow run for a GITHUB_TOKEN push — a fix would
           # land and nothing would build it.
           token: ${{ secrets.GH_ADMIN_TOKEN }}
 
@@ -263,7 +263,7 @@ jobs:
           set -euo pipefail
 
           if [ -z "${DEEPSEEK_APIKEY:-}" ]; then
-            echo "DEEPSEEK_APIKEY is empty - is it configured in the repository secret store?" >&2
+            echo "DEEPSEEK_APIKEY is empty — is it configured in the repository secret store?" >&2
             exit 1
           fi
 
@@ -310,7 +310,7 @@ jobs:
           prompt=.github/agent-prompts/ai-maintenance-agent.md
 
           if [ ! -f "$prompt" ]; then
-            echo "$prompt is missing - has it been synced into this repository?" >&2
+            echo "$prompt is missing — has it been synced into this repository?" >&2
             exit 1
           fi
 
@@ -322,7 +322,7 @@ jobs:
 
 
       # The agent picks the word; this picks the number. Keeping the arithmetic here is
-      # what makes the version verifiable - a model cannot check a version string against
+      # what makes the version verifiable — a model cannot check a version string against
       # anything, and an unvalidated one ships under a tag that means nothing.
       #
       # This is also how a failed release is completed: the tag it broke on cannot be
@@ -333,7 +333,7 @@ jobs:
           set -euo pipefail
 
           if [ ! -f "$BUMP_FILE" ]; then
-            echo "No bump file - the agent asked for no release." >> "$GITHUB_STEP_SUMMARY"
+            echo "No bump file — the agent asked for no release." >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
 
