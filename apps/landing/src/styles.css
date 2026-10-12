@@ -492,8 +492,16 @@ pre.code {
   color: var(--muted); pointer-events: none;
 }
 .code-label + .copy + pre.code { padding-top: 32px; }
-/* A single command needs no room to breathe below it. */
-pre.code.one-line { padding-bottom: 14px; }
+/* A single command, shown as the thing it is: a line typed at a shell, in a terminal, with
+   the same chrome as the transcripts further down. The prompt is the stylesheet's rather
+   than the snippet's, so the copy button hands over the command without a dollar sign in
+   front of it - the same rule the animated terminals follow. */
+.tty-wrap > pre.code { border: 0; background: none; padding: 16px 18px; }
+pre.code.shell-line code::before { content: "$ "; color: var(--accent); }
+
+/* On the chrome bar rather than over the command, which is only one line long. The bar is
+   30px tall and the button is 23, so 4px from the top centres it. */
+.tty-wrap > .copy { top: 4px; right: 10px; }
 .copy {
   position: absolute; top: 9px; right: 9px;
   background: var(--panel); border: 1px solid var(--line); color: var(--muted); cursor: pointer;
