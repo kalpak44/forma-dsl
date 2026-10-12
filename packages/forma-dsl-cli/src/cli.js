@@ -14,8 +14,8 @@
  */
 /** @import { ParameterValue, RenderResult, Solid } from 'forma-dsl' */
 
-import { readFile, writeFile } from 'node:fs/promises';
-import { basename, extname, resolve } from 'node:path';
+import { readFile, realpath, writeFile } from 'node:fs/promises';
+import { basename, dirname, extname, join, resolve, sep } from 'node:path';
 import { parseArgs } from 'node:util';
 import { createRequire } from 'node:module';
 
@@ -128,6 +128,32 @@ function numeric(raw, flag) {
 }
 
 /**
+ * Resolves a path from the command line, refusing one that leaves the working directory.
+ *
+ * `run` is handed the process's own arguments, and in an agentic invocation an attacker
+ * influences them, so neither the document nor its output can be trusted to name a safe
+ * place. Resolving through symlinks first is what makes the check hold - `..`, an absolute
+ * path and a link pointing out of the tree all come back as the directory they really name -
+ * and the separator on the base keeps a sibling whose name merely starts with it out. The
+ * output is looked up through its directory, because a render is usually about to create it.
+ *
+ * @param {string} path The path as given on the command line.
+ * @param {boolean} present Whether the path itself is expected to exist already.
+ * @returns {Promise<string>} The canonical path, inside the working directory.
+ * @throws {UsageError} If it resolves outside the working directory.
+ */
+async function containedPath(path, present) {
+  const base = await realpath(process.cwd());
+  const resolved = present
+    ? await realpath(path)
+    : join(await realpath(dirname(resolve(path))), basename(path));
+  if (resolved !== base && !resolved.startsWith(base + sep)) {
+    throw new UsageError(`refusing ${path}: it is outside the working directory ${base}`);
+  }
+  return resolved;
+}
+
+/**
  * Reads the document named on the command line.
  *
  * @param {string} file The path, or `-` for stdin.
@@ -141,7 +167,7 @@ async function readSource(file) {
       for await (const chunk of process.stdin) chunks.push(chunk);
       return Buffer.concat(chunks).toString('utf8');
     }
-    return await readFile(file, 'utf8');
+    return await readFile(await containedPath(file, true), 'utf8');
   } catch (error) {
     throw new UsageError(`cannot read ${file === '-' ? 'stdin' : file}: ${error.message}`);
   }
@@ -205,7 +231,7 @@ async function writeOut(bytes, out, file, stdout) {
     throw new UsageError(`--out would overwrite the document itself (${out})`);
   }
   try {
-    await writeFile(out, bytes);
+    await writeFile(await containedPath(out, false), bytes);
   } catch (error) {
     throw new UsageError(`cannot write ${out}: ${error.message}`);
   }

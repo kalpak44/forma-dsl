@@ -28,6 +28,10 @@ evaluator's own position.
 
 A `<file>` of `-` reads the document from stdin. `params` and `models` take `--json`.
 
+A document, and an `-o`/`--out` that names one, must resolve inside the directory the command
+is run in: a path that leaves it - by `..`, an absolute path, or a symlink pointing out of the
+tree - is refused with exit code 2.
+
 ### `render`
 
 | Option | Default | What it does |

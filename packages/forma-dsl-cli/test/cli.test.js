@@ -54,9 +54,15 @@ function streams() {
   };
 }
 
-/** A directory holding a document, and the paths around it. */
+/**
+ * A directory holding a document, and the paths around it.
+ *
+ * The command confines a document and its output to the directory it is run in, so the test
+ * moves there rather than passing a path from outside it.
+ */
 async function fixture(source = RISER, name = 'riser.forma') {
   const dir = await mkdtemp(join(tmpdir(), 'forma-cli-'));
+  process.chdir(dir);
   const file = join(dir, name);
   await writeFile(file, source);
   return { dir, file, out: join(dir, 'out.stl') };
@@ -278,6 +284,25 @@ test('an unreadable document is reported as such', async () => {
 
   assert.equal(await run(['params', join(tmpdir(), 'forma-does-not-exist.forma')], io.io), 2);
   assert.match(io.stderr, /cannot read .*forma-does-not-exist\.forma/);
+});
+
+test('a document outside the working directory is refused', async () => {
+  const outside = await mkdtemp(join(tmpdir(), 'forma-outside-'));
+  const file = join(outside, 'riser.forma');
+  await writeFile(file, RISER);
+  await fixture();
+  const io = streams();
+
+  assert.equal(await run(['render', file, '-o', '-'], io.io), 2);
+  assert.match(io.stderr, /outside the working directory/);
+});
+
+test('an output outside the working directory is refused', async () => {
+  const { file } = await fixture();
+  const io = streams();
+
+  assert.equal(await run(['render', file, '-o', join(tmpdir(), 'elsewhere.stl')], io.io), 2);
+  assert.match(io.stderr, /outside the working directory/);
 });
 
 test('--param without a value is refused', async () => {

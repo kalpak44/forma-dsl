@@ -26,6 +26,10 @@ forma models <file> [--json]      list the models the document declares
 
 A `<file>` of `-` reads the document from stdin.
 
+A document, and an `--out` that names one, must resolve inside the directory the command is
+run in: a path that leaves it - by `..`, an absolute path, or a symlink pointing out of the
+tree - is refused with exit code 2.
+
 | Option | What it does |
 | --- | --- |
 | `-o, --out <file>` | where to write; `-` is stdout. Defaults to `<file>.stl` |

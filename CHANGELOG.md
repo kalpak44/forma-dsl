@@ -13,6 +13,14 @@ Dates are the day the tag was cut.
 
 ## Unreleased
 
+### Breaking
+
+- **The `forma` command only reads a document, and writes its STL, inside the directory it is
+  run in.** A `<file>` or `--out` that resolves outside that directory - by `..`, an absolute
+  path, or a symlink pointing out of the tree - is refused with exit code 2. The command takes
+  its arguments from whatever invoked it, which in an agentic workflow may be a model rather
+  than a person, so the working directory is treated as the boundary it may not leave.
+
 ### Added
 
 - **`forma-dsl-cli`, a new package: the `forma` command.** `forma render part.forma -o
