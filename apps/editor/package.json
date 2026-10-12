@@ -17,6 +17,7 @@
     "forma-dsl": "*"
   },
   "devDependencies": {
+    "@codemirror/autocomplete": "^6.20.1",
     "@codemirror/language": "^6.12.4",
     "@codemirror/lint": "^6.9.7",
     "@codemirror/state": "^6.7.6",

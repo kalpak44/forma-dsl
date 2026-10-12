@@ -11,7 +11,8 @@ import { initSite } from './site.js';
 import { Hero } from './hero.js';
 import { Demo } from './demo.js';
 import { QUICKSTART } from './quickstart.js';
-import { MCP_SETUP } from './mcp.js';
+import { MCP_SETUP, MCP_SESSION } from './mcp.js';
+import { Console, CLI_SESSION } from './console.js';
 import { segments, paint } from './highlight.js';
 
 initSite();
@@ -27,6 +28,17 @@ const $ = (id) => document.getElementById(id);
 for (const [id, snippet] of [['quickstart', QUICKSTART], ['mcp-setup', MCP_SETUP]]) {
   const block = $(id)?.querySelector('code');
   if (block) paint(block, segments(snippet), snippet.length);
+}
+
+// Transcripts, not processes: they type what `forma` and the server really print, and the
+// tests hold the numbers and the diagnostics they claim to what the library actually gives
+// back. Each waits to be scrolled to, so neither competes with the headline.
+for (const [id, session, prompt] of [
+  ['tty', CLI_SESSION, 'shell'],
+  ['tty-mcp', MCP_SESSION, 'chat'],
+]) {
+  const root = $(id);
+  if (root) new Console(root, session, prompt).start();
 }
 
 const heroCanvas = /** @type {HTMLCanvasElement | null} */ ($('hero-canvas'));

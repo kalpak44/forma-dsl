@@ -49,7 +49,7 @@ extrude {
 - A `height` of `0` or less yields empty geometry rather than an error, so a parameter
   sweeping to zero does not break the model.
 - `scale_top = [0, 0]` gives a point, which is one way to build a pyramid from any profile.
-- The profile is swept as drawn — `extrude` does not centre it. A `rect` that is not centred
+- The profile is swept as drawn - `extrude` does not centre it. A `rect` that is not centred
   produces a box in the positive quadrant.
 
 ---
@@ -76,7 +76,7 @@ revolve { angle = 180  segments = 64  polygon { points = profile } }
   radius. A profile drawn from `[0, 0]` upwards produces a solid standing on the XY plane.
 - **Every X must be ≥ 0.** A profile that crosses the axis revolves through itself and the
   result is not what you drew.
-- The profile does not have to touch the axis. One that does not produces a tube — which is
+- The profile does not have to touch the axis. One that does not produces a tube - which is
   how [`torus`](shapes-3d.md#torus) is built internally.
 - An `angle` of `0` or less yields empty geometry rather than an error.
 
@@ -84,7 +84,7 @@ revolve { angle = 180  segments = 64  polygon { points = profile } }
 
 ## `project`
 
-The shadow a solid casts on the XY plane — its full outline, from any Z.
+The shadow a solid casts on the XY plane - its full outline, from any Z.
 
 ```hcl
 project { bracket { } }
@@ -120,7 +120,7 @@ slice { z = 12  bracket { } }
 
 - Takes 3D geometry and produces 2D.
 - A plane that misses the solid gives an empty cross-section, not an error.
-- A plane exactly on a flat face is ambiguous — offset it slightly.
+- A plane exactly on a flat face is ambiguous - offset it slightly.
 
 ---
 
@@ -129,7 +129,7 @@ slice { z = 12  bracket { } }
 ### Profiles are where the modelling happens
 
 Most shapes are easier to describe in 2D and then given thickness. A rounded box, for
-instance, has no primitive — it is a rounded rectangle with a height:
+instance, has no primitive - it is a rounded rectangle with a height:
 
 ```hcl
 extrude {
@@ -215,7 +215,7 @@ model "m" {
 
 ### Inspecting a cross-section
 
-`slice` is a debugging tool as much as a modelling one — extrude the slice thinly to see
+`slice` is a debugging tool as much as a modelling one - extrude the slice thinly to see
 where the walls actually fell:
 
 ```hcl
@@ -243,7 +243,7 @@ extrude { height = 10  rect { size = [1, 1] } }          // ✓
 Two children of different dimensionality. Extrude each profile separately, or union the
 profiles before extruding.
 
-### `part "body" is 2D — extrude or revolve it before rendering`
+### `part "body" is 2D - extrude or revolve it before rendering`
 
 A profile reached the renderer. Somewhere the `extrude` or `revolve` is missing, or is
 wrapped around the wrong block.
@@ -261,7 +261,7 @@ have X ≥ 0.
 ### My revolved solid is lying down
 
 `revolve` maps the profile's **Y** to the result's **Z**. A profile written as (x, z) with
-the height in the first component produces a solid on its side — swap the components.
+the height in the first component produces a solid on its side - swap the components.
 
 ### `revolve` produced nothing
 

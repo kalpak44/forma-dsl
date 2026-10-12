@@ -3,7 +3,7 @@
 `forma` is a declarative language for describing solids. A document is a list of top-level
 blocks; geometry is written by **nesting blocks**, where a block's children are its operands.
 The evaluator turns a document into a tree of immutable geometry nodes, and the
-[Manifold](https://github.com/elalish/manifold) CSG kernel — compiled to WebAssembly — solves
+[Manifold](https://github.com/elalish/manifold) CSG kernel - compiled to WebAssembly - solves
 that tree into meshes.
 
 ```hcl
@@ -28,8 +28,8 @@ model "riser" {
 ```
 
 This reference documents every construct in the language and every function the JavaScript
-package exports. For a tour of the project itself — how to run the editor, how to consume the
-library from Node — see the [top-level README](../../../README.md).
+package exports. For a tour of the project itself - how to run the editor, how to consume the
+library from Node - see the [top-level README](../../../README.md).
 
 ---
 
@@ -79,7 +79,7 @@ Leaf blocks. They take attributes and never contain other blocks.
 | [`cone`](reference/shapes-3d.md#cone) | 3D | A cone, or a truncated cone |
 | [`torus`](reference/shapes-3d.md#torus) | 3D | A ring, optionally a partial arc |
 
-2D shapes cannot be rendered on their own — [`extrude`](reference/conversions.md#extrude) or
+2D shapes cannot be rendered on their own - [`extrude`](reference/conversions.md#extrude) or
 [`revolve`](reference/conversions.md#revolve) them first.
 
 ---
@@ -149,5 +149,15 @@ the package root and typed by hand-written declarations.
 
 ## Errors
 
-[Every error message](errors.md), what raises it, and what to change — the language's errors
+[Every error message](errors.md), what raises it, and what to change - the language's errors
 in one place, grouped by the stage that raises them.
+
+---
+
+## Running it
+
+| Tool | What it is |
+| --- | --- |
+| [Command line](cli.md) | `forma render part.forma -o part.stl` - solving a document in a build, with no browser |
+| [Editor](https://kalpak44.github.io/forma-dsl/editor/) | The same kernel in a browser, with live previews and a control per declared param |
+| [MCP server](https://www.npmjs.com/package/forma-dsl-mcp) | The language as a tool an agent can write, with every document it produces solved before it answers |

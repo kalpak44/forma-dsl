@@ -2,8 +2,8 @@
  * A browser for these tests to run in.
  *
  * The landing page is written against the DOM, so testing it means providing one. jsdom
- * covers the document, the events and storage; the four APIs it does not implement —
- * `matchMedia`, the two observers and the frame callback — are faked here and driven by the
+ * covers the document, the events and storage; the four APIs it does not implement -
+ * `matchMedia`, the two observers and the frame callback - are faked here and driven by the
  * test, which is what turns a reveal, a resize or an animation frame into something a test
  * can make happen rather than wait for.
  */
@@ -141,7 +141,7 @@ export function createPage(html = '<!doctype html><html><body></body></html>') {
     cancelAnimationFrame: () => {},
   };
 
-  // defineProperty rather than assignment: Node declares some of these — `navigator` — as
+  // defineProperty rather than assignment: Node declares some of these - `navigator` - as
   // accessors with no setter, and assigning to one throws.
   for (const key of INSTALLED) {
     Object.defineProperty(globalThis, key, { configurable: true, writable: true, value: globals[key] });

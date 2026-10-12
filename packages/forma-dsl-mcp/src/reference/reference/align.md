@@ -46,13 +46,13 @@ the *minimum* face at that coordinate. `z = 5` means "sit this on a surface at h
 
 #### Returns
 
-The children, unioned and translated. Dimensionality passes through — a 2D child accepts
+The children, unioned and translated. Dimensionality passes through - a 2D child accepts
 `x` and `y` only.
 
 #### Caveats
 
 - **`align` needs a kernel context.** It is the one block that cannot be evaluated without
-  one: `align needs a kernel context — render the model rather than building it`. Building a
+  one: `align needs a kernel context - render the model rather than building it`. Building a
   node tree with a bare `Evaluator` and no context will fail on it.
 - **It costs a kernel round-trip.** The child has to be solved before the alignment can be
   computed, so the subtree is evaluated at build time rather than lazily. The digest cache
@@ -60,7 +60,7 @@ The children, unioned and translated. Dimensionality passes through — a 2D chi
 - It measures the **bounding box**, not the geometry. For anything that is not
   axis-aligned, the box is larger than the shape.
 - Children are unioned first, so several blocks inside one `align` move together.
-- A label — `align "name" { }` — is accepted and silently ignored.
+- A label - `align "name" { }` - is accepted and silently ignored.
 
 ---
 
@@ -81,7 +81,7 @@ align {
 }
 ```
 
-Most shapes take a `center = true` attribute, which is cheaper — it changes how the shape is
+Most shapes take a `center = true` attribute, which is cheaper - it changes how the shape is
 built rather than measuring it afterwards. Reach for `align` when the thing being centred is
 a **composition** rather than a single shape, and there is no one attribute to set.
 
@@ -131,9 +131,9 @@ align {
 
 | Approach | When |
 | --- | --- |
-| `center = true` on the shape | A single primitive. Free — it changes how the shape is built |
+| `center = true` on the shape | A single primitive. Free - it changes how the shape is built |
 | `translate` by a known amount | You already know the dimensions, usually because they are params |
-| `align` | The extent is **computed** — a hull, a composition, an offset outline — and writing the arithmetic would mean duplicating it |
+| `align` | The extent is **computed** - a hull, a composition, an offset outline - and writing the arithmetic would mean duplicating it |
 
 A model that knows its own dimensions should use them:
 
@@ -154,7 +154,7 @@ kernel round-trip. For anything small, prefer clarity.
 
 ## Troubleshooting
 
-### `align needs a kernel context — render the model rather than building it`
+### `align needs a kernel context - render the model rather than building it`
 
 An `Evaluator` was constructed without a `context`, and the document contains an `align`.
 [`render`](../api/render.md) always supplies one, so this only comes up when driving the
@@ -170,12 +170,12 @@ unaffected.
 
 ### `align: "x" must be "min", "center", "max" or a number`
 
-The value is a string that is not one of the three keywords — `"middle"` and `"centre"` are
+The value is a string that is not one of the three keywords - `"middle"` and `"centre"` are
 the usual culprits. The spelling is `"center"`.
 
 ### `align needs at least one shape inside it`
 
-The body produced nothing — an `if` that took no branch, or a `for` over an empty list.
+The body produced nothing - an `if` that took no branch, or a `for` over an empty list.
 
 ### `align: unknown attribute "z"` on a 2D shape
 

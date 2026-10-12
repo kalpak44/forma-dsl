@@ -3,7 +3,7 @@
  *
  * The manual lives in apps/docs/content, which is a private workspace and cannot be depended
  * on from something that ships to npm. Copying is the only way the server can answer from it
- * offline — and a copy is only safe if it cannot drift, which is what
+ * offline - and a copy is only safe if it cannot drift, which is what
  * test/reference.test.js asserts by comparing the two trees byte for byte.
  *
  * Run it after editing the manual: `npm run sync:reference -w forma-dsl-mcp`.
@@ -16,7 +16,7 @@ const SOURCE = fileURLToPath(new URL('../../../apps/docs/content/', import.meta.
 const TARGET = fileURLToPath(new URL('../src/reference/', import.meta.url));
 
 if (!existsSync(SOURCE)) {
-  console.error(`No manual at ${SOURCE} — this script only runs inside the monorepo.`);
+  console.error(`No manual at ${SOURCE} - this script only runs inside the monorepo.`);
   process.exit(1);
 }
 

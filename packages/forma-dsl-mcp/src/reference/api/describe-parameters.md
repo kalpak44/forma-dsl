@@ -15,7 +15,7 @@ const params = describeParameters(source);
 ### `describeParameters(source)`
 
 Parses `source` and returns one descriptor per top-level [`param`](../reference/param.md), in
-source order. No geometry is evaluated and no kernel is loaded — this is the call a front end
+source order. No geometry is evaluated and no kernel is loaded - this is the call a front end
 makes to build controls before it can have any values to render with.
 
 #### Parameters
@@ -51,7 +51,7 @@ makes to build controls before it can have any values to render with.
 - **`min`, `max`, `step` and `options` are advisory.** Nothing enforces them, including
   [`render`](render.md). Clamp in the model if a bound matters.
 - **Model params are not listed.** A `param` inside a `model` is a constant, not an input.
-- It still throws on a **syntax error** — the document has to parse.
+- It still throws on a **syntax error** - the document has to parse.
 
 #### Type inference
 
@@ -127,7 +127,7 @@ default, and a front end can act on that before rendering fails.
 
 ### Re-reading after an edit
 
-`describeParameters` is cheap — a parse, no kernel — so calling it on every edit is
+`describeParameters` is cheap - a parse, no kernel - so calling it on every edit is
 reasonable. Keep any value the user has already set, for a param that still exists with a
 compatible type:
 
@@ -147,7 +147,7 @@ function reconcile(source, previous) {
 
 ### A descriptor's `default` is `undefined`
 
-Either the param declares no default — check `required` — or its default could not be
+Either the param declares no default - check `required` - or its default could not be
 evaluated. A default that refers to a param declared **below** it cannot resolve; params are
 read in source order.
 

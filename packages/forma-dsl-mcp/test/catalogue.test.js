@@ -116,7 +116,7 @@ const SCAFFOLD = {
  * Attributes the generated harness cannot reach, written out in full.
  *
  * `rotate` spells its angle `angle` in 2D and `x`/`y`/`z`/`angles` in 3D, and accepts exactly
- * one vocabulary depending on what is inside it — so the 2D spelling needs a 2D child rather
+ * one vocabulary depending on what is inside it - so the 2D spelling needs a 2D child rather
  * than the 3D one every other transform is tested with.
  */
 const OVERRIDES = {

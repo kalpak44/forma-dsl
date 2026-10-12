@@ -17,7 +17,7 @@ their type, and a mismatch is reported where it is used.
 | **object** | `{ w = 3, h = 4 }`, `{ w: 3 }` | `=` and `:` are interchangeable. Read with `.key` |
 | **null** | `null` | Falsy; renders as the empty string in interpolation |
 
-There is no separate vector type in the language — a vector is a list of numbers, and blocks
+There is no separate vector type in the language - a vector is a list of numbers, and blocks
 say how many components they want. Where a block wants a vector, a **single number is
 accepted as shorthand for every component**, so `scale { factor = 2 }` and
 `scale { factor = [2, 2, 2] }` are the same.
@@ -69,7 +69,7 @@ What each accepts:
 Two lists of different lengths cannot be combined:
 `cannot combine vectors of length 2 and 3`.
 
-**Division and modulo by zero are errors**, not `Infinity` or `NaN` — a NaN would otherwise
+**Division and modulo by zero are errors**, not `Infinity` or `NaN` - a NaN would otherwise
 travel all the way into the kernel and surface as a degenerate vertex a long way from its
 cause.
 
@@ -89,7 +89,7 @@ as [interpolation](#string-interpolation):
 
 ```hcl
 [1, 2] == [1, 2]       // true
-1 == "1"               // false — different types are never equal
+1 == "1"               // false - different types are never equal
 ```
 
 `<`, `<=`, `>` and `>=` require both sides to be the same type, and compare numbers
@@ -99,7 +99,7 @@ numerically and strings lexicographically. Mixing them is an error:
 ### Logic
 
 `&&` and `||` short-circuit, so the right side is not evaluated when the left decides the
-answer — `count > 0 && list[0] > 1` is safe on an empty list. Both always return a bool, even
+answer - `count > 0 && list[0] > 1` is safe on an empty list. Both always return a bool, even
 when given non-bool operands: `1 || false` is `true`, not `1`.
 
 `!x` negates the [truthiness](#truthiness) of any value. Unary `-` requires a number:
@@ -118,7 +118,7 @@ right-associative, so `a ? b : c ? d : e` chains as `a ? b : (c ? d : e)`.
 
 ## Truthiness
 
-Conditions — in `? :`, `&&`, `||`, `!` and [`if`](control-flow.md#if) — accept any value.
+Conditions - in `? :`, `&&`, `||`, `!` and [`if`](control-flow.md#if) - accept any value.
 
 | Falsy | Truthy |
 | --- | --- |
@@ -147,7 +147,7 @@ opts.wall     // 2
 opts["wall"]  // 2
 ```
 
-`.x`, `.y` and `.z` on a **list** are sugar for indices 0, 1 and 2 — they are not a vector
+`.x`, `.y` and `.z` on a **list** are sugar for indices 0, 1 and 2 - they are not a vector
 type. They are read on a list of any length, so `[1, 2].z` yields nothing rather than
 raising; the failure surfaces later, wherever that nothing is used.
 
@@ -165,7 +165,7 @@ an error: `cannot index this value`.
 ```hcl
 max(sizes)             // variadic, flattens its arguments
 pow(2, 10)
-sin(30)                // 0.5 — every angle is in degrees
+sin(30)                // 0.5 - every angle is in degrees
 ```
 
 Functions take **positional arguments only**. Named arguments are an error:
@@ -194,12 +194,12 @@ How each value renders:
 
 | Value | Rendered as |
 | --- | --- |
-| number | `3`, `0.5` — JavaScript's default number formatting |
+| number | `3`, `0.5` - JavaScript's default number formatting |
 | string | itself |
 | bool | `true` / `false` |
-| list | `[1, 2, 3]` — elements joined by `, ` inside brackets, recursively |
+| list | `[1, 2, 3]` - elements joined by `, ` inside brackets, recursively |
 | `null` | the empty string |
-| object | `{w: 3, h: 4}` — each entry rendered by these same rules. Interpolating one is usually a mistake, but it at least names which object |
+| object | `{w: 3, h: 4}` - each entry rendered by these same rules. Interpolating one is usually a mistake, but it at least names which object |
 
 A splice must contain exactly one expression; anything left over is an error:
 `trailing input in ${ }`. Errors raised inside a splice are reported at the position of the

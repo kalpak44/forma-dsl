@@ -47,6 +47,17 @@ export interface FormaDocument {
 
 export declare function parse(source: string): FormaDocument;
 
+/**
+ * Renders the lines around a position with a caret under its column.
+ *
+ * Both the CLI and the MCP server print this beside an error message; a position on its own
+ * still makes the reader count lines.
+ */
+export declare function excerpt(
+  source: string,
+  loc?: Pick<SourceLocation, 'line' | 'column'> | null,
+): string | undefined;
+
 // --- the kernel -------------------------------------------------------------------------
 
 // Re-exported from the dependency rather than restated here. A hand-written approximation
@@ -66,7 +77,7 @@ export type Kernel = ManifoldToplevel;
  * A live 3D solid owned by an EvaluationContext.
  *
  * WebAssembly objects are not garbage-collected. Anything obtained from a context belongs
- * to that context — do not call `delete()` on it yourself.
+ * to that context - do not call `delete()` on it yourself.
  */
 export type Solid = Manifold;
 
@@ -146,7 +157,7 @@ export declare class Transform {
   readonly m: readonly number[];
   readonly order: number;
   at(row: number, col: number): number;
-  /** `this ∘ other` — `other` runs first. */
+  /** `this ∘ other` - `other` runs first. */
   concat(other: Transform): Transform;
   toArray(): number[];
 }
@@ -204,7 +215,7 @@ export interface ContextStats {
 /**
  * Evaluates a geometry tree against the Manifold kernel, memoized by node digest.
  *
- * A context is meant to outlive a single render — reusing one is what makes a re-render
+ * A context is meant to outlive a single render - reusing one is what makes a re-render
  * after an edit skip the subtrees that did not change. It owns every WASM object it holds,
  * so it must eventually be `dispose()`d, and `collect()` bounds what it holds meanwhile.
  */
@@ -356,6 +367,12 @@ export interface FunctionDefinition {
 
 export declare const FUNCTIONS: Record<string, FunctionDefinition>;
 export declare const CONSTANTS: Record<string, number>;
+
+/**
+ * The type names a `param` block may declare, each of which is also an ordinary identifier
+ * bound to itself in the root scope - which is why `type = number` needs no quoting.
+ */
+export declare const TYPE_NAMES: readonly ParameterType[];
 
 export interface RenderMesh {
   /** Three vertices per triangle, expanded so hard edges stay hard. */

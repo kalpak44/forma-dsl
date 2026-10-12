@@ -6,8 +6,8 @@ Turning a solved solid into buffers a renderer can upload, or a file a slicer ca
 import { toRenderMesh, toBinarySTL } from 'forma-dsl';
 ```
 
-Both take a `Solid` — the `concrete` field of a
-[rendered part](render.md#returns) — and both return plain typed arrays that **outlive the
+Both take a `Solid` - the `concrete` field of a
+[rendered part](render.md#returns) - and both return plain typed arrays that **outlive the
 context**, so they are what to copy out before disposing.
 
 ---
@@ -25,7 +25,7 @@ Converts a solid into flat arrays for a renderer.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `positions` | `Float32Array` | Three vertices per triangle, expanded — `triangleCount * 9` floats |
+| `positions` | `Float32Array` | Three vertices per triangle, expanded - `triangleCount * 9` floats |
 | `normals` | `Float32Array` | One face normal, repeated for all three corners |
 | `triangleCount` | `number` | Triangles |
 | `vertexCount` | `number` | Vertices **before** expansion, as the kernel counted them |
@@ -44,7 +44,7 @@ The cost is that `positions.length / 3` is `triangleCount * 3` rather than `vert
 
 - A degenerate triangle keeps a zero normal rather than dividing by zero and poisoning the
   buffer with NaN.
-- [`render`](render.md) already calls this for every part — `part.mesh` is the result. Call
+- [`render`](render.md) already calls this for every part - `part.mesh` is the result. Call
   it yourself only for a solid you built directly.
 
 ---
@@ -59,7 +59,7 @@ Encodes a solid as binary STL.
 | --- | --- |
 | **`solid`** | `Solid` |
 | **`header`** | `string`, default `'forma-dsl'`. Free text for the 80-byte header, truncated to fit |
-| **Returns** | `Uint8Array` — the file |
+| **Returns** | `Uint8Array` - the file |
 
 Binary rather than ASCII: a model of any size is several times smaller and every slicer reads
 it.
@@ -141,7 +141,7 @@ function toThree(part) {
 
 ### Keeping geometry past the context
 
-Typed arrays are plain memory, so they survive disposal — unlike `part.concrete`:
+Typed arrays are plain memory, so they survive disposal - unlike `part.concrete`:
 
 ```js
 const result = await render(source);
@@ -159,7 +159,7 @@ result.context.dispose();              // …so this is safe
 
 ### `EvaluationContext has been disposed`
 
-The solid was freed before it was encoded. Export first, dispose after — or copy the arrays
+The solid was freed before it was encoded. Export first, dispose after - or copy the arrays
 out, which is what the example above does.
 
 ### The STL is empty, or has zero triangles

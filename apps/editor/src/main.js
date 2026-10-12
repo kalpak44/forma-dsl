@@ -1,7 +1,7 @@
 /**
  * The editor: what the page is wired to, and what happens between a keystroke and a render.
  *
- * Everything the reader touches is here — the CodeMirror instance, the controls built from
+ * Everything the reader touches is here - the CodeMirror instance, the controls built from
  * whatever `param` declarations the document itself makes, the example picker and the STL
  * download. Rendering is debounced at two different delays, because a slider produces far
  * more events than a keyboard does and each one is a cheaper edit.
@@ -67,7 +67,7 @@ function fatal(message) {
  * localStorage, for browsers that have it.
  *
  * It throws outright when storage is blocked, rather than returning null, and it is read
- * during module initialisation — an unguarded access takes the whole app down.
+ * during module initialisation - an unguarded access takes the whole app down.
  */
 const storage = {
   /**
@@ -241,7 +241,7 @@ function initialValue(descriptor) {
 /**
  * Parses a vector typed into a text field.
  *
- * Accepts `[10, 20]` and `10, 20` alike — a person editing a vector should not have to
+ * Accepts `[10, 20]` and `10, 20` alike - a person editing a vector should not have to
  * reproduce the brackets.
  *
  * @param {string} text What was typed.
@@ -419,7 +419,7 @@ let timer = null;
 /**
  * The render currently building, so a newer one can stop it.
  *
- * A superseded render cannot paint — the generation check sees to that — but without this it
+ * A superseded render cannot paint - the generation check sees to that - but without this it
  * still runs to completion first, and the newer render queues behind the kernel calls it is
  * making. Stopping it is what keeps a held-down arrow key responsive.
  *
@@ -432,7 +432,7 @@ let inFlight = null;
  *
  * Nesting limits and `range` bound a single loop; only this bounds two nested in each other,
  * which is the shape that asks for more geometry than a tab can hold. Generous enough that no
- * honest model comes near it — the worked examples build tens of blocks, not thousands.
+ * honest model comes near it - the worked examples build tens of blocks, not thousands.
  */
 const MAX_NODES = 50_000;
 
@@ -451,7 +451,7 @@ function schedule(delay = TYPING_DELAY) {
  * The one context for the life of the page.
  *
  * The digest cache is the reason a re-render after an edit is cheap, and a context created
- * per render would start empty every time — the cache would only ever serve repeats within a
+ * per render would start empty every time - the cache would only ever serve repeats within a
  * single model. Bounding what it holds is `collect`'s job, not the constructor's.
  *
  * @returns {Promise<EvaluationContext>} The context.
@@ -605,7 +605,7 @@ function exportSTL() {
   try {
     data = toBinarySTL(merged, 'forma-dsl');
   } finally {
-    // The merged solid is ours, not the cache's, so it is ours to free — including when the
+    // The merged solid is ours, not the cache's, so it is ours to free - including when the
     // conversion above throws.
     if (!single) merged.delete();
   }

@@ -1,9 +1,9 @@
 /**
  * What the server knows about every construct in the language.
  *
- * The descriptions and the attribute tables are written here; the structural facts — which
+ * The descriptions and the attribute tables are written here; the structural facts - which
  * blocks exist, what dimensionality each produces and takes, which functions exist and with
- * what arity — are read from the package's own registries at load time and merged in. Where
+ * what arity - are read from the package's own registries at load time and merged in. Where
  * the two disagree, the registry wins and `catalogueDrift` says so, which is what
  * `test/catalogue.test.js` asserts is empty. A block added to the language therefore cannot
  * ship without this file learning about it.
@@ -81,7 +81,7 @@ const BLOCK_ENTRIES = [
       CENTER,
     ],
     example: 'rounded_rect { size = [62, 13]  radius = 6.5  center = true }',
-    notes: ['`rounded_rect { size = [10, 10]  radius = 5 }` is a circle of diameter 10 — `size` is the outer size.'],
+    notes: ['`rounded_rect { size = [10, 10]  radius = 5 }` is a circle of diameter 10 - `size` is the outer size.'],
   },
   {
     name: 'circle', group: '2D shapes', summary: 'A circle, from a radius or a diameter.',
@@ -112,7 +112,7 @@ const BLOCK_ENTRIES = [
       { name: 'sides', type: 'integer', default: 'required', description: 'At least 3' },
       {
         name: 'width_across_flats', type: 'number',
-        description: 'Distance between opposite flats — how a nut or a hex key is specified',
+        description: 'Distance between opposite flats - how a nut or a hex key is specified',
       },
       { name: 'width_across_corners', type: 'number', description: 'Distance between opposite corners' },
       { name: 'radius', type: 'number', default: '1', description: 'Centre to corner' },
@@ -479,17 +479,17 @@ const DECLARATIONS = [
         name: 'type', type: 'enum', values: ['number', 'string', 'bool', 'vector', 'list', 'angle'],
         description: 'Which control to build. Written bare, without quotes. Inferred from `default` when omitted',
       },
-      { name: 'min', type: 'number', description: 'Lower bound of the control. Advisory — never enforced' },
-      { name: 'max', type: 'number', description: 'Upper bound of the control. Advisory — never enforced' },
+      { name: 'min', type: 'number', description: 'Lower bound of the control. Advisory - never enforced' },
+      { name: 'max', type: 'number', description: 'Upper bound of the control. Advisory - never enforced' },
       { name: 'step', type: 'number', description: 'Granularity of the control. Advisory' },
       { name: 'description', type: 'string', description: 'Help text' },
       { name: 'options', type: 'list', description: 'A fixed set of choices, for a dropdown. Advisory' },
     ],
     example: 'param height { type = number  default = 20  min = 8  max = 40  step = 1 }\nparam wall = 2.5',
     notes: [
-      'This is the one block that does not reject attributes it does not understand — a param block is metadata.',
+      'This is the one block that does not reject attributes it does not understand - a param block is metadata.',
       '`min`, `max`, `step` and `options` shape the editor control and nothing else. Clamp in the model if a bound matters.',
-      "A default may refer to params declared above it by their bare name, but never to `var` — `var` is assembled after every param resolves.",
+      "A default may refer to params declared above it by their bare name, but never to `var` - `var` is assembled after every param resolves.",
       'A param declared inside a `model` must have a default and cannot be set from outside.',
       '`param s` on its own is a syntax error; write `param s { }` for a required one.',
     ],
@@ -513,7 +513,7 @@ const DECLARATIONS = [
     notes: [
       'Params are read by their bare name inside the body; there is no `var.` for them.',
       'Only declared params may be passed. There is no pass-through.',
-      'A component body cannot see the call site — it is evaluated in a fresh scope rooted at the document.',
+      'A component body cannot see the call site - it is evaluated in a fresh scope rooted at the document.',
       'A component cannot declare parts, cannot shadow a builtin, and cannot recurse.',
       'Reuse is free: the same call with the same arguments is one node in the tree, evaluated once.',
     ],
@@ -596,8 +596,8 @@ const FUNCTION_DESCRIPTIONS = {
   round: 'Rounds to the nearest integer, halves upwards',
   sqrt: 'Square root. A negative input gives NaN, which fails where it is used',
   sign: '-1, 0 or 1',
-  pow: 'pow(x, y) — x raised to y',
-  atan2: 'atan2(y, x) — degrees, in the correct quadrant',
+  pow: 'pow(x, y) - x raised to y',
+  atan2: 'atan2(y, x) - degrees, in the correct quadrant',
   log: 'Natural logarithm',
   exp: 'e raised to x',
   sin: 'Takes degrees, returns a ratio',
@@ -612,8 +612,8 @@ const FUNCTION_DESCRIPTIONS = {
   len: 'Length of a list or a string; 0 for anything else',
   concat: 'Every argument flattened into one list',
   reverse: 'A list, back to front',
-  contains: 'contains(list, value) — whether the list holds it',
-  join: 'join(separator, list) — the items as one string',
+  contains: 'contains(list, value) - whether the list holds it',
+  join: 'join(separator, list) - the items as one string',
   str: 'The value as a string',
   num: 'The value as a number; non-numeric text gives NaN',
   range: 'range(end), range(start, end) or range(start, end, step). Excludes the end; capped at 100000 values',
@@ -679,7 +679,7 @@ export function formatConstruct(entry) {
   /** @type {string[]} */
   const facts = [];
   if (entry.dim) facts.push(`produces ${entry.dim}D`);
-  if (entry.leaf) facts.push('a leaf — it takes no children');
+  if (entry.leaf) facts.push('a leaf - it takes no children');
   else if (entry.takes === 'same') facts.push("takes 2D or 3D children, passing the dimensionality through");
   else if (entry.takes) facts.push(`takes ${entry.takes}D children`);
   if (entry.ordered) facts.push('the order of its children matters');
@@ -691,7 +691,7 @@ export function formatConstruct(entry) {
       const type = attribute.values
         ? attribute.values.map((value) => `\`"${value}"\``).join(' ')
         : attribute.type;
-      lines.push(`| \`${attribute.name}\` | ${type} | ${attribute.default ?? '—'} | ${attribute.description} |`);
+      lines.push(`| \`${attribute.name}\` | ${type} | ${attribute.default ?? '-'} | ${attribute.description} |`);
     }
     lines.push('');
   }

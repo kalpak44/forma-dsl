@@ -1,7 +1,7 @@
 # Compiler stages
 
 The pipeline, stage by stage, plus the registries the evaluator reads. These are exported so
-that editors, linters and tools can reach into the compiler without re-implementing it — the
+that editors, linters and tools can reach into the compiler without re-implementing it - the
 [editor](../../../editor) uses them for syntax
 highlighting and inline diagnostics.
 
@@ -63,7 +63,7 @@ duplicate names and a component that shadows a builtin.
 ### `program.parameterDescriptors(evaluator?)`
 
 The declared params as [`ParameterDescriptor`](describe-parameters.md#returns)s. Without an
-evaluator, every field but the name comes back `undefined` —
+evaluator, every field but the name comes back `undefined` -
 [`describeParameters`](describe-parameters.md) is this with one supplied.
 
 #### Listing a document's models without rendering
@@ -104,10 +104,10 @@ everything unioned.
 
 #### Caveats
 
-- **The evaluator does not call the kernel** — except for `align`. Its output is a node tree;
+- **The evaluator does not call the kernel** - except for `align`. Its output is a node tree;
   solving it is [`EvaluationContext`](evaluation-context.md)'s job.
 - Without a `context`, a document containing `align` fails with
-  `align needs a kernel context — render the model rather than building it`.
+  `align needs a kernel context - render the model rather than building it`.
 - `requireParams: false` is for inspection only. A param with no value is simply absent from
   scope, so evaluating geometry that reads it will fail.
 
@@ -152,7 +152,7 @@ try {
 }
 ```
 
-Not every failure is a `FormaError` — a few come from the kernel, and `render` raises a plain
+Not every failure is a `FormaError` - a few come from the kernel, and `render` raises a plain
 `Error` for a 2D part. Check `error.loc` rather than the class when all you need is a
 position. See [Errors](../errors.md) for the full catalogue.
 
@@ -172,7 +172,7 @@ Every block the language understands, by name, as `Record<string, BlockDefinitio
 | `combine` | `'list'` receives every child; anything else receives them unioned |
 | `build(args, children?)` | Produces the node |
 
-**[`part`](../reference/part.md) and [`align`](../reference/align.md) are not in it** — the
+**[`part`](../reference/part.md) and [`align`](../reference/align.md) are not in it** - the
 evaluator handles both itself, because neither is an ordinary geometry operation.
 
 ```js
@@ -184,8 +184,8 @@ Object.keys(BLOCKS).filter((k) => BLOCKS[k].leaf);     // just the shapes
 
 ### `FUNCTIONS`
 
-Every builtin function, as `Record<string, FunctionDefinition>` with `arity` — `null` for
-variadic — and `call(args)`.
+Every builtin function, as `Record<string, FunctionDefinition>` with `arity` - `null` for
+variadic - and `call(args)`.
 
 ### `CONSTANTS`
 
@@ -213,7 +213,7 @@ cannot be added without the documentation's code samples learning about it.
 
 ## Troubleshooting
 
-### `align needs a kernel context — render the model rather than building it`
+### `align needs a kernel context - render the model rather than building it`
 
 Pass a context, or avoid `align` in documents you intend to evaluate without one:
 

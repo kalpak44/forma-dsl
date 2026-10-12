@@ -29,7 +29,7 @@ the node's digest.
 | | |
 | --- | --- |
 | **Parameter** | `node: GeometryNode` |
-| **Returns** | `Promise<Solid \| Shape>` — a `Manifold` for a 3D node, a `CrossSection` for a 2D one |
+| **Returns** | `Promise<Solid \| Shape>` - a `Manifold` for a 3D node, a `CrossSection` for a 2D one |
 | **Throws** | If the context has been disposed |
 
 Concurrent requests for the same node share one evaluation, so a shape used twice in a tree
@@ -41,12 +41,12 @@ Frees every cached object the given roots can no longer reach.
 
 | | |
 | --- | --- |
-| **`roots`** | `readonly GeometryNode[]` — the trees still in use |
+| **`roots`** | `readonly GeometryNode[]` - the trees still in use |
 | **`options.keep`** | `number`, default `512`. How many unreachable entries to keep as a most-recently-used tail |
-| **Returns** | `number` — how many objects were freed |
+| **Returns** | `number` - how many objects were freed |
 
 The retained tail matters more than it looks: editing churns the tree, so the entries that
-just fell out of it are the ones most likely to come straight back — on an undo, or on the
+just fell out of it are the ones most likely to come straight back - on an undo, or on the
 next character of a number being typed.
 
 ### `context.dispose()`
@@ -68,7 +68,7 @@ evaluations still in flight free their own results as they land. Disposing twice
 ## Why a context exists
 
 WebAssembly objects are not garbage-collected. Something has to own them, and something has
-to decide when they are no longer needed — that is this class.
+to decide when they are no longer needed - that is this class.
 
 It is also the cache. Nothing is freed as evaluation proceeds, because an intermediate result
 is also a cache entry and a later node may still need it. The two ways out are `collect`,
@@ -115,7 +115,7 @@ async function rerender(source, params) {
 }
 ```
 
-There is no `dispose` here, and that is correct — the page unloading frees the whole heap.
+There is no `dispose` here, and that is correct - the page unloading frees the whole heap.
 
 ### Tuning what is kept
 
@@ -141,7 +141,7 @@ console.log(`${evaluated} solved, ${hits} reused`);
 ```
 
 On a document where one dimension changed, `evaluated` should be a handful and `hits` most of
-the tree. If `evaluated` is the whole document every time, something is defeating the cache —
+the tree. If `evaluated` is the whole document every time, something is defeating the cache -
 see [Troubleshooting](#every-render-re-evaluates-everything).
 
 ### Evaluating a node directly
@@ -167,7 +167,7 @@ context.dispose();
 1. **Everything a context returns belongs to the context.** Never call `delete()` on a
    `Solid`, a `Shape` or anything hanging off `part.concrete`.
 2. **A result is valid only while its context is alive.** After `dispose()`, every object it
-   produced is gone. Copy out what you need first — `toRenderMesh` and `toBinarySTL` both
+   produced is gone. Copy out what you need first - `toRenderMesh` and `toBinarySTL` both
    produce plain typed arrays that outlive the context.
 3. **`render` does not dispose a context you supplied.** It disposes only one it created
    itself, and only on failure.
@@ -179,7 +179,7 @@ context.dispose();
 ### `EvaluationContext has been disposed`
 
 An `evaluate` or a `render` used a context after `dispose()`. Usually an async render that
-was still in flight when a page or a test tore the context down — await it first.
+was still in flight when a page or a test tore the context down - await it first.
 
 ### `EvaluationContext used before create() resolved`
 
@@ -198,19 +198,19 @@ Add a `collect` after each render, passing the roots that are still in use:
 context.collect(result.parts.map((part) => part.node));
 ```
 
-Without it, every intermediate solid from every render is retained — which is the correct
+Without it, every intermediate solid from every render is retained - which is the correct
 default, because the context cannot know whether you still hold a reference.
 
 ### `collect` freed nothing
 
-It returns `0` when the number of unreachable entries is at or below `keep` — the default 512
+It returns `0` when the number of unreachable entries is at or below `keep` - the default 512
 tail. That is expected on a small document. Pass `{ keep: 0 }` to see whether anything is
 genuinely unreachable.
 
 ### Every render re-evaluates everything
 
-Either a fresh context is being created per render — check that the same one is passed back
-in — or the document's content genuinely changes on every render. A param that feeds a
+Either a fresh context is being created per render - check that the same one is passed back
+in - or the document's content genuinely changes on every render. A param that feeds a
 dimension changes the digest of everything downstream of it, which is correct; a param that
 feeds only one wall should not.
 

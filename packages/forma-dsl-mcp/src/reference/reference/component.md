@@ -27,7 +27,7 @@ model "m" {
 Declares a block named `NAME`. Its body is ordinary geometry; its `param` declarations are
 the attributes a call site may pass.
 
-Once declared, it is called like any other block — the call site cannot tell a component
+Once declared, it is called like any other block - the call site cannot tell a component
 from a builtin, which is the point.
 
 #### Body
@@ -41,7 +41,7 @@ from a builtin, which is the point.
 
 #### Returns
 
-One geometry node — everything in the body, unioned. The dimensionality is whatever the body
+One geometry node - everything in the body, unioned. The dimensionality is whatever the body
 produced, so a component may return 2D or 3D geometry and be used wherever that fits.
 
 #### Caveats
@@ -60,8 +60,8 @@ produced, so a component may return 2D or 3D geometry and be used wherever that 
   branch, fails with `component "c" produced no geometry`.
 - **Recursion is not supported.** A component that calls itself has no base case the
   evaluator can see, and hits the nesting limit:
-  `nesting deeper than 64 blocks — is a component using itself?`
-- A label on a call — `my_component "label" { }` — is accepted and silently ignored.
+  `nesting deeper than 64 blocks - is a component using itself?`
+- A label on a call - `my_component "label" { }` - is accepted and silently ignored.
   Do not rely on it.
 
 ---
@@ -88,7 +88,7 @@ component "tray" {
 }
 ```
 
-Note the empty braces on `lid`. `param lid` on its own is a **syntax error** — a param needs
+Note the empty braces on `lid`. `param lid` on its own is a **syntax error** - a param needs
 either `= expression` or a braced body, even an empty one.
 
 Inside the body, a param is read by its bare name. There is no `var.` for component params;
@@ -172,7 +172,7 @@ model "m" {
 ### Reuse is free
 
 Identity in the geometry tree is content identity, so a component called twenty times with
-the same arguments is **evaluated once** — its digest is the same each time, and the kernel
+the same arguments is **evaluated once** - its digest is the same each time, and the kernel
 sees one node. Calling it twenty times with twenty different sizes does cost twenty
 evaluations, because the content genuinely differs.
 
@@ -190,7 +190,7 @@ A `param` with no default and no body:
 
 ```hcl
 component "c" {
-  param s          // ✗ syntax error — the parser is looking for `=` or `{`
+  param s          // ✗ syntax error - the parser is looking for `=` or `{`
   box { size = [s, s, s] }
 }
 
@@ -207,19 +207,19 @@ the call site, or give the declaration a default.
 
 ### `c: unknown param "t"`
 
-The call passed an attribute the component does not declare — usually a typo, or an
+The call passed an attribute the component does not declare - usually a typo, or an
 attribute meant for a block inside the component. Components have no pass-through: every
 value they need must be declared.
 
 ### `component "box" shadows a builtin block`
 
-The name is already a builtin. Pick another — `rounded_box`, `my_box`, `case_body`. See the
+The name is already a builtin. Pick another - `rounded_box`, `my_box`, `case_body`. See the
 [full block list](../README.md#shapes) for what is taken.
 
 ### `a component cannot declare parts`
 
 A [`part`](part.md) is a piece of the scene, not geometry an enclosing block can operate on,
-so it cannot come out of a component. Invert it — put the part in the model and call the
+so it cannot come out of a component. Invert it - put the part in the model and call the
 component inside it:
 
 ```hcl
@@ -231,7 +231,7 @@ component "c" { box { size = [1, 1, 1] } }
 model "m" { part "p" { c { } } }
 ```
 
-### `nesting deeper than 64 blocks — is a component using itself?`
+### `nesting deeper than 64 blocks - is a component using itself?`
 
 Almost always direct or mutual recursion. There is no base case the evaluator can detect,
 because a component's body is expanded before any condition inside it is known. Rewrite the
@@ -239,7 +239,7 @@ recursion as a [`for`](../language/control-flow.md#for) loop.
 
 ### `component "c" produced no geometry`
 
-The body evaluated to nothing — an empty body, a loop over an empty list, or an `if` with no
+The body evaluated to nothing - an empty body, a loop over an empty list, or an `if` with no
 `else` whose condition was false. A component must return something; guard at the call site
 instead:
 

@@ -1,7 +1,7 @@
 /*
  * The landing page reads as a drafting sheet: hairline rules, registration marks in the
  * corners, a title block, and dimension lines between sections. Monospace carries the
- * headings — the product is a language, so the display face is the one you write it in —
+ * headings - the product is a language, so the display face is the one you write it in -
  * and a serif carries the prose, which is what keeps it from looking like a terminal.
  *
  * Dark is the default and light is vellum rather than white: a drawing on warm paper.
@@ -426,6 +426,47 @@ pre.code {
 }
 .install li b { font-weight: 400; font-size: 15px; color: var(--muted); }
 
+/* --- the terminal in the CLI section ---------------------------------------------------- */
+
+/* A transcript, styled as a terminal. It is not a process and does not pretend to be one:
+   the chrome is decorative, there is no input, and nothing here is focusable. */
+.tty-wrap { border: 1px solid var(--line); background: var(--panel-2); overflow: hidden; }
+.tty-chrome {
+  display: flex; gap: 7px; align-items: center;
+  padding: 10px 13px; border-bottom: 1px solid var(--line); background: var(--panel);
+}
+.tty-chrome span { width: 9px; height: 9px; border-radius: 50%; background: var(--line-strong); }
+
+.stack { display: grid; gap: 18px; }
+
+.tty {
+  padding: 16px 18px; min-height: 300px;
+  font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7;
+  white-space: pre; overflow-x: auto;
+}
+/* The agent transcript sits under a code block rather than beside the prose on its own, so
+   it is given less height - the section is already tall. */
+.tty-short { min-height: 230px; }
+@media (max-width: 900px) { .tty { font-size: 11.5px; min-height: 260px; } .tty-short { min-height: 210px; } }
+
+.tty-line { color: var(--muted); }
+
+/* The prompt is the stylesheet's, not the transcript's, so nothing the animation types can
+   forge one and no copied line carries a `$` that would not run. */
+.tty-cmd { color: var(--text); }
+.tty-shell::before { content: "$ "; color: var(--accent); }
+.tty-chat::before { content: "› "; color: var(--amber); }
+.tty-cmd.typing::after {
+  content: "▋"; color: var(--accent); animation: tty-caret 1s steps(1) infinite;
+}
+@keyframes tty-caret { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .tty-cmd.typing::after { animation: none; } }
+
+.tty-out { color: var(--text); }
+.tty-note { color: var(--muted); }
+.tty-bad { color: var(--err); }
+.tty-caret { color: color-mix(in srgb, var(--muted) 72%, transparent); }
+
 .copy-wrap { position: relative; }
 .copy {
   position: absolute; top: 9px; right: 9px;
@@ -508,5 +549,5 @@ footer.site .colophon {
 }
 .param input[type='range']:active { cursor: grabbing; }
 /* While the demo is dragging it itself, the control glows a little so it is clear that
-   something is moving it — and that you may take it off them. */
+   something is moving it - and that you may take it off them. */
 .param input[type='range'].auto { accent-color: var(--amber); filter: drop-shadow(0 0 5px color-mix(in srgb, var(--amber) 55%, transparent)); }

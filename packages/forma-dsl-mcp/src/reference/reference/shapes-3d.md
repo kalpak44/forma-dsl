@@ -11,7 +11,7 @@ Five leaf blocks producing solids. They take attributes and never contain other 
 | [`torus`](#torus) | `radius`, `tube_radius` | always |
 
 Anything these cannot express is usually a 2D profile plus
-[`extrude`](conversions.md#extrude) or [`revolve`](conversions.md#revolve) — that is where
+[`extrude`](conversions.md#extrude) or [`revolve`](conversions.md#revolve) - that is where
 the real modelling happens.
 
 ---
@@ -35,7 +35,7 @@ box { size = [40, 20, 10]  center = true }
 #### Caveats
 
 - A single number is accepted as shorthand for all three, so `size = 10` is a 10 mm cube.
-- There is no rounded box. Round a 2D profile and extrude it —
+- There is no rounded box. Round a 2D profile and extrude it -
   see [Usage](#rounded-boxes).
 
 ---
@@ -52,7 +52,7 @@ sphere { diameter = 24  segments = 64 }
 | Attribute | Type | Default | Description |
 | --- | --- | --- | --- |
 | `radius` | number | `1` | |
-| `diameter` | number | — | An alternative spelling of the same thing |
+| `diameter` | number | - | An alternative spelling of the same thing |
 | `segments` | integer | `0` | Segments around the equator; `0` lets the kernel choose |
 
 #### Caveats
@@ -77,17 +77,17 @@ cylinder { bottom_radius = 12  top_radius = 8  height = 15 }
 | Attribute | Type | Default | Description |
 | --- | --- | --- | --- |
 | `height` | number | **required** | Along Z |
-| `radius` | number | — | Both ends alike |
-| `diameter` | number | — | An alternative spelling of `radius` |
-| `bottom_radius` | number | — | The end at Z = 0 |
-| `top_radius` | number | — | The end at Z = `height` |
+| `radius` | number | - | Both ends alike |
+| `diameter` | number | - | An alternative spelling of `radius` |
+| `bottom_radius` | number | - | The end at Z = 0 |
+| `top_radius` | number | - | The end at Z = `height` |
 | `segments` | integer | `0` | Segments around; `0` lets the kernel choose |
 | `center` | bool | `false` | `true` centres it on Z = 0; otherwise it stands on the XY plane |
 
 #### Caveats
 
 - Give **either** `radius`/`diameter`, **or both** `bottom_radius` and `top_radius`. Anything
-  else is `cylinder: give "radius"/"diameter", or both "bottom_radius" and "top_radius"` —
+  else is `cylinder: give "radius"/"diameter", or both "bottom_radius" and "top_radius"` -
   one radius on its own is ambiguous, and there is no default.
 - Unlike every other shape, `radius` has no usable default here: the check runs before the
   fallback would apply.
@@ -110,7 +110,7 @@ cone { radius = 10  top_radius = 4  height = 20 }
 | --- | --- | --- | --- |
 | `height` | number | **required** | Along Z |
 | `radius` | number | `1` | The base, at Z = 0 |
-| `diameter` | number | — | An alternative spelling of `radius` |
+| `diameter` | number | - | An alternative spelling of `radius` |
 | `top_radius` | number | `0` | `0` gives a point |
 | `segments` | integer | `0` | Segments around |
 | `center` | bool | `false` | As for [`cylinder`](#cylinder) |
@@ -118,7 +118,7 @@ cone { radius = 10  top_radius = 4  height = 20 }
 #### Caveats
 
 - `cone` and `cylinder` build the same kind of solid; they differ only in which attributes
-  are required and what `top_radius` defaults to. Use whichever reads better — `cone` when
+  are required and what `top_radius` defaults to. Use whichever reads better - `cone` when
   the top is a point, `cylinder` when both ends matter.
 
 ---
@@ -158,7 +158,7 @@ torus { radius = 20  tube_radius = 4  angle = 180 }
 
 ### Rounded boxes
 
-There is no rounded-box primitive. Round the 2D profile and extrude it — which also gives
+There is no rounded-box primitive. Round the 2D profile and extrude it - which also gives
 control over whether the vertical edges or the horizontal ones are rounded:
 
 ```hcl
@@ -270,8 +270,8 @@ box { size = [40, 20, 10] }   // ✓
 ### My cylinder is not where I expect
 
 By default a cylinder stands **on** the XY plane, with its base at Z = 0. `center = true`
-puts its middle there instead. The same is true of `box`, whose minimum corner — not its
-centre — sits at the origin by default.
+puts its middle there instead. The same is true of `box`, whose minimum corner - not its
+centre - sits at the origin by default.
 
 ### Two solids that touch exactly render with artefacts
 

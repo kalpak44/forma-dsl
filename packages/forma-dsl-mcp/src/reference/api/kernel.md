@@ -21,8 +21,8 @@ Loads and sets up the Manifold module, once per page or process.
 
 | | |
 | --- | --- |
-| **`options.locateFile`** | `() => string` — returns the URL of the `.wasm` file |
-| **Returns** | `Promise<Kernel>` — the `manifold-3d` toplevel module |
+| **`options.locateFile`** | `() => string` - returns the URL of the `.wasm` file |
+| **Returns** | `Promise<Kernel>` - the `manifold-3d` toplevel module |
 
 #### Caveats
 
@@ -30,7 +30,7 @@ Loads and sets up the Manifold module, once per page or process.
   share one instantiation rather than each starting their own.
 - **Only the first call's options take effect.** Later calls get the memoized promise, so
   `locateFile` has to be right the first time.
-- A rejected load is *not* memoized — a WASM fetch that lost the network can be retried
+- A rejected load is *not* memoized - a WASM fetch that lost the network can be retried
   rather than being permanently broken for the page.
 
 ### Bundlers and `locateFile`
@@ -48,7 +48,7 @@ await loadKernel({ locateFile: () => wasmUrl });
 Do this **before** the first `EvaluationContext.create()`, or the default path is what gets
 memoized.
 
-In Node, nothing is needed — the module resolves the file itself.
+In Node, nothing is needed - the module resolves the file itself.
 
 ---
 
@@ -75,7 +75,7 @@ left alone when omitted.
   solid built at draft quality will be *reused* at final quality unless the cache is cleared.
   See [Usage](#a-draft-pass-and-a-final-pass).
 - A shape's own `segments` attribute overrides all of this for that shape. Prefer it whenever
-  a specific facet count matters — a hole that must clear a printed bolt should not depend on
+  a specific facet count matters - a hole that must clear a printed bolt should not depend on
   a global.
 
 ## `resetQuality`
@@ -91,7 +91,7 @@ Restores the kernel's own defaults. Returns `Promise<void>`.
 ### A draft pass and a final pass
 
 Because quality is global and digests do not include it, the cache has to be dropped between
-passes — otherwise the final render happily reuses the draft's geometry:
+passes - otherwise the final render happily reuses the draft's geometry:
 
 ```js
 import { setQuality, EvaluationContext, render } from 'forma-dsl';
@@ -149,7 +149,7 @@ const context = await EvaluationContext.create();
 const { Manifold, CrossSection } = context.wasm;
 ```
 
-Anything you construct this way is **yours** to delete — the context only owns what it built
+Anything you construct this way is **yours** to delete - the context only owns what it built
 itself.
 
 ---
@@ -167,7 +167,7 @@ await loadKernel({ locateFile: () => wasmUrl });
 
 ### `locateFile` is being ignored
 
-The kernel was already loaded — the promise is memoized, so only the first call's options
+The kernel was already loaded - the promise is memoized, so only the first call's options
 count. Move the `loadKernel` call earlier, before anything creates a context.
 
 ### `setQuality` had no effect on an existing model

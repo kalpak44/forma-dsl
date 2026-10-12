@@ -3,7 +3,7 @@
  *
  * A value type: every operation returns a new transform and none mutates the receiver, so a
  * transform captured by a scope cannot be changed underneath it by a sibling block. That
- * matters more than it sounds — nesting is how the language composes, and a mutable
+ * matters more than it sounds - nesting is how the language composes, and a mutable
  * transform would make a block's meaning depend on what ran before it.
  */
 
@@ -116,7 +116,7 @@ export class Transform {
   }
 
   /**
-   * Rotates about x, then y, then z — the order OpenSCAD and Cadova both use, so a model
+   * Rotates about x, then y, then z - the order OpenSCAD and Cadova both use, so a model
    * ported from either lands in the same orientation.
    *
    * @param {Vector | ReadonlyArray<number>} angles Degrees about x, y and z.

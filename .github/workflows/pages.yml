@@ -1,4 +1,4 @@
-# Managed by homelab-infra — terraform/github/forma-dsl/workflows/pages.yml
+# Managed by homelab-infra - terraform/github/forma-dsl/workflows/pages.yml
 # Edits made here in the target repo are overwritten by `just deploy github forma-dsl`.
 #
 # The action versions here are bumped by hand. Dependabot cannot watch this file: it only
@@ -7,7 +7,7 @@
 #
 # The site is one artifact out of `npm run build`: the landing page at the root, the editor
 # under /editor/ and the reference docs under /docs/. What is published is exactly what the
-# Release check already builds on every pull request — including the docs link checker,
+# Release check already builds on every pull request - including the docs link checker,
 # which fails the build rather than shipping a dead cross-reference.
 name: Pages
 
@@ -57,7 +57,7 @@ jobs:
         run: npm ci
 
       # Reads the Pages configuration; it cannot create it. Turning Pages on is a one-time
-      # admin action — Settings → Pages → Source: GitHub Actions — because creating a site
+      # admin action - Settings → Pages → Source: GitHub Actions - because creating a site
       # needs `administration: write`, which is not a permission a workflow token can hold
       # at all. `enablement: true` here only trades the clear "verify that the repository
       # has Pages enabled" for an opaque "Resource not accessible by integration".

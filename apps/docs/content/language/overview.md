@@ -21,7 +21,7 @@ model "stack" {                      // something to render
 }
 ```
 
-Order does not matter between declarations of different kinds — a `model` may use a
+Order does not matter between declarations of different kinds - a `model` may use a
 `component` declared below it. Order does matter among `local`s, which are evaluated top to
 bottom. See [Scope and names](scope.md).
 
@@ -41,11 +41,11 @@ mistake it was.
 1. **Lexer** turns characters into tokens. It rejects unknown characters, unterminated
    strings and unterminated block comments.
 2. **Parser** turns tokens into an abstract syntax tree. It rejects anything that is not
-   grammatical — a missing brace, a keyword used as a block type, a `param` block containing
+   grammatical - a missing brace, a keyword used as a block type, a `param` block containing
    nested blocks.
 3. **Evaluator** resolves params and locals, then walks the models. It rejects unknown names,
    bad operands, unknown blocks, unknown attributes and dimensionality mismatches. Its output
-   is a tree of [geometry nodes](../api/geometry-node.md) — it never calls the kernel itself.
+   is a tree of [geometry nodes](../api/geometry-node.md) - it never calls the kernel itself.
 4. **Kernel** solves the node tree into concrete solids, memoized by node digest in an
    [`EvaluationContext`](../api/evaluation-context.md).
 
@@ -95,9 +95,9 @@ An operation with no children is an error; a shape with children is an error.
 
 Every piece of geometry is either 2D or 3D, and the language tracks which.
 
-- **2D shapes** — `rect`, `rounded_rect`, `circle`, `ellipse`, `regular_polygon`, `stadium`,
-  `polygon` — produce cross-sections.
-- **3D shapes** — `box`, `sphere`, `cylinder`, `cone`, `torus` — produce solids.
+- **2D shapes** - `rect`, `rounded_rect`, `circle`, `ellipse`, `regular_polygon`, `stadium`,
+  `polygon` - produce cross-sections.
+- **3D shapes** - `box`, `sphere`, `cylinder`, `cone`, `torus` - produce solids.
 - **Operations** either fix what they accept (`extrude` takes 2D, `refine` takes 3D) or pass
   their children's dimensionality through (`translate`, `rotate`, `hull`, the booleans).
 
@@ -107,7 +107,7 @@ Three rules follow, and each has its own error message:
 | --- | --- |
 | The children of one block must all be the same dimensionality | `"union" cannot mix 2D and 3D shapes` |
 | A block that fixes what it takes must get it | `"extrude" takes 2D geometry, got 3D` |
-| Anything rendered must be 3D | `part "body" is 2D — extrude or revolve it before rendering` |
+| Anything rendered must be 3D | `part "body" is 2D - extrude or revolve it before rendering` |
 
 To get from 2D to 3D use [`extrude`](../reference/conversions.md#extrude) or
 [`revolve`](../reference/conversions.md#revolve); to go back use
@@ -118,8 +118,8 @@ To get from 2D to 3D use [`extrude`](../reference/conversions.md#extrude) or
 
 ## Units and orientation
 
-- **Lengths are unitless.** Every consumer treats them as millimetres — STL has no unit
-  either — but nothing in the language enforces that.
+- **Lengths are unitless.** Every consumer treats them as millimetres - STL has no unit
+  either - but nothing in the language enforces that.
 - **Angles are always in degrees.** Everywhere: `rotate { z = 90 }`, `revolve { angle = 180 }`,
   `sin(30)`, `param a { type = angle }`. There is no radian form in the language. The
   JavaScript [`Angle`](../api/values.md#angle) class stores radians internally, and that is
@@ -134,7 +134,7 @@ To get from 2D to 3D use [`extrude`](../reference/conversions.md#extrude) or
 
 ## Identity is content
 
-The evaluator does not produce a call graph — it produces a tree of immutable nodes, each
+The evaluator does not produce a call graph - it produces a tree of immutable nodes, each
 carrying a 128-bit digest of its own content and its children's digests. Two structurally
 identical subtrees have the same digest and therefore *are* the same node.
 
@@ -142,7 +142,7 @@ That has consequences worth designing around:
 
 - A component used twenty times is evaluated once. Eight spheres in a loop cost one sphere
   and eight transforms.
-- Two shapes written with their attributes in a different order still share a cache entry —
+- Two shapes written with their attributes in a different order still share a cache entry -
   object keys are sorted before they are digested.
 - The members of a `union` are sorted by subtree size, so two unions written in a different
   order also share a digest. `difference` is never reordered, because its first child means

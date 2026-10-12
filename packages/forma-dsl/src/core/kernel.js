@@ -2,7 +2,7 @@
  * Loading the Manifold WASM module, and the global knobs for curve resolution.
  *
  * One instance per page or process. Memoized here rather than left to each caller, because
- * two models evaluating concurrently at startup must not each start an instantiation — and
+ * two models evaluating concurrently at startup must not each start an instantiation - and
  * because the resolution controls below are global to the module, so there is nowhere else
  * they could honestly live.
  */
@@ -38,7 +38,7 @@ export function loadKernel(options) {
       return wasm;
     }, (error) => {
       // A rejected promise would be memoized along with everything else, so a transient
-      // failure — a WASM fetch that lost the network — would be permanent for the page.
+      // failure - a WASM fetch that lost the network - would be permanent for the page.
       modulePromise = null;
       throw error;
     });

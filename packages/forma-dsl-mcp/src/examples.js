@@ -126,7 +126,7 @@ model "stacked_trays" {
 
   {
     name: 'revolved-profile',
-    summary: 'A vase turned from a profile — the shortest route from a drawing to a solid.',
+    summary: 'A vase turned from a profile - the shortest route from a drawing to a solid.',
     shows: ['polygon from a table of points', 'revolve', 'a second profile derived from the first', 'segments'],
     source: `param wall   { type = number  default = 2.4  min = 1.2  max = 5    step = 0.2 }
 param base   { type = number  default = 3.5  min = 2    max = 8    step = 0.5 }

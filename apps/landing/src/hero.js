@@ -2,7 +2,7 @@
  * The scene behind the headline.
  *
  * A turntable of machined-looking parts under a receding grid, drawn as matte solids with
- * bright edge overlays — a drawing that happens to be moving, rather than a video. It is
+ * bright edge overlays - a drawing that happens to be moving, rather than a video. It is
  * plain three.js on purpose: the hero has to be on screen immediately, and the geometry
  * kernel is several megabytes that the demo further down the page can afford to wait for.
  */
@@ -91,7 +91,7 @@ function makeParts() {
  * The hero background, for the life of the page.
  *
  * Constructing one starts a render loop that pauses whenever the canvas is off screen or
- * the tab is hidden — a landing page has no business holding a GPU while it is not being
+ * the tab is hidden - a landing page has no business holding a GPU while it is not being
  * looked at.
  */
 export class Hero {

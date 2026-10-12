@@ -1,4 +1,4 @@
-# Managed by homelab-infra — terraform/github/forma-dsl/workflows/release.yml
+# Managed by homelab-infra - terraform/github/forma-dsl/workflows/release.yml
 # Edits made here in the target repo are overwritten by `just deploy github forma-dsl`.
 #
 # The action versions here are bumped by hand. Dependabot cannot watch this file: it only
@@ -20,7 +20,7 @@ on:
     # One tag per published package, `<name>@<version>`, so each gets its own entry on the
     # releases page. Adding a package means adding its pattern here.
     tags: ["forma-dsl@*", "forma-dsl-mcp@*"]
-  # The agent starts this for a pull request whose head commit has no checks — a branch
+  # The agent starts this for a pull request whose head commit has no checks - a branch
   # opened before the check existed never gets one retroactively.
   workflow_dispatch: {}
 
@@ -45,7 +45,7 @@ jobs:
       matrix:
         # The floor is the oldest runtime a consumer may still be on: Node 20 reached end
         # of life in April 2026, and ESLint rules out 22.0–22.12. It is also what the
-        # published `engines` declare — the library ships source, so the runtime that
+        # published `engines` declare - the library ships source, so the runtime that
         # consumes it is the consumer's.
         node: ["22.13", "24.x"]
 
@@ -101,7 +101,7 @@ jobs:
         run: npm ci
 
       # The thresholds live in the `test:coverage` script, so no step here can drop them.
-      # Writes coverage/lcov.info, which Sonar uploads — must run before Sonar.
+      # Writes coverage/lcov.info, which Sonar uploads - must run before Sonar.
       - name: Test with coverage
         run: npm run test:coverage
 
@@ -116,7 +116,7 @@ jobs:
       #
       # Never on a tag. The scanner takes its branch name from the ref, so a tag run asks
       # SonarCloud about a branch called `v1.2.3` that has never existed, and the gate
-      # lookup answers "Not authorized or project not found" — which reads as a bad token
+      # lookup answers "Not authorized or project not found" - which reads as a bad token
       # and is not. The tag points at a commit main analysed moments earlier, so there is
       # nothing to re-analyse; without this the release job never runs.
       - name: SonarCloud analysis
@@ -142,7 +142,7 @@ jobs:
 
     permissions:
       contents: write
-      # npm authenticates this job by its OIDC identity — no token. npm signs the
+      # npm authenticates this job by its OIDC identity - no token. npm signs the
       # provenance attestation from the same identity, which is what ties the published
       # tarball to this repository and this commit.
       id-token: write
@@ -190,7 +190,7 @@ jobs:
           # Checked before the build, so the failure names the missing registration rather
           # than surfacing as an authentication error ten minutes later.
           if ! npm view "$name" version >/dev/null 2>&1; then
-            echo "::error::${name} has never been published — publish the first version by hand, then register this workflow as its trusted publisher"
+            echo "::error::${name} has never been published - publish the first version by hand, then register this workflow as its trusted publisher"
             exit 1
           fi
 
@@ -241,7 +241,7 @@ jobs:
 
       # No NODE_AUTH_TOKEN and no `--provenance`: npm trusts this workflow by name, so the
       # credential is the run's OIDC identity and the attestation is automatic. Renaming
-      # this file breaks publishing until the trusted publisher is recreated — npm matches
+      # this file breaks publishing until the trusted publisher is recreated - npm matches
       # it exactly, its configurations cannot be edited in place, and each package carries
       # its own registration.
       # Skipped when that exact version is already on the registry, so a run that

@@ -37,14 +37,14 @@ offset { amount = -1.5  join = "Miter"  rect { size = [40, 20] } }
 - **2D only.** `"offset" takes 2D geometry, got 3D`. There is no 3D shell operation; build
   one as a `difference` of two profiles, or offset the profile before extruding.
 - A negative amount larger than the shape's half-width erases it, leaving empty geometry.
-- This is the operation [`rounded_rect`](shapes-2d.md#rounded_rect) is built from — a
+- This is the operation [`rounded_rect`](shapes-2d.md#rounded_rect) is built from - a
   shrunken rectangle offset back out is what makes its corners true arcs.
 
 ---
 
 ## `hull`
 
-The convex hull of everything inside — the shape a rubber sheet would take around it.
+The convex hull of everything inside - the shape a rubber sheet would take around it.
 
 ```hcl
 hull {
@@ -61,7 +61,7 @@ None.
 #### Caveats
 
 - Works in 2D and 3D, passing the dimensionality through.
-- Children are unioned first, so the hull is of everything together — which is the point.
+- Children are unioned first, so the hull is of everything together - which is the point.
 - Any concavity is filled in. A hull of a C-shape is a solid blob.
 
 ---
@@ -85,7 +85,7 @@ refine { edge_length = 1  sphere { radius = 20 } }
 - 3D only.
 - Triangle count grows quadratically as the limit falls. `edge_length = 0.1` on anything
   large will cost seconds and hundreds of megabytes.
-- Refining does not change the shape — it only adds vertices, usually so that
+- Refining does not change the shape - it only adds vertices, usually so that
   [`smooth`](#smooth) or a downstream deformation has something to work with.
 
 ---
@@ -133,7 +133,7 @@ smooth { min_sharp_angle = 40  refine { edge_length = 1  blocky_thing { } } }
 - 3D only.
 - **Smoothing needs vertices to work with.** On a cube there is nothing between the corners
   to move, so the result is barely different. Pair it with [`refine`](#refine).
-- This is a mesh operation, not a fillet. For a controlled radius, model the fillet — round
+- This is a mesh operation, not a fillet. For a controlled radius, model the fillet - round
   the profile, or union in a [`torus`](shapes-3d.md#torus).
 
 ---
@@ -196,7 +196,7 @@ difference {
 
 ### Organic shapes from a hull
 
-A hull of a few spheres is the quickest route to a smooth, blobby form — a handle, a fillet
+A hull of a few spheres is the quickest route to a smooth, blobby form - a handle, a fillet
 between two bosses, a rounded enclosure:
 
 ```hcl
@@ -216,7 +216,7 @@ component "rounded_enclosure" {
 }
 ```
 
-Eight spheres, but one sphere node — content identity means the kernel builds the sphere
+Eight spheres, but one sphere node - content identity means the kernel builds the sphere
 once and the hull sees eight transforms of it.
 
 ### Flat cuts
@@ -232,7 +232,7 @@ For a half-model view, that is one operation instead of an intersection with a b
 
 ### Refine, then smooth
 
-The two go together — smoothing has nothing to move until the mesh is dense enough:
+The two go together - smoothing has nothing to move until the mesh is dense enough:
 
 ```hcl
 smooth {
@@ -249,7 +249,7 @@ Watch the triangle count; this is the most expensive pair of operations in the l
 
 ### `"offset" takes 2D geometry, got 3D`
 
-`offset` works on outlines. To grow a solid, project it, offset the outline and re-extrude —
+`offset` works on outlines. To grow a solid, project it, offset the outline and re-extrude -
 or offset the profile before it was extruded in the first place.
 
 ### `offset: "amount" must be a finite number`
@@ -259,7 +259,7 @@ or offset the profile before it was extruded in the first place.
 ### My `smooth` did nothing
 
 The mesh has no vertices to move. Refine first, and check that `min_sharp_angle` is above the
-angle of the edges you want rounded — the default of `60` leaves every edge on a cube alone.
+angle of the edges you want rounded - the default of `60` leaves every edge on a cube alone.
 
 ### `refine` hung the browser
 

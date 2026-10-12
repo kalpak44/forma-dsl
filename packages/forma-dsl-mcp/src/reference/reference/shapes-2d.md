@@ -5,7 +5,7 @@ blocks.
 
 **2D shapes cannot be rendered on their own.** Give them thickness with
 [`extrude`](conversions.md#extrude) or [`revolve`](conversions.md#revolve) first, or a part
-holding one fails with `part "body" is 2D — extrude or revolve it before rendering`.
+holding one fails with `part "body" is 2D - extrude or revolve it before rendering`.
 
 | Block | Sized by | Centred by default |
 | --- | --- | --- |
@@ -20,7 +20,7 @@ holding one fails with `part "body" is 2D — extrude or revolve it before rende
 ### A note on `segments`
 
 Several shapes take `segments`, the number of straight edges used to approximate a curve.
-`0` — the default — means *let the kernel decide* from its global quality settings, which
+`0` - the default - means *let the kernel decide* from its global quality settings, which
 [`setQuality`](../api/kernel.md#setquality) controls. Set it explicitly when a specific facet
 count matters: a hole that must clear a printed bolt, or a preview that must stay cheap.
 
@@ -83,7 +83,7 @@ circle { diameter = 24  segments = 64 }
 | Attribute | Type | Default | Description |
 | --- | --- | --- | --- |
 | `radius` | number | `1` | |
-| `diameter` | number | — | An alternative spelling of the same thing |
+| `diameter` | number | - | An alternative spelling of the same thing |
 | `segments` | integer | `0` | Segments around the circle; `0` lets the kernel choose |
 
 #### Caveats
@@ -114,7 +114,7 @@ ellipse { radii = [30, 18] }
 
 - Implemented as a scaled unit circle, so both radii stay exact rather than being
   approximated by a polygon fitted to an ellipse.
-- Always centred. There is no `center` attribute — passing one is
+- Always centred. There is no `center` attribute - passing one is
   `ellipse: unknown attribute "center"`.
 
 ---
@@ -133,16 +133,16 @@ regular_polygon { sides = 8  radius = 20  rotation = 22.5 }
 | Attribute | Type | Default | Description |
 | --- | --- | --- | --- |
 | `sides` | integer | **required** | At least 3 |
-| `width_across_flats` | number | — | Distance between opposite flats — how a hex key or a nut is specified |
-| `width_across_corners` | number | — | Distance between opposite corners |
+| `width_across_flats` | number | - | Distance between opposite flats - how a hex key or a nut is specified |
+| `width_across_corners` | number | - | Distance between opposite corners |
 | `radius` | number | `1` | Centre to corner. Same as half the across-corners width |
-| `diameter` | number | — | Twice the radius |
+| `diameter` | number | - | Twice the radius |
 | `rotation` | angle | `0` | Where the first corner sits, in degrees |
 
 #### Caveats
 
 - Give **one** sizing attribute. They are tried in the order above, so
-  `width_across_flats` wins if several are present — do not rely on that; pass one.
+  `width_across_flats` wins if several are present - do not rely on that; pass one.
 - `radius` and `diameter` together are an error, as on [`circle`](#circle).
 - Fewer than 3 sides is an error: `regular_polygon: "sides" must be at least 3`.
 - Always centred on the origin.
@@ -153,7 +153,7 @@ regular_polygon { sides = 8  radius = 20  rotation = 22.5 }
 
 ## `stadium`
 
-A rectangle fully rounded on its short axis — the shape of a slot.
+A rectangle fully rounded on its short axis - the shape of a slot.
 
 ```hcl
 stadium { size = [40, 8]  center = true }
@@ -203,7 +203,7 @@ polygon {
   without a separate `difference`.
 - The outline should not self-intersect. The fill rule decides what happens when it does,
   rather than the shape being rejected.
-- Points are not closed for you — the last point connects back to the first automatically, so
+- Points are not closed for you - the last point connects back to the first automatically, so
   do not repeat it.
 
 ---
@@ -226,7 +226,7 @@ model "vase" {
 }
 ```
 
-Every X must be ≥ 0 — a profile that crosses the axis revolves through itself.
+Every X must be ≥ 0 - a profile that crosses the axis revolves through itself.
 
 ### Slots and keyways
 
@@ -255,7 +255,7 @@ for i, size in [1.5, 2, 2.5, 3, 4, 5, 6] {
 }
 ```
 
-The `+ 0.3` is print clearance — the language has no opinion about fits, so the model states
+The `+ 0.3` is print clearance - the language has no opinion about fits, so the model states
 them.
 
 ### Holes without a boolean
@@ -276,7 +276,7 @@ polygon {
 
 ## Troubleshooting
 
-### `part "body" is 2D — extrude or revolve it before rendering`
+### `part "body" is 2D - extrude or revolve it before rendering`
 
 A 2D shape reached the renderer. Wrap it:
 
@@ -286,7 +286,7 @@ extrude { height = 4  circle { radius = 10 } }
 
 ### `"circle" is a shape and cannot contain other blocks`
 
-A shape is a leaf. Something was nested inside its braces — usually a missing `}` on the
+A shape is a leaf. Something was nested inside its braces - usually a missing `}` on the
 line before, so the next block was swallowed.
 
 ### `circle: give either "radius" or "diameter", not both`
@@ -305,5 +305,5 @@ shorter side. Check that it is set and that the shape is big enough to show it.
 
 ### My hexagon is rotated 30° from what I wanted
 
-`rotation = 0` puts a **corner** on +X. For a flat on +X, use `rotation = 30` — or in general
+`rotation = 0` puts a **corner** on +X. For a flat on +X, use `rotation = 30` - or in general
 `180 / sides`.

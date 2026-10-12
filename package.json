@@ -18,6 +18,7 @@
     "build:docs": "npm run build -w @forma-dsl/docs",
     "preview": "npm run preview -w @forma-dsl/landing",
     "mcp": "node packages/forma-dsl-mcp/src/bin.js",
+    "cli": "node packages/forma-dsl-cli/src/bin.js",
     "test": "npm test --workspaces --if-present",
     "test:coverage": "node -e \"require('node:fs').mkdirSync('coverage',{recursive:true})\" && node --test --experimental-test-coverage --test-coverage-lines=90 --test-coverage-branches=80 --test-coverage-functions=75 --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --test-reporter=spec --test-reporter-destination=stdout \"packages/*/test/**/*.test.js\" \"apps/*/test/**/*.test.js\"",
     "lint": "eslint .",

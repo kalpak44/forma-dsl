@@ -36,7 +36,7 @@ translate { offset = [10, 0]     rect { size = [4, 4] } }      // 2D
 
 #### Caveats
 
-- `offset` must have as many components as the child has dimensions — 2 for a cross-section,
+- `offset` must have as many components as the child has dimensions - 2 for a cross-section,
   3 for a solid. A mismatch is `translate: "offset" must be a number or an array of 3
   numbers`.
 - A single number broadcasts to every axis, which is rarely what you want here but is
@@ -54,14 +54,14 @@ rotate { angles = [0, 90, 45]  box { size = [20, 4, 4] } }      // 3D, all three
 rotate { angle = 30  rect { size = [20, 4] } }                  // 2D
 ```
 
-#### Attributes — 3D children
+#### Attributes - 3D children
 
 | Attribute | Type | Default | Description |
 | --- | --- | --- | --- |
-| `angles` | 3-vector | — | Degrees about X, Y and Z at once |
+| `angles` | 3-vector | - | Degrees about X, Y and Z at once |
 | `x`, `y`, `z` | number | `0` | Degrees about that axis, named one at a time |
 
-#### Attributes — 2D children
+#### Attributes - 2D children
 
 | Attribute | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -70,7 +70,7 @@ rotate { angle = 30  rect { size = [20, 4] } }                  // 2D
 #### Caveats
 
 - **Rotation is about the origin, not about the geometry.** To spin something in place, put
-  it at the origin, rotate, then translate — or build it centred in the first place.
+  it at the origin, rotate, then translate - or build it centred in the first place.
 - In 3D the axes are applied **X, then Y, then Z**, matching OpenSCAD, so a model ported from
   there lands in the same orientation. Composing rotations in a different order requires
   separate `rotate` blocks.
@@ -100,7 +100,7 @@ scale { factor = [1, 1, 0.5]  sphere { radius = 5 } }    // flattened
 - A negative factor mirrors as well as scales, and flips the winding. Prefer
   [`mirror`](#mirror) when reflection is what you mean.
 - A factor of `0` collapses the geometry to nothing.
-- Non-uniform scaling of a curved surface changes its radii — a scaled sphere is an
+- Non-uniform scaling of a curved surface changes its radii - a scaled sphere is an
   ellipsoid, which is the cheapest way to get one.
 
 ---
@@ -167,7 +167,7 @@ translate {          // …then moved 50 along X
 }
 ```
 
-Swapping the two gives a different result — rotating a translated box sweeps it around the
+Swapping the two gives a different result - rotating a translated box sweeps it around the
 origin on an arc of radius 50.
 
 ### Radial patterns
@@ -183,7 +183,7 @@ for i in range(0, 8) {
 }
 ```
 
-Because identity is content identity, this costs **one** cylinder and eight transforms — the
+Because identity is content identity, this costs **one** cylinder and eight transforms - the
 cylinder node is the same node every time round the loop.
 
 ### Mirrored pairs
@@ -212,7 +212,7 @@ scale { factor = [1, 0.6, 1]  sphere { radius = 20  segments = 64 } }
 ### `translate: "offset" must be a number or an array of 3 numbers`
 
 The offset has the wrong number of components for its child. 2D children want two, 3D
-children want three — and a 2D shape stays 2D until it is extruded:
+children want three - and a 2D shape stays 2D until it is extruded:
 
 ```hcl
 translate { offset = [1, 2, 3]  rect { size = [4, 4] } }   // ✗ rect is 2D
@@ -228,7 +228,7 @@ rotate { angle = 45  box { size = [1, 1, 1] } }    // ✗
 rotate { z = 45      box { size = [1, 1, 1] } }    // ✓
 ```
 
-The reverse — `z` on a 2D child — fails the same way.
+The reverse - `z` on a 2D child - fails the same way.
 
 ### `"translate" needs at least one shape inside it`
 

@@ -19,7 +19,7 @@ Groups geometry into one named, coloured piece of the scene. Parts are solved in
 and drawn in their own colour.
 
 A part is **not an operand**. It does not contribute geometry to the block around it, and an
-enclosing `translate` will not move it — which is why a part belongs directly in a
+enclosing `translate` will not move it - which is why a part belongs directly in a
 [`model`](model.md), or inside a `for` or `if` in one.
 
 #### Label
@@ -57,7 +57,7 @@ Nothing, to the enclosing block. The part travels separately and lands in the sc
 - **A part cannot come out of a [`component`](component.md)**:
   `a component cannot declare parts`. Call the component inside a part instead.
 - **Every part must be 3D** by the time it renders:
-  `part "body" is 2D — extrude or revolve it before rendering`.
+  `part "body" is 2D - extrude or revolve it before rendering`.
 - Several blocks inside a part are implicitly unioned, exactly as anywhere else.
 - Nothing rejects two parts with the same name; the viewer will simply list two entries
   called the same thing.
@@ -121,7 +121,7 @@ if var.show_label {
   part "label" { color = "#f4f1e4"  label_band { } }
 }
 
-// ✗ — when show_label is false this is an empty part, which is an error
+// ✗ - when show_label is false this is an empty part, which is an error
 part "label" {
   if var.show_label { label_band { } }
 }
@@ -159,13 +159,13 @@ for (const part of result.parts) {
   part.name;      // "bottle"
   part.color;     // "#8fd3e8"
   part.opacity;   // 1
-  part.node;      // the GeometryNode — what context.collect() wants
+  part.node;      // the GeometryNode - what context.collect() wants
   part.concrete;  // the solved Manifold solid, owned by the context
   part.mesh;      // positions and normals, ready to upload
 }
 ```
 
-Parts are solved independently, so two parts that share a subtree still solve it once — the
+Parts are solved independently, so two parts that share a subtree still solve it once - the
 digest cache is keyed on content, not on which part asked.
 
 To export one part, pass its `concrete` to [`toBinarySTL`](../api/export.md#tobinarystl).
@@ -176,7 +176,7 @@ To export one part, pass its `concrete` to [`toBinarySTL`](../api/export.md#tobi
 
 ### `a part needs at least one shape inside it`
 
-The part's body produced nothing — usually an `if` inside it that took no branch, or a `for`
+The part's body produced nothing - usually an `if` inside it that took no branch, or a `for`
 over an empty list. Move the condition outside the part.
 
 ### `a part cannot contain another part`
@@ -194,9 +194,9 @@ component "shell" { ... }                    // geometry only
 model "m" { part "shell" { shell { } } }     // the part lives here
 ```
 
-### `part "body" is 2D — extrude or revolve it before rendering`
+### `part "body" is 2D - extrude or revolve it before rendering`
 
-The part holds a cross-section. Extrude or revolve it first — see
+The part holds a cross-section. Extrude or revolve it first - see
 [2D ↔ 3D](conversions.md).
 
 ### A part inside an operation disappears
@@ -208,7 +208,7 @@ depends on whether the operation had anything else to work with:
 // ✗ fails: "translate" needs at least one shape inside it
 translate { offset = [0, 0, 10]  part "p" { box { size = [1, 1, 1] } } }
 
-// ✗ worse — renders, but part "p" is silently gone from the scene
+// ✗ worse - renders, but part "p" is silently gone from the scene
 translate {
   offset = [0, 0, 10]
   box { size = [1, 1, 1] }
@@ -220,10 +220,10 @@ part "p" { translate { offset = [0, 0, 10]  box { size = [1, 1, 1] } } }
 ```
 
 Nothing warns about the second case. If a part you declared is missing from the render,
-check that it is written directly in the [`model`](model.md) — or inside a `for` or `if` in
-one — and not nested inside a transform or a boolean.
+check that it is written directly in the [`model`](model.md) - or inside a `for` or `if` in
+one - and not nested inside a transform or a boolean.
 
 ### Two parts have the same name
 
 Nothing rejects it. Part names come from an expression, so a loop that computes the same
-label twice produces duplicates — include the loop index: `part "leg_${i}"`.
+label twice produces duplicates - include the loop index: `part "leg_${i}"`.

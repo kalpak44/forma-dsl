@@ -8,7 +8,7 @@ import { createPage } from './dom.js';
 import { DEMOS } from '../src/demos.js';
 
 // The demo imports the kernel's wasm through Vite, so the module cannot be loaded at all
-// until Node is taught that specifier — which is why it is imported after the hooks.
+// until Node is taught that specifier - which is why it is imported after the hooks.
 register('./vite-imports.js', import.meta.url);
 const { Demo } = await import('../src/demo.js');
 

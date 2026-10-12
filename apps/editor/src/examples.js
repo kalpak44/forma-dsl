@@ -2,7 +2,7 @@
  * The documents the editor offers from its picker.
  *
  * Chosen to cover the language rather than to look impressive: each one introduces something
- * the others do not — parameters, booleans, reusable components, a lathe. They are held to
+ * the others do not - parameters, booleans, reusable components, a lathe. They are held to
  * being real by `test/examples.test.js`, which renders every one of them, so an example
  * cannot go stale against a language change without the build saying so.
  */

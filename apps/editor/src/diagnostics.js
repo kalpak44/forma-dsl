@@ -8,7 +8,7 @@
  * an error under a line that was never the problem is what this file exists to prevent, and
  * why {@link Diagnostics} has an `invalidate` at all.
  *
- * Kept apart from `main.js` and free of the DOM so the rule can be tested without a browser —
+ * Kept apart from `main.js` and free of the DOM so the rule can be tested without a browser -
  * the bug it fixes lived in an event handler precisely because the invariant was implicit.
  */
 

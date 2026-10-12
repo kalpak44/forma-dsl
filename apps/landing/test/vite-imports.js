@@ -2,7 +2,7 @@
  * Module hooks for the two import forms only a bundler understands.
  *
  * The demo imports the kernel's `.wasm` with Vite's `?url` suffix and the page's entry
- * imports a stylesheet, neither of which Node can resolve — so without these the module
+ * imports a stylesheet, neither of which Node can resolve - so without these the module
  * cannot be loaded at all, let alone tested. `?url` becomes the file's path on disk, which
  * is what the suffix means, and a stylesheet becomes an empty module.
  */

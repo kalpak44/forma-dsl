@@ -29,7 +29,7 @@ param bolts {
 
 #### Attributes
 
-Every attribute is optional. **Only `default` affects geometry** — the rest describe the
+Every attribute is optional. **Only `default` affects geometry** - the rest describe the
 control the editor should build, and are returned verbatim by
 [`describeParameters`](../api/describe-parameters.md).
 
@@ -43,7 +43,7 @@ control the editor should build, and are returned verbatim by
 | `description` | string | Help text |
 | `options` | list | A fixed set of choices, for a dropdown rather than a free field |
 
-Unknown attributes are **not** rejected here — a param block is metadata, and anything in it
+Unknown attributes are **not** rejected here - a param block is metadata, and anything in it
 is passed through to the descriptor. This is the one block in the language that does not
 reject attributes it does not understand.
 
@@ -55,13 +55,13 @@ Nothing. A param binds a name; it produces no geometry.
 
 - **`min`, `max`, `step` and `options` are not enforced.** They shape the editor's control
   and nothing else. `render(source, { params: { bolts: 9999 } })` succeeds on a param
-  declared `max = 16`. Validate in the model if a bound matters —
+  declared `max = 16`. Validate in the model if a bound matters -
   `local n = min(max(var.bolts, 3), 16)`.
 - A param block may contain **attributes only**. Nested blocks inside it are an error:
   `a param block holds attributes, not nested blocks`.
 - Declaring the same param twice is an error: `param "a" is declared twice`.
 - A param's `default` may refer to params declared **above** it by their bare name, but not
-  to `var` — `var` is assembled after every param has resolved. See
+  to `var` - `var` is assembled after every param has resolved. See
   [Scope](../language/scope.md#the-root-scope).
 - A param declared inside a `model` is a different thing: it must have a default and cannot
   be set from outside. See [`model`](model.md#model-params).
@@ -124,7 +124,7 @@ When `type` is omitted it is inferred from the default: a number gives `number`,
 `bool`, a string `string`, a list `vector`. A param with neither a `type` nor a `default`
 falls back to `number`.
 
-An `angle` param is an ordinary number as far as the language is concerned — every angle in
+An `angle` param is an ordinary number as far as the language is concerned - every angle in
 forma is in degrees, and the type only tells the editor to label the control that way.
 
 ### Declaring a required input
@@ -155,7 +155,7 @@ param bore     = diameter / 2 - wall * 4     // ✓ bare names of earlier params
 ```
 
 For a value that is always derived and should never be a control, use a
-[`local`](local.md) instead — locals are computed after every param and may use `var.`.
+[`local`](local.md) instead - locals are computed after every param and may use `var.`.
 
 ### Offering a fixed set of choices
 
@@ -191,7 +191,7 @@ give it a default, or supply one:
 await render(source, { params: { height: 20 } });
 ```
 
-[`describeParameters`](../api/describe-parameters.md) works on such a document — it is built
+[`describeParameters`](../api/describe-parameters.md) works on such a document - it is built
 to be callable before any value exists, so a front end can discover what to ask for.
 
 ### `param "a" is declared twice`
@@ -201,7 +201,7 @@ overwritten, because a duplicated input would make the editor's control ambiguou
 
 ### `a param block holds attributes, not nested blocks`
 
-Something inside the braces was parsed as a block rather than an attribute — usually a
+Something inside the braces was parsed as a block rather than an attribute - usually a
 missing `=`:
 
 ```hcl

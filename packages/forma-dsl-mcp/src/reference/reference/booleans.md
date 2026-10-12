@@ -27,7 +27,7 @@ None.
 
 - **Usually unnecessary.** Sibling blocks are already implicitly unioned, so
   `part "p" { a  b }` and `part "p" { union { a  b } }` are the same. Write `union`
-  explicitly when it makes the grouping clearer — typically as one operand of a
+  explicitly when it makes the grouping clearer - typically as one operand of a
   `difference`.
 - The order of the children does not affect the result, and does not affect the digest
   either: union members are sorted by subtree size before hashing, so two unions written in a
@@ -86,7 +86,7 @@ None.
 
 #### Caveats
 
-- With one child, it is that child. With none, it is an error —
+- With one child, it is that child. With none, it is an error -
   `"intersection" needs at least one shape inside it`.
 - Order does not affect the result.
 
@@ -149,7 +149,7 @@ intersection {
 }
 ```
 
-For a single flat cut, [`trim`](refinement.md#trim) is cheaper — it cuts with a half-space
+For a single flat cut, [`trim`](refinement.md#trim) is cheaper - it cuts with a half-space
 and needs no second solid.
 
 ### Grouping so a transform applies to several shapes
@@ -164,7 +164,7 @@ translate {
 }
 ```
 
-Inside a `difference`, though, each child is separate — so to subtract two shapes *as one
+Inside a `difference`, though, each child is separate - so to subtract two shapes *as one
 body*, group them explicitly:
 
 ```hcl
@@ -178,7 +178,7 @@ difference {
 ```
 
 Here the `union` is not decorative: without it the two cylinders would be two separate
-cutters, which happens to give the same result for a difference — but not for an
+cutters, which happens to give the same result for a difference - but not for an
 `intersection`, where it changes the answer entirely.
 
 ---

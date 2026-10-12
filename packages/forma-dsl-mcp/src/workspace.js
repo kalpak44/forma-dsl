@@ -3,7 +3,7 @@
  *
  * An MCP server writes files on behalf of a model, so the set of paths it will accept is a
  * security boundary rather than a convenience. Which directories make up that set is the
- * client's decision — it declares them as MCP roots, and {@link Workspace} only asks. What
+ * client's decision - it declares them as MCP roots, and {@link Workspace} only asks. What
  * the workspace enforces is that everything goes through `resolve`, which refuses anything
  * landing outside all of them, including by way of `..`, an absolute path, or a symlink
  * pointing out of the tree.
@@ -84,7 +84,7 @@ export class Workspace {
    *
    * A root is resolved once and remembered, so a root that is itself a link still compares
    * equal to the paths resolved beneath it. Roots that do not exist are dropped rather than
-   * fatal — a client may well declare a directory this server has no business in — and only
+   * fatal - a client may well declare a directory this server has no business in - and only
    * an empty result is an error.
    *
    * @returns {Promise<Root[]>} The roots, in the order the client gave them.
@@ -124,7 +124,7 @@ export class Workspace {
     if (!roots.length) {
       throw new WorkspaceError(
         refused.length
-          ? `no usable workspace root — ${refused.join('; ')}`
+          ? `no usable workspace root - ${refused.join('; ')}`
           : 'the client has declared no workspace root, so there is nowhere to read or write; '
             + 'declare one with the MCP roots capability',
       );
@@ -185,7 +185,7 @@ export class Workspace {
     // the caller gave is used to choose segments and never to name a file. Each segment has
     // to match SAFE_SEGMENT, and what comes out is assembled onto a directory the client
     // declared. Every line below, and every caller, works with that value rather than the one
-    // that came in — so the walk beneath cannot be steered by a name this never approved.
+    // that came in - so the walk beneath cannot be steered by a name this never approved.
     const base = this.#baseOf(root, lexical);
     const segments = relative(base, lexical).split(sep).filter(Boolean);
     if (!segments.every((segment) => SAFE_SEGMENT.test(segment))) {
@@ -193,7 +193,7 @@ export class Workspace {
     }
     const absolute = segments.reduce((at, segment) => join(at, segment), base);
 
-    // The file itself may not exist yet — a write is the common case — so the deepest
+    // The file itself may not exist yet - a write is the common case - so the deepest
     // ancestor that does exist is what gets its links followed. This is the one check that
     // cannot be made without the filesystem: whether a directory inside a root is a link out
     // of it is not answerable from the path alone.
@@ -208,7 +208,7 @@ export class Workspace {
   }
 
   /**
-   * Which spelling of a root a path sits under — the one the client gave, or the one symlinks
+   * Which spelling of a root a path sits under - the one the client gave, or the one symlinks
    * resolve it to.
    *
    * @param {Root} root The root holding it.
@@ -294,7 +294,7 @@ export class Workspace {
 
     const replaced = existsSync(absolute);
     if (replaced && !overwrite) {
-      throw new WorkspaceError(`"${path}" already exists — pass overwrite: true to replace it`);
+      throw new WorkspaceError(`"${path}" already exists - pass overwrite: true to replace it`);
     }
 
     await mkdir(dirname(absolute), { recursive: true });

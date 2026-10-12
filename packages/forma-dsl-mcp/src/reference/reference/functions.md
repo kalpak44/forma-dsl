@@ -1,7 +1,7 @@
 # Functions
 
 Thirty builtin functions, callable in any [expression](../language/expressions.md). They take
-**positional arguments only** — named arguments are an error — and there are no user-defined
+**positional arguments only** - named arguments are an error - and there are no user-defined
 functions: to name a value declare a [`local`](local.md), and to name geometry declare a
 [`component`](component.md).
 
@@ -103,7 +103,7 @@ local bolts = max(3, min(16, var.bolts))
 
 `len(value)` → number
 
-The length of a list or a string. Anything else gives `0` — it does not raise.
+The length of a list or a string. Anything else gives `0` - it does not raise.
 
 ```hcl
 len([1, 2, 3])      // 3
@@ -168,7 +168,7 @@ range(4)              // [0, 1, 2, 3]
 range(2, 6)           // [2, 3, 4, 5]
 range(0, 10, 2.5)     // [0, 2.5, 5, 7.5]
 range(5, 0, -1)       // [5, 4, 3, 2, 1]
-range(0, -5)          // []  — backwards with a positive step is empty, not infinite
+range(0, -5)          // []  - backwards with a positive step is empty, not infinite
 ```
 
 This is what drives most [`for`](../language/control-flow.md#for) loops.
@@ -211,14 +211,14 @@ String interpolation already converts, so `str` is mostly useful when building a
 | `pi` | 3.141592653589793 |
 | `e` | 2.718281828459045 |
 
-They are ordinary names in the root scope, so they can be shadowed by a param or a local —
+They are ordinary names in the root scope, so they can be shadowed by a param or a local -
 avoid doing so.
 
 ```hcl
 local circumference = 2 * pi * var.radius
 ```
 
-Since every angle in the language is in degrees, `pi` comes up less than it would elsewhere —
+Since every angle in the language is in degrees, `pi` comes up less than it would elsewhere -
 mostly in arc lengths and areas rather than in rotations.
 
 ---
@@ -281,8 +281,8 @@ model "m" {
 
 ### `len takes 1 argument(s), got 2`
 
-A fixed-arity function got the wrong count. The variadic ones — `min`, `max`, `sum`,
-`concat`, `range` — accept any number; the rest do not.
+A fixed-arity function got the wrong count. The variadic ones - `min`, `max`, `sum`,
+`concat`, `range` - accept any number; the rest do not.
 
 ### `pow: functions take positional arguments`
 
@@ -305,7 +305,7 @@ allocating until the tab dies.
 
 ### `... must be a finite number`
 
-Something upstream produced `NaN` or `Infinity` — `sqrt` of a negative, `min()` of nothing,
+Something upstream produced `NaN` or `Infinity` - `sqrt` of a negative, `min()` of nothing,
 `num("abc")`. The error names the block and attribute that read it, not where it was
 produced, so work backwards from there.
 

@@ -168,7 +168,7 @@ test('a segment that could separate, escape or terminate a path is refused', asy
   const workspace = await Workspace.open(await scratch(t));
 
   // A NUL survives `resolve` and lands inside the root, so containment alone lets it through
-  // — it used to reach the filesystem and come back as an unreadable ERR_INVALID_ARG_VALUE.
+  // - it used to reach the filesystem and come back as an unreadable ERR_INVALID_ARG_VALUE.
   await assert.rejects(() => workspace.resolve('a\0b.forma'), /outside the workspace root/);
   // A backslash is a legal POSIX filename character and a separator on Windows. Refusing it
   // costs nothing here and keeps the two platforms reading the same path the same way.

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Program, Evaluator, parse, tokenize, FormaError, render } from '../src/index.js';
+import { Program, Evaluator, parse, tokenize, FormaError, excerpt, render } from '../src/index.js';
 import { GeometryNode } from '../src/core/node.js';
 import { Transform } from '../src/values/transform.js';
 import { DigestWriter } from '../src/core/digest.js';
@@ -143,4 +143,26 @@ test('a signal that never fires leaves the render alone', async () => {
   const r = await render('model "m" { box { size = 10 } }', { signal: controller.signal });
   assert.equal(r.parts.length, 1);
   r.context.dispose();
+});
+
+test('the excerpt puts the caret under the column', () => {
+  const rendered = excerpt('alpha\nbeta\ngamma', { line: 2, column: 3 });
+
+  assert.deepEqual(rendered.split('\n'), [
+    '1 | alpha',
+    '2 | beta',
+    '  |   ^',
+    '3 | gamma',
+  ]);
+});
+
+test('a position with no line gets no excerpt', () => {
+  assert.equal(excerpt('anything', null), undefined);
+  assert.equal(excerpt('anything'), undefined);
+});
+
+test('the excerpt clamps to the ends of the document', () => {
+  const rendered = excerpt('only', { line: 1, column: 1 });
+
+  assert.deepEqual(rendered.split('\n'), ['1 | only', '  | ^']);
 });

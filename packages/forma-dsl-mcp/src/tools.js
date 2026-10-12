@@ -23,7 +23,7 @@ import { checkDocument, exportStl } from './document.js';
  * All four hints are stated rather than just `readOnlyHint`, because the omitted ones are not
  * absent: the specification gives `destructiveHint` a default of **true** and `idempotentHint`
  * a default of **false**. A tool declaring neither is therefore advertising itself as
- * destructive and unrepeatable — which, for a call that hands back a page of the manual, is
+ * destructive and unrepeatable - which, for a call that hands back a page of the manual, is
  * simply untrue, and a cautious client is entitled to act on it.
  *
  * `openWorldHint` is false because every answer is bundled with the package. Nothing here
@@ -52,8 +52,8 @@ const say = (text, isError = false) => ({
  * Runs a handler, turning anything it throws into a result the caller can read.
  *
  * A thrown error becomes a protocol-level failure, which most clients surface as "the tool
- * broke" rather than as something the model can correct. A refusal it can read — a path
- * outside the roots, a part that does not exist — belongs in the result instead.
+ * broke" rather than as something the model can correct. A refusal it can read - a path
+ * outside the roots, a part that does not exist - belongs in the result instead.
  *
  * @param {() => Promise<object>} handler What to run.
  * @returns {Promise<object>} Its result, or the failure as text.
@@ -115,9 +115,9 @@ function parameterLines(parameters) {
       return [
         `\`${parameter.name}\``,
         parameter.type,
-        parameter.default === undefined ? '—' : JSON.stringify(parameter.default),
+        parameter.default === undefined ? '-' : JSON.stringify(parameter.default),
         parameter.required ? 'yes' : 'no',
-        bounded ? `${parameter.min ?? '−∞'} … ${parameter.max ?? '∞'}` : '—',
+        bounded ? `${parameter.min ?? '−∞'} … ${parameter.max ?? '∞'}` : '-',
       ];
     }),
   ), ''];
@@ -184,7 +184,7 @@ function sceneLines(scene, stats) {
 function takesOf(entry) {
   if (entry.leaf) return 'nothing';
   if (entry.takes === 'same') return '2D or 3D';
-  return entry.takes ? `${entry.takes}D` : '—';
+  return entry.takes ? `${entry.takes}D` : '-';
 }
 
 /**
@@ -224,7 +224,7 @@ async function documentFrom(workspace, { source, path }) {
   if (source && path) throw new Error('give either "source" or "path", not both');
   if (source) return source;
   if (path) return workspace.read(path);
-  throw new Error('give either "source" — the document itself — or "path" to one already written');
+  throw new Error('give either "source" - the document itself - or "path" to one already written');
 }
 
 /**
@@ -304,7 +304,7 @@ function registerBlocks(server) {
         ['Block', 'Dim', 'Takes', 'Summary'],
         all.filter((entry) => entry.group === name).map((entry) => [
           `\`${entry.name}\``,
-          entry.dim ? `${entry.dim}D` : '—',
+          entry.dim ? `${entry.dim}D` : '-',
           takesOf(entry),
           entry.summary,
         ]),
@@ -319,7 +319,7 @@ function registerBlocks(server) {
  * Every function an expression may call, and the two named constants.
  *
  * There are no user-defined functions in forma, so this answer is complete rather than a
- * sample — which is worth saying, because it is what stops a caller inventing one.
+ * sample - which is worth saying, because it is what stops a caller inventing one.
  *
  * @param {McpServer} server The server.
  * @returns {void}
@@ -363,7 +363,7 @@ function registerReference(server) {
     description:
       'The language\'s full reference manual, bundled with this server. Pass `query` to '
       + 'search it, or `page` to read one page whole. Reach for this when forma_blocks is not '
-      + 'enough — the manual has the worked examples, the caveats and the troubleshooting for '
+      + 'enough - the manual has the worked examples, the caveats and the troubleshooting for '
       + 'every error message the language raises. Call with no arguments to list the pages.',
     inputSchema: {
       query: z.string().optional().describe('Words to search for, e.g. "revolve profile axis".'),
@@ -383,7 +383,7 @@ function registerReference(server) {
         `# ${hits.length} page${plural} matching "${query}"`,
         '',
         ...hits.map((hit) => [
-          `## ${hit.title} — \`${hit.path}\``,
+          `## ${hit.title} - \`${hit.path}\``,
           hit.heading ? `_under "${hit.heading}"_` : '',
           '',
           '> ' + hit.snippet.replaceAll('\n', '\n> '),
@@ -468,7 +468,7 @@ function registerWrite(server, workspace) {
       + 'triangle count and genus, or the error with the line, the column and an excerpt with '
       + 'a caret on it. This is how you find out whether what you wrote is the size you meant, '
       + 'is watertight, and is not silently empty. A document that does not render is refused '
-      + 'and nothing is written — pass `force: true` to write it anyway. Refuses to replace an '
+      + 'and nothing is written - pass `force: true` to write it anyway. Refuses to replace an '
       + 'existing file unless `overwrite` is set.',
     inputSchema: {
       path: z.string()
@@ -494,7 +494,7 @@ function registerWrite(server, workspace) {
 
     const written = await workspace.write(path, source, { overwrite, extension: '.forma' });
     return say([
-      `Wrote \`${written.relative}\` under \`${written.root}\` — ${written.bytes} bytes`
+      `Wrote \`${written.relative}\` under \`${written.root}\` - ${written.bytes} bytes`
       + `${written.replaced ? ', replacing what was there' : ''}.`,
       '',
       formatReport(report),
@@ -546,7 +546,7 @@ function registerExportStl(server, workspace) {
   server.registerTool('forma_export_stl', {
     title: 'Render and write a binary STL',
     description:
-      'Renders a document and writes one part — or every part unioned — as a binary STL. '
+      'Renders a document and writes one part - or every part unioned - as a binary STL. '
       + 'Lengths are unitless in forma and STL has no unit either; every consumer treats them '
       + 'as millimetres.',
     inputSchema: {
@@ -575,7 +575,7 @@ function registerExportStl(server, workspace) {
       extension: '.stl',
     });
     return say(
-      `Wrote \`${written.relative}\` under \`${written.root}\` — ${written.bytes} bytes, `
+      `Wrote \`${written.relative}\` under \`${written.root}\` - ${written.bytes} bytes, `
       + `${result.triangles} triangles, from model \`${result.model}\`, part \`${result.part}\`.`,
     );
   }));

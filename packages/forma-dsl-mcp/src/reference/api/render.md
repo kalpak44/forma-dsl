@@ -33,7 +33,7 @@ A `Promise<RenderResult>`:
 | Field | Type | Description |
 | --- | --- | --- |
 | `name` | `string` | The model's name |
-| `parts` | `RenderedPart[]` | One per [`part`](../reference/part.md) — see below |
+| `parts` | `RenderedPart[]` | One per [`part`](../reference/part.md) - see below |
 | `program` | [`Program`](low-level.md#program) | The parsed document, for inspecting params |
 | `context` | `EvaluationContext` | The context that owns every solid in `parts` |
 | `stats` | `RenderStats` | `nodes`, `evaluated`, `cacheHits`, `milliseconds` |
@@ -60,7 +60,7 @@ Each `RenderedPart`:
 - Params are resolved before any geometry is built, so a missing required param fails
   immediately rather than halfway through a model.
 - `options.params` sets **top-level** params only. A param declared inside a `model` is a
-  constant — see [model params](../reference/model.md#model-params).
+  constant - see [model params](../reference/model.md#model-params).
 
 ---
 
@@ -129,7 +129,7 @@ async function rerender(source, params) {
 }
 ```
 
-Typing a digit into a dimension re-solves that wall and nothing else — `stats.cacheHits`
+Typing a digit into a dimension re-solves that wall and nothing else - `stats.cacheHits`
 against `stats.evaluated` shows how much was skipped.
 
 ### Choosing a model
@@ -165,7 +165,7 @@ result.context.dispose();
 ```js
 const { stats } = await render(source, { context });
 
-stats.nodes;        // nodes in the tree — a measure of the document's size
+stats.nodes;        // nodes in the tree - a measure of the document's size
 stats.evaluated;    // kernel calls actually made, across the context's life
 stats.cacheHits;    // how many were avoided
 stats.milliseconds; // wall clock for this render
@@ -181,7 +181,7 @@ them across calls rather than reading one in isolation.
 ### `EvaluationContext has been disposed`
 
 Something held on to a result after disposing the context that owns it. `part.concrete` and
-`part.mesh` are only valid while the context is alive — copy the mesh arrays out first if you
+`part.mesh` are only valid while the context is alive - copy the mesh arrays out first if you
 need them later.
 
 ### Memory grows across renders
@@ -193,18 +193,18 @@ Add the `collect` call. A reused context caches every solid it has ever built, b
 context.collect(result.parts.map((part) => part.node));
 ```
 
-### `part "body" is 2D — extrude or revolve it before rendering`
+### `part "body" is 2D - extrude or revolve it before rendering`
 
 The model produced a cross-section. See [2D ↔ 3D](../reference/conversions.md).
 
-### `align needs a kernel context — render the model rather than building it`
+### `align needs a kernel context - render the model rather than building it`
 
 Only happens when driving [`Evaluator`](low-level.md#evaluator) directly without a context.
 `render` always supplies one.
 
 ### The error has no line number
 
-Most do — `FormaError` carries a `loc` with `line`, `column` and `offset`, and appends it to
+Most do - `FormaError` carries a `loc` with `line`, `column` and `offset`, and appends it to
 the message. A few errors are raised before any position is known (`the document declares no
 model`) or inside a value helper that has none (`no attribute "a"`).
 
