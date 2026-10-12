@@ -91,8 +91,11 @@ millimetres.
 | [`forma-dsl`](https://www.npmjs.com/package/forma-dsl) | the language, its evaluator and the geometry kernel binding |
 | [`forma-dsl-mcp`](https://www.npmjs.com/package/forma-dsl-mcp) | an MCP server: it knows the language, solves what it writes, and produces `.forma` files |
 
-The [reference manual](https://kalpak44.github.io/forma-dsl/docs/) documents the language, and
-the [editor](https://kalpak44.github.io/forma-dsl/editor/) runs the same kernel in a browser.
+**[The site](https://kalpak44.github.io/forma-dsl/)** ·
+**[Try the editor](https://kalpak44.github.io/forma-dsl/editor/)** ·
+**[Read the reference](https://kalpak44.github.io/forma-dsl/docs/)**
+
+The reference manual documents the language, and the editor runs the same kernel in a browser.
 
 ## License
 

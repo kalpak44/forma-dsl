@@ -2,14 +2,15 @@
 
 [![Release](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml/badge.svg)](https://github.com/kalpak44/forma-dsl/actions/workflows/release.yml)
 [![forma-dsl on npm](https://img.shields.io/npm/v/forma-dsl.svg?label=forma-dsl)](https://www.npmjs.com/package/forma-dsl)
+[![forma-dsl-cli on npm](https://img.shields.io/npm/v/forma-dsl-cli.svg?label=forma-dsl-cli)](https://www.npmjs.com/package/forma-dsl-cli)
 [![forma-dsl-mcp on npm](https://img.shields.io/npm/v/forma-dsl-mcp.svg?label=forma-dsl-mcp)](https://www.npmjs.com/package/forma-dsl-mcp)
 [![M8ven Verified](https://m8ven.ai/api/agent-verify/badge?score=100)](https://m8ven.ai/verified/verify?id=d3529b4756004447)
-[![forma-dsl-cli on npm](https://img.shields.io/npm/v/forma-dsl-cli.svg?label=forma-dsl-cli)](https://www.npmjs.com/package/forma-dsl-cli)
 
 A declarative DSL for 3D modeling and scene composition, reusable components, and live
-previews. This is the monorepo: the library, the editor that consumes it, and the reference
-manual.
+previews. This is the monorepo: the library, the command line and the MCP server that consume
+it, the editor, and the reference manual.
 
+**[The site](https://kalpak44.github.io/forma-dsl/)** ·
 **[Try the editor](https://kalpak44.github.io/forma-dsl/editor/)** ·
 **[Read the reference](https://kalpak44.github.io/forma-dsl/docs/)**
 
