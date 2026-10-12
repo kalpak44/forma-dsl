@@ -11,7 +11,7 @@ This project follows [semantic versioning](https://semver.org). While the versio
 
 Dates are the day the tag was cut.
 
-## Unreleased
+## forma-dsl 0.4.0 · forma-dsl-cli 0.4.0 · forma-dsl-mcp 0.4.0 - 2026-10-12
 
 ### Added
 
