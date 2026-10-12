@@ -145,7 +145,10 @@ export class Console {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
         observer.disconnect();
-        this.#loop();
+        // Deliberately not awaited: the loop is endless, so there is nothing to wait for.
+        // `void` says that rather than leaving a floating promise whose rejection - a DOM
+        // call failing mid-type - would surface as an unhandled one with no owner.
+        void this.#loop();
       }
     }, { threshold: 0.3 });
     observer.observe(this.root);

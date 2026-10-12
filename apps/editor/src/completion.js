@@ -21,7 +21,7 @@ import { snippetCompletion } from '@codemirror/autocomplete';
 import { BLOCKS, CONSTANTS, FUNCTIONS, Program, TYPE_NAMES } from 'forma-dsl';
 
 /** The blocks that may open a document, which is the only place they are legal. */
-const TOP_LEVEL = ['param', 'local', 'component', 'model'];
+const TOP_LEVEL = new Set(['param', 'local', 'component', 'model']);
 
 /** What may be written inside a `model` or a `component` body, beyond the blocks themselves. */
 const BODY_KEYWORDS = ['part', 'for', 'if', 'else'];
@@ -113,7 +113,7 @@ function vocabulary() {
 const VOCABULARY = vocabulary();
 
 /** The subset legal at the top of a document, where only four blocks may appear. */
-const TOP_LEVEL_ONLY = VOCABULARY.filter((option) => TOP_LEVEL.includes(option.label));
+const TOP_LEVEL_ONLY = VOCABULARY.filter((option) => TOP_LEVEL.has(option.label));
 
 /**
  * The names the document itself declares, as completions.
