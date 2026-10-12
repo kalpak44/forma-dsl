@@ -209,6 +209,8 @@ export class Console {
     const line = this.#line('cmd', '');
     line.classList.add('typing');
 
+    // A character at a time, which is the whole effect. Nothing here is concurrent work
+    // waiting to be overlapped - each await is the pause between two keystrokes.
     for (const character of beat.command) {
       if (run !== this.#run) return false;
       line.textContent += character;

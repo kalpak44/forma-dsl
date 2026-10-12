@@ -452,6 +452,12 @@ export class Evaluator {
     /** @type {Produced} */
     const produced = { nodes: [], parts: [] };
 
+    // One block at a time, deliberately. `block` checks the signal and the node budget on
+    // the way in, so building these concurrently would enter every one of them before any
+    // could trip either - which turns `maxNodes` from a bound on how much gets built into a
+    // bound on how much gets built after everything has already started. There is also
+    // nothing to overlap: the evaluator is pure, and the one block that reaches the kernel
+    // is memoized by the context anyway.
     for (const block of body.blocks) {
       const result = await this.block(block, inner);
       produced.nodes.push(...result.nodes);
@@ -611,6 +617,9 @@ export class Evaluator {
     /** @type {Produced} */
     const produced = { nodes: [], parts: [] };
 
+    // Sequential for the same reason `body` is, and more so: this is the loop a runaway
+    // document runs away in, and the budget can only stop it if the iterations are entered
+    // one at a time.
     for (const [index, item] of sequence.entries()) {
       const iteration = scope.child();
       // One name binds the value; two bind the index and then the value.
