@@ -101,7 +101,7 @@ export function segments(code) {
  * Renders the first `count` characters of a highlighted snippet into an element.
  *
  * The segments are computed once for the whole document and then sliced, so a character
- * never changes colour as the rest of its line arrives — which is what makes typing read
+ * never changes colour as the rest of its line arrives - which is what makes typing read
  * as writing rather than as a lint pass.
  *
  * @param {Element} target Where to put the nodes. Its contents are replaced.

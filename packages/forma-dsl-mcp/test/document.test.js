@@ -4,7 +4,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { checkDocument, disposeSharedContext, excerpt, exportStl } from '../src/document.js';
+import { checkDocument, disposeSharedContext, exportStl } from '../src/document.js';
 
 test.after(() => disposeSharedContext());
 
@@ -56,7 +56,7 @@ test('a 2D part is rejected with the message that says what to do', async () => 
   const report = await checkDocument('model "m" { part "p" { circle { radius = 4 } } }');
 
   assert.equal(report.ok, false);
-  assert.match(report.error.message, /2D — extrude or revolve it/);
+  assert.match(report.error.message, /2D - extrude or revolve it/);
 });
 
 test('a document with no model is reported before the kernel is asked', async () => {
@@ -99,21 +99,6 @@ test('a model is chosen by name, and an unknown one is an error', async () => {
   assert.match(missing.error.message, /no model named "nope"/);
 });
 
-test('the excerpt puts the caret under the column', () => {
-  const rendered = excerpt('alpha\nbeta\ngamma', { line: 2, column: 3 });
-
-  assert.deepEqual(rendered.split('\n'), [
-    '1 | alpha',
-    '2 | beta',
-    '  |   ^',
-    '3 | gamma',
-  ]);
-});
-
-test('an error with no position gets no excerpt', () => {
-  assert.equal(excerpt('anything', null), undefined);
-});
-
 test('a single-part model exports that part as STL', async () => {
   const result = await exportStl(CUBE);
 
@@ -147,8 +132,8 @@ test('a named part is exported on its own, and an unknown one is refused', async
 test('a part that solves to nothing is reported rather than passed off as fine', async () => {
   const report = await checkDocument('model "m" { part "p" { extrude { height = 0  rect { size = [4, 4] } } } }');
 
-  // Empty geometry is legal in the language — a param at the end of its range should not
-  // break a model — so this has to come back as a measurement, not an error.
+  // Empty geometry is legal in the language - a param at the end of its range should not
+  // break a model - so this has to come back as a measurement, not an error.
   assert.equal(report.ok, true);
   assert.equal(report.scene.parts[0].volume, 0);
   assert.equal(report.scene.parts[0].empty, true);

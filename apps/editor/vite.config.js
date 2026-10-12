@@ -15,7 +15,7 @@ export default defineConfig(({ command }) => ({
   build: {
     // The published site is one artifact: the landing page at the root, the editor here
     // under /editor/, and the manual under /docs/. Outside this workspace, so `emptyOutDir`
-    // has to be explicit — Vite will not clear a directory above its root without being
+    // has to be explicit - Vite will not clear a directory above its root without being
     // told to. Only this app's own directory is cleared; the landing page owns dist/ and
     // builds first.
     outDir: fileURLToPath(new URL('../../dist/editor', import.meta.url)),

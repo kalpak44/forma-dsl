@@ -28,7 +28,7 @@ test.after(() => disposeSharedContext());
 
 /**
  * A client that declares throwaway directories as its roots, connected to a server that was
- * given no workspace of its own — so the directories come over the wire, as they do in life.
+ * given no workspace of its own - so the directories come over the wire, as they do in life.
  *
  * @param {import('node:test').TestContext} t The test, used to register the cleanup.
  * @param {number} [count] How many roots the client declares.
@@ -368,7 +368,7 @@ test('exporting a part that does not exist names the ones that do', async (t) =>
 });
 
 // The document a model converges on when asked for "a tree" with no documentation in front
-// of it — three corrections, each one dictated by the error the previous attempt returned.
+// of it - three corrections, each one dictated by the error the previous attempt returned.
 // Kept here so the walkthrough in the README stays true rather than aspirational.
 const TREE = `param trunk_height { type = number  default = 30  min = 10  max = 60 }
 param canopy_layers { type = number  default = 3  min = 1  max = 6 }

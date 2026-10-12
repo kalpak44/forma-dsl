@@ -2,7 +2,7 @@
  * Syntax highlighting for the editor, as a CodeMirror stream tokenizer.
  *
  * Deliberately not a second parser. The real one already reports errors with positions, and
- * all this needs to do is colour text and match brackets — a full grammar here would be a
+ * all this needs to do is colour text and match brackets - a full grammar here would be a
  * second place the definition of the language had to be kept true.
  *
  * What it must not do is guess at the vocabulary: the block and function names come from the
@@ -12,17 +12,18 @@
 
 import { StreamLanguage, LanguageSupport, HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { tags } from '@lezer/highlight';
-import { BLOCKS, FUNCTIONS } from 'forma-dsl';
+import { BLOCKS, FUNCTIONS, TYPE_NAMES } from 'forma-dsl';
+import { completeForma } from './completion.js';
 
 const DECLARATIONS = new Set(['param', 'local', 'component', 'model', 'part']);
 const CONTROL = new Set(['for', 'in', 'if', 'else']);
 const ATOMS = new Set(['true', 'false', 'null']);
-const TYPES = new Set(['number', 'string', 'bool', 'vector', 'list', 'angle']);
 
-// Taken from the registries rather than restated, so a block or function added to the
-// language is highlighted without anyone remembering to update a list here.
+// Taken from the registries rather than restated, so a block, a function or a param type
+// added to the language is highlighted without anyone remembering to update a list here.
 const SHAPES = new Set(Object.keys(BLOCKS));
 const CALLS = new Set(Object.keys(FUNCTIONS));
+const TYPES = new Set(TYPE_NAMES);
 
 /** A name followed by an optional label and then `{` is being used as a block. */
 const BLOCK_AHEAD = /^\s*("[^"]*"\s*)*\{/;
@@ -98,6 +99,9 @@ const forma = StreamLanguage.define({
     commentTokens: { line: '//', block: { open: '/*', close: '*/' } },
     closeBrackets: { brackets: ['(', '[', '{', '"'] },
     indentOnInput: /^\s*\}$/,
+    // Hung off the language rather than added as its own extension, so the completion the
+    // editor already installs with `basicSetup` finds this one instead of running beside it.
+    autocomplete: completeForma,
   },
 });
 

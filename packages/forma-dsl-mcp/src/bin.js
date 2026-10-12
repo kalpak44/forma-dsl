@@ -2,7 +2,7 @@
 /**
  * The executable: one MCP server, speaking over stdin and stdout.
  *
- * Nothing may be written to stdout but the protocol — a stray `console.log` corrupts the
+ * Nothing may be written to stdout but the protocol - a stray `console.log` corrupts the
  * JSON-RPC stream and the client disconnects with an error that names nothing. Everything
  * this file has to say goes to stderr, which clients collect as the server's log.
  *

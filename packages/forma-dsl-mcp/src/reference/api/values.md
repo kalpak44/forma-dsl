@@ -1,8 +1,8 @@
 # Values
 
 Three small immutable classes the evaluator works in: [`Vector`](#vector),
-[`Angle`](#angle) and [`Transform`](#transform). Documents never see them directly — a
-document writes lists and bare numbers — but they are exported for anyone building geometry
+[`Angle`](#angle) and [`Transform`](#transform). Documents never see them directly - a
+document writes lists and bare numbers - but they are exported for anyone building geometry
 through the [`GeometryNode`](geometry-node.md) API.
 
 ```js
@@ -26,7 +26,7 @@ separate 3D class would be the same code with one more letter.
 | `Vector.of(value, dimensions)` | From anything vector-like |
 | `Vector.zero(dimensions)` | The origin |
 
-`Vector.of` accepts a `Vector`, a **number** — broadcast to every component — an array, or an
+`Vector.of` accepts a `Vector`, a **number** - broadcast to every component - an array, or an
 `{x, y, z}` object whose missing keys read as zero. This is what makes
 `scale { factor = 2 }` work the same as `factor = [2, 2, 2]`.
 
@@ -89,7 +89,7 @@ wrong rather than an error.
 | `plus(other)` `minus(other)` | Other may be an `Angle` or a number of degrees |
 | `times(factor)` | A plain multiplier, not an angle |
 
-The unit names appear twice — `Angle.degrees(90)` builds one, `angle.degrees` reads one back.
+The unit names appear twice - `Angle.degrees(90)` builds one, `angle.degrees` reads one back.
 They are different namespaces and do not collide.
 
 ---
@@ -121,9 +121,9 @@ renders.
 | --- | --- |
 | `dim` | 2 or 3 |
 | `m` | The matrix, column-major and frozen |
-| `order` | Side length — one more than `dim` |
+| `order` | Side length - one more than `dim` |
 | `at(row, col)` | One entry, read out of column-major storage |
-| `concat(other)` | `this ∘ other` — **`other` runs first** |
+| `concat(other)` | `this ∘ other` - **`other` runs first** |
 | `toArray()` | A copy, safe to keep |
 
 #### Caveats
@@ -145,7 +145,7 @@ renders.
 ```js
 import { Transform, GeometryNode } from 'forma-dsl';
 
-// Rotate, then move — the argument to concat runs first.
+// Rotate, then move - the argument to concat runs first.
 const placement = Transform.translation([30, 0, 0], 3)
   .concat(Transform.rotation3D([0, 0, 45]));
 
@@ -176,7 +176,7 @@ import { Angle } from 'forma-dsl';
 const a = Angle.degrees(30);
 a.sin;         // 0.5
 a.radians;     // 0.5235987755982988
-a.plus(60).degrees;   // 90 — a bare number is read as degrees
+a.plus(60).degrees;   // 90 - a bare number is read as degrees
 ```
 
 ### Vector arithmetic
@@ -190,8 +190,8 @@ const wall = 2;
 const inner = size.minus(new Vector([wall * 2, wall * 2, 0]));
 inner.toArray();      // [36, 26, 12]
 
-Vector.of(3, 3).toArray();          // [3, 3, 3] — a scalar broadcasts
-Vector.of({ x: 1, z: 5 }, 3).toArray();  // [1, 0, 5] — missing keys are zero
+Vector.of(3, 3).toArray();          // [3, 3, 3] - a scalar broadcasts
+Vector.of({ x: 1, z: 5 }, 3).toArray();  // [1, 0, 5] - missing keys are zero
 ```
 
 ---
@@ -205,7 +205,7 @@ surfaces more helpfully as `translate: "offset" must be a number or an array of 
 
 ### `cannot read an angle from string`
 
-`Angle.of` takes an `Angle` or a number. A string is not coerced — that would let `"90deg"`
+`Angle.of` takes an `Angle` or a number. A string is not coerced - that would let `"90deg"`
 silently become `NaN`.
 
 ### My composed transform is applied in the wrong order
@@ -219,5 +219,5 @@ Every transform is about the origin. Centre the geometry, rotate, then translate
 
 ### Non-uniform scaling made my circle an ellipse
 
-Expected — that is how [`ellipse`](../reference/shapes-2d.md#ellipse) is built internally, and
+Expected - that is how [`ellipse`](../reference/shapes-2d.md#ellipse) is built internally, and
 it is the cheapest route to an ellipsoid from a sphere.

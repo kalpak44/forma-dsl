@@ -4,6 +4,7 @@
 [![forma-dsl on npm](https://img.shields.io/npm/v/forma-dsl.svg?label=forma-dsl)](https://www.npmjs.com/package/forma-dsl)
 [![forma-dsl-mcp on npm](https://img.shields.io/npm/v/forma-dsl-mcp.svg?label=forma-dsl-mcp)](https://www.npmjs.com/package/forma-dsl-mcp)
 [![M8ven Verified](https://m8ven.ai/api/agent-verify/badge?score=100)](https://m8ven.ai/verified/verify?id=d3529b4756004447)
+[![forma-dsl-cli on npm](https://img.shields.io/npm/v/forma-dsl-cli.svg?label=forma-dsl-cli)](https://www.npmjs.com/package/forma-dsl-cli)
 
 A declarative DSL for 3D modeling and scene composition, reusable components, and live
 previews. This is the monorepo: the library, the editor that consumes it, and the reference
@@ -12,10 +13,14 @@ manual.
 **[Try the editor](https://kalpak44.github.io/forma-dsl/editor/)** ·
 **[Read the reference](https://kalpak44.github.io/forma-dsl/docs/)**
 
+```bash
+npx forma-dsl-cli render riser.forma -p height=32 -o riser.stl
+```
+
 ![The demo typing a bracket, a flange, a component and a vase, solving each and re-solving as a slider moves](apps/docs/assets/demo.gif)
 
 The [live demo](https://kalpak44.github.io/forma-dsl/#demo) types each document out and solves
-it as it goes, then re-solves as a parameter moves — in the browser, with the same kernel.
+it as it goes, then re-solves as a parameter moves - in the browser, with the same kernel.
 
 ```hcl
 param height { type = number  default = 20  min = 8  max = 40 }
@@ -41,6 +46,7 @@ model "riser" {
 | Package | Published | What it is |
 | --- | --- | --- |
 | [`packages/forma-dsl`](packages/forma-dsl) | [`forma-dsl`](https://www.npmjs.com/package/forma-dsl) | The language, its evaluator and the geometry kernel binding. One runtime dependency |
+| [`packages/forma-dsl-cli`](packages/forma-dsl-cli) | [`forma-dsl-cli`](https://www.npmjs.com/package/forma-dsl-cli) | The `forma` command: solve a document to STL in a build, with no browser. One runtime dependency, the library |
 | [`packages/forma-dsl-mcp`](packages/forma-dsl-mcp) | [`forma-dsl-mcp`](https://www.npmjs.com/package/forma-dsl-mcp) | An MCP server over stdio: it knows the language, solves what it writes, and produces `.forma` files |
 | [`apps/landing`](apps/landing) | no | The landing page: a live WebGL hero, a demo that types the language and solves it, and the privacy and terms sheets |
 | [`apps/editor`](apps/editor) | no | The browser editor: CodeMirror, three.js, Vite |
@@ -54,7 +60,7 @@ needs and the package does not have therefore fails in this repository rather th
 someone's install.
 
 The same rule governs what each workspace may *claim* about the language. None of them
-restates the vocabulary — each reads it from the library's own registries, and a test holds
+restates the vocabulary - each reads it from the library's own registries, and a test holds
 them to it:
 
 - **Syntax highlighting is generated, not transcribed.** The editor's
@@ -70,12 +76,17 @@ them to it:
   load time and exposes any disagreement as `catalogueDrift`, which
   [`catalogue.test.js`](packages/forma-dsl-mcp/test/catalogue.test.js) asserts is empty. Its
   worked examples are rendered at both ends of every parameter's range.
+- **The editor's completion offers the whole language.** It is built from `BLOCKS`,
+  `FUNCTIONS`, `CONSTANTS` and `TYPE_NAMES`, and
+  [`completion.test.js`](apps/editor/test/completion.test.js) asserts that no name in a
+  registry is missing from what the editor offers - so a block added to the language is
+  suggested without anyone updating a list.
 - **The manual has no dead cross-references.** `npm run build` resolves all 237 internal links
   and fails rather than publishing a broken one.
 
 ## Working on it
 
-Node 22.13 or newer — the floor the published packages declare.
+Node 22.13 or newer - the floor the published packages declare.
 
 ```bash
 npm ci
@@ -87,6 +98,7 @@ npm run check   # lint, typecheck, tests, build, package contents: the whole gat
 | `npm run dev` | the landing page, with hot reload |
 | `npm run dev:editor` | the editor |
 | `npm run mcp` | the MCP server, on stdio |
+| `npm run cli` | the `forma` command, from the source tree |
 | `npm test` | every workspace's tests |
 | `npm run test:coverage` | the same, against the thresholds CI enforces |
 | `npm run build` | the whole site into `dist/` |
@@ -94,10 +106,10 @@ npm run check   # lint, typecheck, tests, build, package contents: the whole gat
 [CONTRIBUTING.md](CONTRIBUTING.md) has the house style, the stability policy and how a release
 is cut. [CHANGELOG.md](CHANGELOG.md) records what changed in each one.
 
-Found something exploitable? [SECURITY.md](SECURITY.md) says where to send it — please not a
+Found something exploitable? [SECURITY.md](SECURITY.md) says where to send it - please not a
 public issue. [PRIVACY.md](PRIVACY.md) covers the published packages: neither makes a network
 request, and the MCP server writes only inside the directories your client declares.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).

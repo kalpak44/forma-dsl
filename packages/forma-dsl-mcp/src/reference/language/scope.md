@@ -1,7 +1,7 @@
 # Scope and names
 
 Every name in a document resolves through a chain of scopes. This page says exactly what is
-in each one, and in what order they are built — which is what determines whether a
+in each one, and in what order they are built - which is what determines whether a
 declaration may refer to another.
 
 ---
@@ -10,12 +10,12 @@ declaration may refer to another.
 
 Built once, before any geometry, in this order:
 
-1. **Constants** — `pi` and `e`.
-2. **Type names** — `number`, `string`, `bool`, `vector`, `list`, `angle`, each bound to
+1. **Constants** - `pi` and `e`.
+2. **Type names** - `number`, `string`, `bool`, `vector`, `list`, `angle`, each bound to
    itself as a string, so `type = number` in a param block resolves with no quoting.
 3. **Params**, in source order. Each is bound under its bare name as it is resolved, so a
    later param's default may refer to an earlier one.
-4. **`var`** — an object holding every resolved param.
+4. **`var`** - an object holding every resolved param.
 5. **Locals**, in source order. Each is bound as it is resolved, so a later local may refer
    to an earlier one.
 
@@ -24,10 +24,10 @@ The order has two consequences worth knowing:
 ```hcl
 param a = 3
 param b = a * 2        // ✓ an earlier param, by its bare name
-param c = var.a * 2    // ✗ unknown name "var" — var does not exist yet
+param c = var.a * 2    // ✗ unknown name "var" - var does not exist yet
 
 local d = var.a + 1    // ✓ locals are built after var
-local e = f            // ✗ unknown name "f" — a later local
+local e = f            // ✗ unknown name "f" - a later local
 local f = 2
 ```
 
@@ -45,8 +45,8 @@ model "m" {
 }
 ```
 
-They differ when something shadows the bare name. `var` holds **params only** — never
-locals, never component params, never loop variables — so `var.NAME` is the unambiguous way
+They differ when something shadows the bare name. `var` holds **params only** - never
+locals, never component params, never loop variables - so `var.NAME` is the unambiguous way
 to reach an input:
 
 ```hcl
@@ -68,8 +68,8 @@ of use.
 
 ## Body scopes
 
-Every block body — a `model`, a `component`, a builtin block, a `for` iteration, an `if`
-branch — evaluates in a fresh scope nested inside its parent.
+Every block body - a `model`, a `component`, a builtin block, a `for` iteration, an `if`
+branch - evaluates in a fresh scope nested inside its parent.
 
 **Locals declared in a body are visible to the whole body**, not only to what follows them,
 because every local in a body is resolved before any of its blocks are built:
@@ -82,7 +82,7 @@ model "m" {
 ```
 
 That is the opposite of the top-level rule, where locals are strictly ordered. Within one
-body, ordering between locals still applies — a body local may not refer to a later body
+body, ordering between locals still applies - a body local may not refer to a later body
 local.
 
 ---
@@ -110,7 +110,7 @@ model "m" {
 Inside a component body, these are in scope:
 
 - its own `param`s, bound from the attributes at the call site
-- everything in the root scope — constants, type names, document params (bare and via `var.`)
+- everything in the root scope - constants, type names, document params (bare and via `var.`)
   and document locals
 - its own body locals
 
@@ -123,7 +123,7 @@ Nothing from the caller. Values travel in through params and no other way.
 A `model` may declare its own `param` blocks. They behave like locals with a declaration
 syntax, not like document params:
 
-- Each **must** have a default — `model "m": param "s" needs a default`.
+- Each **must** have a default - `model "m": param "s" needs a default`.
 - They are **not** settable from outside. `render(source, { params: { s: 9 } })` sets
   document params only; a model param keeps its default.
 - They are bound in the model's scope under the bare name, and are not added to `var`.

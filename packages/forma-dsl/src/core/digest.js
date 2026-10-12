@@ -23,8 +23,8 @@ function rotl(x, r) {
 /**
  * Wraps a number to a signed 32-bit integer, the way the algorithm's additions are defined.
  *
- * `Math.imul(x, 1)` rather than `x | 0`: the two are identical — both coerce through
- * ToInt32 — but this one says *wrap*, which is what MurmurHash means here. `Math.trunc` is
+ * `Math.imul(x, 1)` rather than `x | 0`: the two are identical - both coerce through
+ * ToInt32 - but this one says *wrap*, which is what MurmurHash means here. `Math.trunc` is
  * emphatically not a substitute: it drops the fraction without wrapping, so `2**31 + 5`
  * stays positive instead of becoming negative, and every digest downstream changes.
  *
@@ -68,7 +68,7 @@ function fmix(h) {
 /**
  * Packs the bytes after the last whole block into four words, little-endian.
  *
- * Byte `i` of the tail belongs to word `i >> 2` at shift `(i & 3) * 8` — which is what
+ * Byte `i` of the tail belongs to word `i >> 2` at shift `(i & 3) * 8` - which is what
  * MurmurHash3's fallthrough spells out one case at a time. The arithmetic is identical;
  * only the shape differs, and the digests it produces are asserted to be unchanged.
  *

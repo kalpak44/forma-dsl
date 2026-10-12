@@ -4,7 +4,7 @@
  *
  * Two things earn this its own module. The cache is keyed on content rather than on object
  * identity, so an edit that rebuilds the tree from scratch still hits every subtree it did
- * not change — which is what makes re-solving on a keystroke affordable. And the kernel's
+ * not change - which is what makes re-solving on a keystroke affordable. And the kernel's
  * objects are WASM allocations that no garbage collector will free, so something has to own
  * them and let them go; that is what `dispose` and `collect` are for, and why the caller is
  * told in `render`'s contract that the context is theirs.
@@ -18,8 +18,8 @@ import { loadKernel } from './kernel.js';
 /**
  * How many unreachable entries `collect` keeps.
  *
- * Editing a model churns the tree — a keystroke changes one subtree and leaves its siblings
- * untouched — so the entries that just fell out of the tree are the ones most likely to come
+ * Editing a model churns the tree - a keystroke changes one subtree and leaves its siblings
+ * untouched - so the entries that just fell out of the tree are the ones most likely to come
  * straight back, on an undo or on the next character of a number being typed.
  */
 const DEFAULT_RETAINED = 512;
@@ -113,7 +113,7 @@ export class EvaluationContext {
   /**
    * Resolves to the kernel object for a node.
    *
-   * Concurrent requests for the same node share one evaluation — without the in-flight map,
+   * Concurrent requests for the same node share one evaluation - without the in-flight map,
    * a shape used twice in a tree that is walked concurrently would be built twice and one
    * copy leaked.
    *
@@ -335,6 +335,6 @@ function free(value) {
   try {
     value?.delete();
   } catch {
-    // Already freed by the kernel, or never owned one — either way there is nothing to do.
+    // Already freed by the kernel, or never owned one - either way there is nothing to do.
   }
 }

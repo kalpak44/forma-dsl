@@ -3,7 +3,7 @@
  *
  * The copy under src/reference exists so a published install can answer offline, and a copy
  * is only safe if it cannot drift. This compares it byte for byte against apps/docs/content,
- * and skips when that is not present — a consumer running these tests from a tarball has no
+ * and skips when that is not present - a consumer running these tests from a tarball has no
  * monorepo to compare against, and should not fail for it.
  */
 import assert from 'node:assert/strict';
@@ -58,14 +58,14 @@ test('the bundled copy matches the manual it was copied from', { skip: !existsSy
   assert.deepEqual(
     await walk(BUNDLED),
     source,
-    'run `npm run sync:reference -w forma-dsl-mcp` — the manual has gained or lost a page',
+    'run `npm run sync:reference -w forma-dsl-mcp` - the manual has gained or lost a page',
   );
 
   for (const path of source) {
     assert.equal(
       await readFile(join(BUNDLED, path), 'utf8'),
       await readFile(join(MANUAL, path), 'utf8'),
-      `${path} has drifted — run \`npm run sync:reference -w forma-dsl-mcp\``,
+      `${path} has drifted - run \`npm run sync:reference -w forma-dsl-mcp\``,
     );
   }
 });

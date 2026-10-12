@@ -1,8 +1,8 @@
 /**
  * Binary STL, for handing a solved part to a slicer.
  *
- * STL is the least a mesh format can carry — triangles and normals, no units, no colour and
- * no notion of a part — and it is what every slicer reads. Anything richer belongs in its
+ * STL is the least a mesh format can carry - triangles and normals, no units, no colour and
+ * no notion of a part - and it is what every slicer reads. Anything richer belongs in its
  * own exporter rather than in a dialect of this one.
  */
 

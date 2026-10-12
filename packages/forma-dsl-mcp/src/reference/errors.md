@@ -25,7 +25,7 @@ Raised while turning characters into tokens. Always a typo.
 
 | Message | Cause |
 | --- | --- |
-| `unexpected character "…"` | A character that cannot begin a token — a smart quote, a stray backtick, a non-ASCII dash |
+| `unexpected character "…"` | A character that cannot begin a token - a smart quote, a stray backtick, a non-ASCII dash |
 | `unterminated string` | A `"` with no closing `"`, or a literal newline inside one |
 | `unterminated block comment` | A `/*` with no `*/`. Block comments do not nest |
 | `unknown escape \q` | Only `\n` `\t` `\r` `\"` `\\` `\$` exist |
@@ -42,7 +42,7 @@ Raised while turning tokens into a tree. Always a grammar mistake.
 | `expected a block, found "…"` | Something at the top level that is not a block |
 | `unknown top-level block "shape"` | Only `param`, `local`, `component` and `model` may appear at the top level |
 | `expected an attribute or block, found "…"` | Inside a body, an entry that does not start with a name |
-| `expected {, found "…"` | A `param` with no `=` and no body — write `param s { }`. Also a `component` or `model` with no body |
+| `expected {, found "…"` | A `param` with no `=` and no body - write `param s { }`. Also a `component` or `model` with no body |
 | `expected =, found "…"` | A `local` with no value |
 | `expected ident, found "…"` | A keyword where a name was required |
 | `"for" cannot be used as a block type` | One of the eleven [keywords](language/syntax.md#keywords) used as a block name |
@@ -93,7 +93,7 @@ Raised while evaluating.
 | Message | Cause |
 | --- | --- |
 | `unknown name "x"` | Nothing in scope binds it. See [Scope](language/scope.md) |
-| `no attribute "x"` | A missing key on an object — including `var.x` for something that is not a param |
+| `no attribute "x"` | A missing key on an object - including `var.x` for something that is not a param |
 | `cannot read "x" of nothing` | A property read on `null` |
 | `cannot index this value` | Indexing something that is not a list, string or object |
 | `cannot negate a non-number` | Unary `-` on a string, list or bool |
@@ -115,7 +115,7 @@ operator: `outer - inner`. See [Identifiers](language/syntax.md#identifiers).
 ### `unknown name "var"`
 
 A param default referred to `var`, which is assembled only after every param has resolved.
-Use the earlier param's bare name instead — see
+Use the earlier param's bare name instead - see
 [the root scope](language/scope.md#the-root-scope).
 
 ---
@@ -135,11 +135,11 @@ Raised while building geometry.
 
 | Message | Cause |
 | --- | --- |
-| `unknown block "bloop" — the blocks are …` | Not a builtin and not a declared component. The message lists every block there is, this document's own components first |
+| `unknown block "bloop" - the blocks are …` | Not a builtin and not a declared component. The message lists every block there is, this document's own components first |
 | `"box" does not take a label` | Only [`part`](reference/part.md) takes a meaningful label |
 | `"box" is a shape and cannot contain other blocks` | A shape is a leaf. Usually a missing `}` swallowed the next block |
 | `"translate" needs at least one shape inside it` | An operation with nothing to act on |
-| `box: unknown attribute "colour" — box reads …` | Every block rejects attributes it did not read, so a typo fails loudly, and names what it would have read |
+| `box: unknown attribute "colour" - box reads …` | Every block rejects attributes it did not read, so a typo fails loudly, and names what it would have read |
 | `attribute "size" is set twice` | The same attribute written twice in one block |
 | `box: "size" must be a number or an array of 3 numbers` | Wrong shape of value |
 | `circle: "radius" must be a finite number` | A `NaN` or `Infinity` reached the block |
@@ -149,7 +149,7 @@ Raised while building geometry.
 | `cylinder: give "radius"/"diameter", or both "bottom_radius" and "top_radius"` | One end radius on its own is ambiguous |
 | `offset: "join" must be one of "Square", "Round", "Miter"` | An enum attribute with an unrecognised value |
 
-### `box: unknown attribute "colour" — box reads "center", "size"`
+### `box: unknown attribute "colour" - box reads "center", "size"`
 
 Worth dwelling on, because it is the error that saves the most time. A misspelled attribute
 would otherwise be silent, and the model would render subtly wrong with nothing to point at.
@@ -158,8 +158,8 @@ anything through.
 
 Both this and `unknown block` carry the alternatives, because the reader is often a program
 with no copy of this manual: an error that says only what is wrong leaves it guessing at
-spellings. A block that branches on which of two spellings it was given — `radius` against
-`diameter` — reads only one of them, so the list is what that call would accept rather than
+spellings. A block that branches on which of two spellings it was given - `radius` against
+`diameter` - reads only one of them, so the list is what that call would accept rather than
 always the whole set.
 
 ---
@@ -170,7 +170,7 @@ always the whole set.
 | --- | --- |
 | `"union" cannot mix 2D and 3D shapes` | Children of different dimensionality in one block |
 | `"extrude" takes 2D geometry, got 3D` | A block that fixes what it takes got the other thing |
-| `part "body" is 2D — extrude or revolve it before rendering` | A cross-section reached the renderer |
+| `part "body" is 2D - extrude or revolve it before rendering` | A cross-section reached the renderer |
 | `cannot combine 2D and 3D geometry in a union` | The same mistake, from the [node API](api/geometry-node.md) rather than a document |
 
 See [Dimensionality](language/overview.md#dimensionality) for the three rules, and
@@ -186,7 +186,7 @@ See [Dimensionality](language/overview.md#dimensionality) for the three rules, a
 | `c: unknown param "t"` | Components have no pass-through: every value must be declared |
 | `component "c" produced no geometry` | An empty body, a loop over an empty list, or an `if` that took no branch |
 | `a component cannot declare parts` | Scene structure belongs in the model |
-| `nesting deeper than 64 blocks — is a component using itself?` | Direct or mutual recursion. Rewrite as a `for` loop |
+| `nesting deeper than 64 blocks - is a component using itself?` | Direct or mutual recursion. Rewrite as a `for` loop |
 
 ---
 
@@ -200,7 +200,7 @@ See [Dimensionality](language/overview.md#dimensionality) for the three rules, a
 | `the document declares no model` | Add a `model` block |
 | `no model named "x"` | `render(source, { model })` named one that does not exist |
 
-A [`part`](reference/part.md) nested inside an operation raises **nothing** — it is silently
+A [`part`](reference/part.md) nested inside an operation raises **nothing** - it is silently
 dropped. If a part is missing from a render, check it is written directly in the model.
 
 ---
@@ -217,7 +217,7 @@ dropped. If a part is missing from a render, check it is written directly in the
 
 | Message | Cause |
 | --- | --- |
-| `align needs a kernel context — render the model rather than building it` | An `Evaluator` built with no context. [`render`](api/render.md) always supplies one |
+| `align needs a kernel context - render the model rather than building it` | An `Evaluator` built with no context. [`render`](api/render.md) always supplies one |
 | `align needs at least one shape inside it` | Nothing to measure |
 | `align: "x" must be "min", "center", "max" or a number` | The spelling is `"center"` |
 
@@ -239,7 +239,7 @@ Raised by the JavaScript API rather than by a document.
 
 ## Silent behaviours
 
-Not errors, and each is deliberate — but each has surprised someone. A parameter reaching the
+Not errors, and each is deliberate - but each has surprised someone. A parameter reaching the
 end of its range should not break a model, so these degenerate quietly:
 
 | What | Result |

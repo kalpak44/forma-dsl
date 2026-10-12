@@ -46,6 +46,7 @@
            so these are dead during `npm run dev` and only there. -->
       <a class="hide-sm" href="#demo">Demo</a>
       <a class="hide-sm" href="#reference">Reference</a>
+      <a class="hide-sm" href="#cli">CLI</a>
       <a class="hide-sm" href="#mcp">MCP</a>
       <a href="docs/">Docs</a>
       <a href="https://github.com/kalpak44/forma-dsl" rel="noopener">GitHub</a>
@@ -236,11 +237,62 @@
     </div>
   </section>
 
+  <!-- ===== cli ======================================================================= -->
+  <section class="band" id="cli">
+    <div class="wrap">
+      <div class="rule reveal">
+        <span class="no">§ 05</span>
+        <h2>Or build it from a Makefile</h2>
+      </div>
+      <div class="install reveal">
+        <div>
+          <p><a href="https://www.npmjs.com/package/forma-dsl-cli" rel="noopener"><code>forma-dsl-cli</code></a>
+            is the same kernel with no browser around it. <code>forma render part.forma -o
+            part.stl</code> solves a document and writes a binary STL, which is what puts a
+            <code>.forma</code> file in a build, a CI job or a release pipeline.</p>
+
+          <p class="lead-in">Three commands, and the pipe is the point:</p>
+          <ul>
+            <li>
+              <code>forma render</code>
+              <b>Solves a document and writes the STL. <code>-o -</code> sends it to stdout
+                and keeps the summary on stderr, so it pipes into whatever comes next.</b>
+            </li>
+            <li>
+              <code>forma params</code>
+              <b>The document describing itself, as a table or as <code>--json</code> - which
+                is how a script builds every variant without being told what they are.</b>
+            </li>
+            <li>
+              <code>forma models</code>
+              <b>Names the models a document declares, so <code>--model</code> can be given
+                one that exists.</b>
+            </li>
+          </ul>
+
+          <p>Three exit codes, because a script has to tell them apart: <code>0</code> worked,
+            <code>1</code> the document did not build, <code>2</code> the invocation was
+            wrong. A failure prints as <code>file:line:column:</code> with the source and a
+            caret under the column - where an editor and a CI annotation can both find it.</p>
+
+          <p>It knows nothing about the language itself. Every block it accepts and every
+            error it reports comes from the same package the editor and the server import, so
+            a block added to the language is one it renders without being told.</p>
+        </div>
+        <div class="tty-wrap">
+          <div class="tty-chrome" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div class="tty" id="tty" role="img"
+               aria-label="A terminal session: forma render writes an STL and reports its triangle count, forma params lists the document's inputs, and a broken document fails with a caret under the column."></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== mcp ======================================================================= -->
   <section class="band" id="mcp">
     <div class="wrap">
       <div class="rule reveal">
-        <span class="no">§ 05</span>
+        <span class="no">§ 06</span>
         <h2>Or describe it, and let a model write it</h2>
       </div>
       <div class="install reveal">
@@ -268,7 +320,7 @@
             </li>
             <li>
               <code>forma_export_stl</code>
-              <b>Renders a part - or every part unioned - straight to binary STL.</b>
+              <b>Renders a part - or every part union - straight to binary STL.</b>
             </li>
           </ul>
 
@@ -280,9 +332,16 @@
             <a href="https://modelcontextprotocol.io/specification/basic/roots" rel="noopener">roots</a>
             capability and reads and writes only inside the directories it is handed.</p>
         </div>
-        <div class="copy-wrap">
-          <button class="copy" id="copy-mcp" type="button" data-copy="mcp-setup">copy</button>
-          <pre class="code" id="mcp-setup"><code></code></pre>
+        <div class="stack">
+          <div class="copy-wrap">
+            <button class="copy" id="copy-mcp" type="button" data-copy="mcp-setup">copy</button>
+            <pre class="code" id="mcp-setup"><code></code></pre>
+          </div>
+          <div class="tty-wrap">
+            <div class="tty-chrome" aria-hidden="true"><span></span><span></span><span></span></div>
+            <div class="tty tty-short" id="tty-mcp" role="img"
+                 aria-label="An agent session: a prompt asks for a tree, forma_write builds and writes tree.forma and reports a measured table of its parts, and a second prompt naming an attribute that does not exist is refused with every attribute that does."></div>
+          </div>
         </div>
       </div>
     </div>
@@ -304,6 +363,7 @@
         <li><a href="editor/">Editor</a></li>
         <li><a href="docs/">Reference</a></li>
         <li><a href="#demo">Demo</a></li>
+        <li><a href="#cli">Command line</a></li>
         <li><a href="#mcp">MCP server</a></li>
       </ul>
     </div>

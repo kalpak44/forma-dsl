@@ -40,7 +40,7 @@ export class Angle {
   static turns(value) { return new Angle(Number(value) * 2 * Math.PI); }
 
   /**
-   * Accepts an Angle or a bare number, which is read as degrees — the unit a person writing
+   * Accepts an Angle or a bare number, which is read as degrees - the unit a person writing
    * a model thinks in.
    *
    * @param {Angle | number} value An angle, or a number of degrees.

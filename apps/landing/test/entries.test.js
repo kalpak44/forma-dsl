@@ -61,4 +61,13 @@ test('the landing page wires the quickstart, the hero and the demo to its own ma
 
   const tabs = [...page.document.querySelectorAll('#tabs .tab')];
   assert.deepEqual(tabs.map((tab) => tab.textContent), DEMOS.map((demo) => demo.name));
+
+  // The terminal waits to be scrolled to, so it is empty here. What this catches is the
+  // seam: the id main.js looks up has to be the one the markup carries, or the section
+  // loads and stays blank forever. What it then writes is console.test.js's business.
+  for (const id of ['tty', 'tty-mcp']) {
+    const tty = /** @type {HTMLElement} */ (page.document.getElementById(id));
+    assert.ok(tty, `the markup carries #${id}, which main.js wires a terminal to`);
+    assert.equal(tty.querySelectorAll('.tty-line').length, 0, 'and nothing runs before it is seen');
+  }
 });

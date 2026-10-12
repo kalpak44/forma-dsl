@@ -3,7 +3,7 @@
  *
  * Recursive descent with a precedence table for the infix operators. The grammar is small
  * enough that a generator would cost more than it saved, and writing it by hand is what lets
- * every node carry the source position that produced it — which is the whole of how errors
+ * every node carry the source position that produced it - which is the whole of how errors
  * point at something later on.
  *
  * It checks shape and nothing else. Whether `cylinder` is a real block, and whether its
@@ -321,7 +321,7 @@ class Parser {
   }
 
   /**
-   * @returns {boolean} Whether the current token starts a new line outside any bracket —
+   * @returns {boolean} Whether the current token starts a new line outside any bracket -
    *   the signal that the expression is finished and the next attribute has begun.
    */
   breaksLine() {
@@ -361,7 +361,7 @@ class Parser {
   }
 
   /**
-   * Reads the suffixes — member access, indexing and calls — that bind tightest.
+   * Reads the suffixes - member access, indexing and calls - that bind tightest.
    *
    * @returns {Expression} The expression.
    */

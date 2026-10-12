@@ -38,7 +38,7 @@ A scene: a list of parts, each with a name, a colour, an opacity and a geometry 
 #### Caveats
 
 - **Every part must be 3D.** A 2D part is rejected before it is solved:
-  `part "body" is 2D — extrude or revolve it before rendering`.
+  `part "body" is 2D - extrude or revolve it before rendering`.
 - **A model must produce something.** An empty body, or one whose only loop ran zero times,
   fails with `model "m" produced no geometry`.
 - **Declaring the same model twice is an error**: `model "m" is declared twice`.
@@ -63,7 +63,7 @@ Naming one that does not exist fails with `no model named "exploded"`. In the ed
 first model is the one shown.
 
 Several models in one document is the idiomatic way to keep variants of the same object
-together — a printable part and the assembly it belongs to, say:
+together - a printable part and the assembly it belongs to, say:
 
 ```hcl
 component "bracket" { ... }
@@ -81,7 +81,7 @@ model "assembly" {                  // what it looks like assembled
 
 ### Parts, and geometry without them
 
-Geometry written straight into a model — outside any `part` — becomes **one default part
+Geometry written straight into a model - outside any `part` - becomes **one default part
 named after the model**, coloured `#b8c4d0`:
 
 ```hcl
@@ -101,7 +101,7 @@ model "m" {
 // parts: "pin", then "m"
 ```
 
-Prefer explicit parts once there is more than one piece — they are what the viewer colours
+Prefer explicit parts once there is more than one piece - they are what the viewer colours
 and lists, and what an exporter can write out separately.
 
 ### Model params
@@ -119,10 +119,10 @@ model "bracket" {
 
 | | Document `param` | Model `param` |
 | --- | --- | --- |
-| Default required | No — may be required instead | **Yes**: `model "m": param "s" needs a default` |
+| Default required | No - may be required instead | **Yes**: `model "m": param "s" needs a default` |
 | Settable by the caller | Yes, via `render(source, { params })` | No |
 | Appears in `describeParameters` | Yes | No |
-| Readable as `var.NAME` | Yes | No — bare name only |
+| Readable as `var.NAME` | Yes | No - bare name only |
 
 Use them to give one model's fixed numbers a name without adding a control to the editor.
 For anything the caller should change, declare the param at the top level.
@@ -142,7 +142,7 @@ model "stacked_trays" {
 }
 ```
 
-An optional part goes behind an `if` **around** the part, never inside it — a part with no
+An optional part goes behind an `if` **around** the part, never inside it - a part with no
 geometry is an error:
 
 ```hcl
@@ -174,13 +174,13 @@ model "assembly" {
 The body evaluated to nothing. Usual causes:
 
 - an empty body;
-- a `for` over an empty list — `range(0, var.n)` where `n` is `0`;
+- a `for` over an empty list - `range(0, var.n)` where `n` is `0`;
 - an `if` with no `else` whose condition was false.
 
 Guard the degenerate case so something is always produced, or make the parameter's minimum
 exclude it.
 
-### `part "body" is 2D — extrude or revolve it before rendering`
+### `part "body" is 2D - extrude or revolve it before rendering`
 
 A part ended up holding a cross-section rather than a solid. 2D shapes cannot be rendered
 directly:
@@ -209,5 +209,5 @@ Two models share a name, so `render(source, { model: 'm' })` would be ambiguous.
 ### My `render(source, { params })` value is ignored
 
 The param is probably declared inside the model rather than at the top level. Only top-level
-params are settable. Check with [`describeParameters`](../api/describe-parameters.md) — it
+params are settable. Check with [`describeParameters`](../api/describe-parameters.md) - it
 lists exactly the params a caller can set.

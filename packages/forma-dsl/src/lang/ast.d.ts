@@ -5,7 +5,7 @@
  * one carries, could only be recovered by reading the parser and the evaluator side by side
  * and hoping they agreed.
  *
- * Declarations rather than JSDoc typedefs, which is what this always was — there is no
+ * Declarations rather than JSDoc typedefs, which is what this always was - there is no
  * runtime content here, so there is nothing for a `.js` file to carry and nothing to build.
  * Written as types, a discriminant is `kind: 'unary'` rather than a `@property` whose
  * description the lint obliged someone to invent.

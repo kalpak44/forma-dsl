@@ -7,7 +7,7 @@ the kernel consumes them.
 import { GeometryNode } from 'forma-dsl';
 
 const box = GeometryNode.shape(3, 'box', { size: [10, 10, 10], center: true });
-box.digest;       // '3f2a…' — 32 hex characters
+box.digest;       // '3f2a…' - 32 hex characters
 box.subtreeSize;  // 1
 ```
 
@@ -36,7 +36,7 @@ process, so it is identical in every browser and every run.
 | Property | Type | Description |
 | --- | --- | --- |
 | `dim` | `2 \| 3` | Whether this node is a cross-section or a solid |
-| `kind` | `string` | What the node does — `shape3d`, `boolean`, `transform`, `extrude`, … |
+| `kind` | `string` | What the node does - `shape3d`, `boolean`, `transform`, `extrude`, … |
 | `props` | `Record<string, unknown>` | The node's own parameters |
 | `children` | `readonly GeometryNode[]` | The operands |
 | `digest` | `string` | 128-bit content digest, 32 lowercase hex characters |
@@ -47,13 +47,13 @@ Nodes are frozen. Every factory returns a new node rather than mutating one.
 
 ### Factories
 
-Prefer these to the constructor — they apply the algebraic simplifications that keep the tree
+Prefer these to the constructor - they apply the algebraic simplifications that keep the tree
 small.
 
 | Factory | Description |
 | --- | --- |
 | `GeometryNode.empty(dim)` | A node standing for no geometry |
-| `GeometryNode.shape(dim, shape, params)` | A leaf primitive — `'box'`, `'circle'`, `'cylinder'`, … |
+| `GeometryNode.shape(dim, shape, params)` | A leaf primitive - `'box'`, `'circle'`, `'cylinder'`, … |
 | `GeometryNode.union(children)` | Everything added together |
 | `GeometryNode.difference(children)` | The first child with the rest removed |
 | `GeometryNode.intersection(children)` | Only what every child shares |
@@ -82,7 +82,7 @@ call and a cache entry:
 - **`dim` must be 2 or 3.** Anything else throws `bad dimensionality`.
 - **Booleans cannot mix dimensionality**: `cannot combine 2D and 3D geometry in a union`.
 - `GeometryNode.unary` defaults its result dimensionality to the child's, which is wrong for
-  the operations that change it — pass `dim` explicitly for anything extrude-like.
+  the operations that change it - pass `dim` explicitly for anything extrude-like.
 - Two nodes with the same digest are interchangeable. Nothing stops you building the same
   node twice; the cache will treat both as one.
 
@@ -108,7 +108,7 @@ for (const node of walk(result.parts[0].node)) {
 }
 ```
 
-Deduplicating on `digest` is what makes the walk reflect what the kernel will actually do —
+Deduplicating on `digest` is what makes the walk reflect what the kernel will actually do -
 the tree is a DAG, not a tree, once sharing is taken into account.
 
 ### Measuring how much a model shares
@@ -123,7 +123,7 @@ for (const node of walk(root)) unique.add(node.digest);
 console.log(`${root.subtreeSize} nodes written, ${unique.size} distinct`);
 ```
 
-A large gap is the digest cache doing its job — eight spheres in a loop are one sphere node
+A large gap is the digest cache doing its job - eight spheres in a loop are one sphere node
 and eight transforms.
 
 ### Building geometry without the language
@@ -151,7 +151,7 @@ await writeFile('ring.stl', toBinarySTL(solid));
 context.dispose();
 ```
 
-Note that `pin` is one node used six times — the kernel builds one cylinder.
+Note that `pin` is one node used six times - the kernel builds one cylinder.
 
 ### Checking whether an edit changed anything
 
@@ -211,5 +211,5 @@ GeometryNode.unary('extrude', profile, { height: 10, /* … */ }, 3);
 
 Digests cover **all** props. A `segments` of `0` and a `segments` of `32` are different
 shapes even when they look alike, and a float that differs in the last bit is a different
-number. Digest equality is exact, by design — the alternative is a cache that occasionally
+number. Digest equality is exact, by design - the alternative is a cache that occasionally
 returns the wrong solid.

@@ -87,8 +87,8 @@ export default [
     ...sonarjs.configs.recommended,
   },
 
-  // A third of SonarCloud's findings need type information — a sort with no comparator, a
-  // template that will interpolate `[object Object]` — and are simply invisible without it.
+  // A third of SonarCloud's findings need type information - a sort with no comparator, a
+  // template that will interpolate `[object Object]` - and are simply invisible without it.
   // Those are the ones that cost the most to diagnose from a dashboard, so the parser gets
   // a program here. Tests are left out: they are not what Sonar analyses, and typing them
   // doubles the lint for nothing.
@@ -117,7 +117,7 @@ export default [
 
   {
     // The library is meant to run unchanged in a browser and in Node, so it is linted
-    // against neither environment's globals — only the ones both actually provide. A
+    // against neither environment's globals - only the ones both actually provide. A
     // `process` or a `window` creeping into the package should fail here, not at a user's
     // import.
     files: ['packages/forma-dsl/src/**/*.js'],
@@ -138,7 +138,7 @@ export default [
   },
 
   {
-    // The MCP server is Node-only by nature — it is a process on a pipe — so unlike the
+    // The MCP server is Node-only by nature - it is a process on a pipe - so unlike the
     // library it is linted against Node's globals. `console` is allowed because stderr is
     // where a stdio server logs; anything written to stdout would corrupt the protocol
     // stream, and that is what `no-console`'s allow-list here is guarding.
@@ -151,6 +151,22 @@ export default [
     plugins: { jsdoc },
     settings: { jsdoc: { mode: 'typescript' } },
     rules: { ...shared, ...jsdocRules, 'no-console': ['error', { allow: ['error'] }] },
+  },
+
+  {
+    // The command line is Node-only by nature - it reads files, writes one, and answers with
+    // an exit code - so like the MCP server it is linted against Node's globals rather than
+    // against the library's deliberately empty set. `no-console` is off because printing is
+    // the whole job; which stream each thing goes to is `src/bin.js`'s concern, not a rule's.
+    files: ['packages/forma-dsl-cli/src/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2023,
+      sourceType: 'module',
+      globals: globals.node,
+    },
+    plugins: { jsdoc },
+    settings: { jsdoc: { mode: 'typescript' } },
+    rules: { ...shared, ...jsdocRules, 'no-console': 'off' },
   },
 
   {

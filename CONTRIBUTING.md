@@ -5,7 +5,7 @@
 This repository is maintained largely by an automated agent: Dependabot proposes dependency
 updates and the agent in `.github/workflows/ai-maintenance-agent.yml` reviews, repairs and
 merges them without a human in the loop. That is why the checks below are blocking rather than
-advisory — they are what stands in for review.
+advisory - they are what stands in for review.
 
 The workflows in `.github/workflows/` and `.github/dependabot.yml` are generated elsewhere and
 are overwritten on the next sync. Their headers say so. Edit them in `homelab-infra`, not here.
@@ -23,7 +23,7 @@ npm run check
 
 | Step | What it holds |
 | --- | --- |
-| `npm run lint` | ESLint, SonarJS and the JSDoc rules — including `max-len` |
+| `npm run lint` | ESLint, SonarJS and the JSDoc rules - including `max-len` |
 | `npm run typecheck` | the published `.d.ts` against the sources, both tsconfigs |
 | `npm test` | every workspace's tests |
 | `npm run build` | the site, including the docs link checker |
@@ -38,6 +38,7 @@ Useful while working:
 npm run dev          # the landing page
 npm run dev:editor   # the editor
 npm run mcp          # the MCP server, on stdio
+npm run cli          # the `forma` command, from the source tree
 ```
 
 ## House style
@@ -57,7 +58,7 @@ carries that, do not write the same thing twice.
 when they drift. That is deliberate: documentation that is allowed to go stale is worse than
 none, because it gets believed.
 
-**Tests are named as sentences about behaviour** — `a box has the volume it claims`, not
+**Tests are named as sentences about behaviour** - `a box has the volume it claims`, not
 `test volume`. A failing test should read as a statement of what broke.
 
 **Everything depends on the published entry point.** The editor, the landing page and the MCP
@@ -75,8 +76,12 @@ exports and what [`index.d.ts`](packages/forma-dsl/src/index.d.ts) declares. Any
 by a deeper path is internal and may move in a patch.
 
 For the MCP server, the tool names, their input schemas and the resource URIs are the surface.
-The wording of a tool's description and of its Markdown results is not — those are tuned for
+The wording of a tool's description and of its Markdown results is not - those are tuned for
 whichever model is reading them.
+
+For the CLI, the commands, their flags and the three exit codes are the surface, along with
+what goes to stdout rather than stderr - a script redirecting one of them is as much a
+consumer as one calling `render`. The wording of the summary line is not.
 
 ## Commits and releases
 
@@ -86,7 +91,7 @@ Commit subjects follow [conventional commits](https://www.conventionalcommits.or
 
 Releases are cut by tagging `<package>@<version>`; the tag must match the version in that
 package's manifest, and the release workflow refuses it if it does not. Publishing uses npm
-trusted publishing over OIDC — there is no token to rotate, and renaming the release workflow
+trusted publishing over OIDC - there is no token to rotate, and renaming the release workflow
 breaks it until the trusted publisher is recreated.
 
 Add an entry to [CHANGELOG.md](CHANGELOG.md) under `## Unreleased` for anything a consumer

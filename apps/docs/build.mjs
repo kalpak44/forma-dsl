@@ -99,7 +99,10 @@ const NAV = [
   },
   {
     title: 'Reference',
-    pages: [['errors.md', 'Errors']],
+    pages: [
+      ['errors.md', 'Errors'],
+      ['cli.md', 'Command line'],
+    ],
   },
 ];
 
@@ -279,8 +282,8 @@ function renderPage(file, markdown) {
     heading({ text, depth, tokens }) {
       const inline = this.parser.parseInline(tokens);
       let id = slugify(text);
-      // Two headings can legitimately slug alike — `### Caveats` under two APIs on one
-      // page — and a duplicate id would send every link to the first of them.
+      // Two headings can legitimately slug alike - `### Caveats` under two APIs on one
+      // page - and a duplicate id would send every link to the first of them.
       if (ids.has(id)) {
         let n = 2;
         while (ids.has(`${id}-${n}`)) n++;
@@ -336,7 +339,7 @@ function rewriteHref(file, href, links) {
   const [path, fragment] = href.split('#');
   const target = relative(DOCS, resolve(DOCS, dirname(file), path));
 
-  // A link that escapes the content tree — the project README, a source file — cannot be
+  // A link that escapes the content tree - the project README, a source file - cannot be
   // part of the built site, so it goes to the repository instead. It is still checked: a
   // path that no longer exists would otherwise become a 404 on GitHub that nothing here
   // ever looks at.

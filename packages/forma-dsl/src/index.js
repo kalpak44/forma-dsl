@@ -13,7 +13,8 @@
 export { Program, Evaluator } from './lang/evaluate.js';
 export { parse } from './lang/parser.js';
 export { tokenize, FormaError } from './lang/lexer.js';
-export { BLOCKS, FUNCTIONS, CONSTANTS } from './lang/builtins.js';
+export { excerpt } from './lang/excerpt.js';
+export { BLOCKS, FUNCTIONS, CONSTANTS, TYPE_NAMES } from './lang/builtins.js';
 export { GeometryNode } from './core/node.js';
 export { EvaluationContext } from './core/context.js';
 export { loadKernel, setQuality, resetQuality } from './core/kernel.js';
@@ -32,7 +33,7 @@ import { toRenderMesh } from './export/mesh.js';
  *
  * The caller owns the returned `context` and must dispose it: it holds the WASM objects for
  * every node in the tree, and those are not garbage-collected. Passing the same context back
- * on the next call is the intended use — that is what lets the digest cache skip the subtrees
+ * on the next call is the intended use - that is what lets the digest cache skip the subtrees
  * an edit did not change. Call `context.collect(parts.map(p => p.node))` afterwards to bound
  * how much a reused context holds.
  *
@@ -66,7 +67,7 @@ export async function render(source, options = {}) {
       // Checked before solving rather than after: a 2D part is going to be refused either
       // way, and there is no reason to spend the kernel call first.
       if (part.node.dim !== 3) {
-        throw new Error(`part "${part.name}" is 2D — extrude or revolve it before rendering`);
+        throw new Error(`part "${part.name}" is 2D - extrude or revolve it before rendering`);
       }
       // The check above is what makes this a solid rather than a cross-section.
       const concrete = /** @type {Solid} */ (await owned.evaluate(part.node));
@@ -110,7 +111,7 @@ export function describeParameters(source) {
     try {
       return evaluator.expression(expression, evaluator.root);
     } catch {
-      // One unreadable attribute — a min that refers to a param with no value yet — must
+      // One unreadable attribute - a min that refers to a param with no value yet - must
       // not cost the caller every other descriptor in the document.
       return undefined;
     }

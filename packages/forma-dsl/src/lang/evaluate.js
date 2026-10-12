@@ -3,7 +3,7 @@
  *
  * Nothing here calls the kernel. Evaluating a model produces {@link GeometryNode}s, which
  * describe geometry without building any, and solving those is {@link EvaluationContext}'s
- * job. Keeping the two apart is what makes a live preview affordable — a description is
+ * job. Keeping the two apart is what makes a live preview affordable - a description is
  * cheap to rebuild on every keystroke, and a solid is not.
  *
  * The three things in this file fail in three different ways, which is why they are three
@@ -30,7 +30,7 @@ const SPECIAL_FORMS = ['align', 'for', 'if', 'part'];
 /**
  * What a body produces: geometry to hand upwards, and any scene parts declared inside it.
  *
- * Parts travel separately from nodes because a part is not an operand — it is a coloured
+ * Parts travel separately from nodes because a part is not an operand - it is a colored
  * piece of the finished scene, and an enclosing `translate` must not absorb it.
  *
  * @typedef {object} Produced
@@ -150,8 +150,8 @@ export class Program {
   /**
    * The declared parameters, in source order, as the editor needs them to build controls.
    *
-   * A param may legitimately have no default — the document then requires a value from the
-   * caller — so the descriptor has to stand on its own. `type` is taken from the declaration
+   * A param may legitimately have no default - the document then requires a value from the
+   * caller - so the descriptor has to stand on its own. `type` is taken from the declaration
    * when it is given and inferred from the default otherwise, and falls back to `number`,
    * which is what a param without either almost always is.
    *
@@ -205,8 +205,8 @@ export class Evaluator {
     /** @type {Program} The program being evaluated. */
     this.program = program;
     /**
-     * @type {EvaluationContext | null} Needed only by blocks that measure their child —
-     * `align` has to know where the geometry actually is — so a program without one can
+     * @type {EvaluationContext | null} Needed only by blocks that measure their child -
+     * `align` has to know where the geometry actually is - so a program without one can
      * still be built into a node tree without loading the kernel.
      */
     this.context = context;
@@ -217,13 +217,13 @@ export class Evaluator {
      * How many blocks may be built before evaluation gives up, or null for no limit.
      *
      * {@link MAX_DEPTH} stops a component that calls itself, and `range` caps how many values
-     * a single loop produces — but neither bounds their product. Two loops of ten thousand
+     * a single loop produces - but neither bounds their product. Two loops of ten thousand
      * nested in each other is a hundred million blocks, each one a kernel allocation, and no
      * amount of waiting finishes it.
      *
      * Off by default, because the embedder that controls its own input does not need it and
-     * should not have a ceiling imposed. A host that builds documents it did not write — an
-     * MCP server, a shared editor — should pass one.
+     * should not have a ceiling imposed. A host that builds documents it did not write - an
+     * MCP server, a shared editor - should pass one.
      *
      * @type {number | null}
      */
@@ -265,7 +265,7 @@ export class Evaluator {
 
   /**
    * Settles one declared param: what the caller gave, or what the declaration defaults to,
-   * or nothing at all — which is the caller's problem to report, since a document param and
+   * or nothing at all - which is the caller's problem to report, since a document param and
    * a component param say different things about it.
    *
    * @param {unknown} supplied What was passed in, or undefined.
@@ -452,6 +452,12 @@ export class Evaluator {
     /** @type {Produced} */
     const produced = { nodes: [], parts: [] };
 
+    // One block at a time, deliberately. `block` checks the signal and the node budget on
+    // the way in, so building these concurrently would enter every one of them before any
+    // could trip either - which turns `maxNodes` from a bound on how much gets built into a
+    // bound on how much gets built after everything has already started. There is also
+    // nothing to overlap: the evaluator is pure, and the one block that reaches the kernel
+    // is memoized by the context anyway.
     for (const block of body.blocks) {
       const result = await this.block(block, inner);
       produced.nodes.push(...result.nodes);
@@ -478,14 +484,14 @@ export class Evaluator {
 
     if (this.maxNodes !== null && ++this.built > this.maxNodes) {
       throw new FormaError(
-        `more than ${this.maxNodes} blocks built — the document asks for more geometry than `
+        `more than ${this.maxNodes} blocks built - the document asks for more geometry than `
         + 'this budget allows; narrow a loop, or raise maxNodes if it is genuinely this large',
         block.loc,
       );
     }
 
     if (this.depth > MAX_DEPTH) {
-      throw new FormaError(`nesting deeper than ${MAX_DEPTH} blocks — is a component using itself?`, block.loc);
+      throw new FormaError(`nesting deeper than ${MAX_DEPTH} blocks - is a component using itself?`, block.loc);
     }
 
     if (block.kind === 'for') return this.forBlock(block, scope);
@@ -505,7 +511,7 @@ export class Evaluator {
     if (!definition) {
       // The whole vocabulary, because the reader is often a program with no copy of the
       // manual: a misspelling it cannot correct from the error costs a round trip it has no
-      // way to end. Declared components come first — they are the names this document itself
+      // way to end. Declared components come first - they are the names this document itself
       // introduced, and the likeliest thing a near miss was reaching for.
       const known = [
         ...[...this.program.components.keys()].sort((a, z) => a.localeCompare(z)),
@@ -513,7 +519,7 @@ export class Evaluator {
         ...Object.keys(BLOCKS).sort((a, z) => a.localeCompare(z)),
       ];
       throw new FormaError(
-        `unknown block "${block.type}" — the blocks are ${quoteAll(known)}`,
+        `unknown block "${block.type}" - the blocks are ${quoteAll(known)}`,
         block.loc,
       );
     }
@@ -611,6 +617,9 @@ export class Evaluator {
     /** @type {Produced} */
     const produced = { nodes: [], parts: [] };
 
+    // Sequential for the same reason `body` is, and more so: this is the loop a runaway
+    // document runs away in, and the budget can only stop it if the iterations are entered
+    // one at a time.
     for (const [index, item] of sequence.entries()) {
       const iteration = scope.child();
       // One name binds the value; two bind the index and then the value.
@@ -665,7 +674,7 @@ export class Evaluator {
    */
   async alignBlock(block, scope) {
     if (!this.context) {
-      throw new FormaError('align needs a kernel context — render the model rather than building it', block.loc);
+      throw new FormaError('align needs a kernel context - render the model rather than building it', block.loc);
     }
     const args = new Args('align', this.attributes(block.body, scope), block.loc);
     const { nodes: children } = await this.body(block.body, scope.child());
@@ -903,7 +912,7 @@ function subtract(left, right, loc) {
 }
 
 /**
- * `*`: a vector times a scalar in either order — the common case in a model — componentwise
+ * `*`: a vector times a scalar in either order - the common case in a model - componentwise
  * on two lists, and ordinary multiplication otherwise.
  *
  * @param {unknown} left The left operand.

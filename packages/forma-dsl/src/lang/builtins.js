@@ -4,7 +4,7 @@
  *
  * This is the one description of what the language contains. The editor's highlighting, the
  * landing page's and the docs' code samples, and the MCP server's catalogue all read
- * `BLOCKS` and `FUNCTIONS` from here rather than restating them — so a block added here is
+ * `BLOCKS` and `FUNCTIONS` from here rather than restating them - so a block added here is
  * one they all learn about, and a block they claim without it existing fails their tests.
  */
 
@@ -195,8 +195,8 @@ export class Args {
    * leaves it guessing at spellings. What it read is tracked already, so the list costs
    * nothing to produce.
    *
-   * A block that branches on which of two spellings it was given — `radius` against
-   * `diameter` — only reads one of them, so the list is what this call would accept and not
+   * A block that branches on which of two spellings it was given - `radius` against
+   * `diameter` - only reads one of them, so the list is what this call would accept and not
    * always the whole set.
    *
    * @returns {void}
@@ -207,7 +207,7 @@ export class Args {
     if (extra.length) {
       const plural = extra.length > 1 ? 's' : '';
       const reads = [...this.used].sort((a, z) => a.localeCompare(z));
-      const instead = reads.length ? ` — ${this.type} reads ${quoteAll(reads)}` : '';
+      const instead = reads.length ? ` - ${this.type} reads ${quoteAll(reads)}` : '';
       throw new FormaError(
         `${this.type}: unknown attribute${plural} ${quoteAll(extra)}${instead}`,
         this.loc,
@@ -579,6 +579,6 @@ export const CONSTANTS = { pi: Math.PI, e: Math.E };
 
 /**
  * Type names are ordinary identifiers that stand for themselves, so `type = number` in a
- * param block needs no keyword and no quoting — the same trade HCL makes.
+ * param block needs no keyword and no quoting - the same trade HCL makes.
  */
 export const TYPE_NAMES = ['number', 'string', 'bool', 'vector', 'list', 'angle'];

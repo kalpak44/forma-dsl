@@ -1,7 +1,7 @@
 /**
  * The language, compressed to what someone writing a document has to hold in their head.
  *
- * This is deliberately not the reference manual — the manual is bundled too, and
+ * This is deliberately not the reference manual - the manual is bundled too, and
  * `forma_reference` serves it. This is the page that goes into a model's context before it
  * writes anything: the rules that are not guessable, the mistakes that are expensive, and
  * the shape of a working document.
@@ -43,7 +43,7 @@ model "riser" {
 }
 \`\`\`
 
-Order does not matter between declarations of different kinds — a model may use a component
+Order does not matter between declarations of different kinds - a model may use a component
 declared below it. Order does matter among top-level \`local\`s, which resolve top to bottom.`,
 
   nesting: `## Nesting is composition
@@ -77,8 +77,8 @@ children is an error.`,
 
 Every piece of geometry is 2D or 3D, and the language tracks which.
 
-- **2D** — \`rect\` \`rounded_rect\` \`circle\` \`ellipse\` \`regular_polygon\` \`stadium\` \`polygon\`
-- **3D** — \`box\` \`sphere\` \`cylinder\` \`cone\` \`torus\`
+- **2D** - \`rect\` \`rounded_rect\` \`circle\` \`ellipse\` \`regular_polygon\` \`stadium\` \`polygon\`
+- **3D** - \`box\` \`sphere\` \`cylinder\` \`cone\` \`torus\`
 - **Operations** either fix what they take (\`extrude\` takes 2D, \`refine\` takes 3D) or pass
   their children's dimensionality through (\`translate\` \`rotate\` \`scale\` \`mirror\` \`hull\`
   \`simplify\` \`align\`, the booleans).
@@ -89,17 +89,17 @@ Three rules, each with its own error:
 | --- | --- |
 | Children of one block must all be the same dimensionality | \`"union" cannot mix 2D and 3D shapes\` |
 | A block that fixes what it takes must get it | \`"extrude" takes 2D geometry, got 3D\` |
-| Anything rendered must be 3D | \`part "body" is 2D — extrude or revolve it before rendering\` |
+| Anything rendered must be 3D | \`part "body" is 2D - extrude or revolve it before rendering\` |
 
 2D → 3D with \`extrude\` or \`revolve\`; 3D → 2D with \`project\` or \`slice\`.`,
 
   units: `## Units and orientation
 
 - **Lengths are unitless.** Every consumer treats them as millimetres.
-- **Angles are always degrees.** Everywhere — \`rotate { z = 90 }\`, \`revolve { angle = 180 }\`,
+- **Angles are always degrees.** Everywhere - \`rotate { z = 90 }\`, \`revolve { angle = 180 }\`,
   \`sin(30)\`, \`param a { type = angle }\`. There is no radian form.
 - **Z is up.** \`extrude\` sweeps along +Z. \`revolve\` spins a profile written in the XY plane
-  about the Y axis, mapping the profile's Y to the result's Z — so a profile drawn upwards
+  about the Y axis, mapping the profile's Y to the result's Z - so a profile drawn upwards
   from \`[0, 0]\` produces a solid standing on the XY plane.
 - **3D rotations apply X, then Y, then Z**, matching OpenSCAD.
 - **Transforms act about the origin.** Centre a shape (\`center = true\`) before rotating it,
@@ -107,11 +107,11 @@ Three rules, each with its own error:
 
   syntax: `## Syntax
 
-**Comments** — \`// line\`, \`# line\`, \`/* block */\`. Block comments do not nest.
+**Comments** - \`// line\`, \`# line\`, \`/* block */\`. Block comments do not nest.
 
-**Numbers** — \`12\` \`0.5\` \`.5\` \`1e3\` \`2.5e-3\`. No hex, no separators, no unit suffix.
+**Numbers** - \`12\` \`0.5\` \`.5\` \`1e3\` \`2.5e-3\`. No hex, no separators, no unit suffix.
 
-**Strings** — double quotes only, no literal newline. Exactly six escapes: \`\\n\` \`\\t\` \`\\r\`
+**Strings** - double quotes only, no literal newline. Exactly six escapes: \`\\n\` \`\\t\` \`\\r\`
 \`\\"\` \`\\\\\` \`\\$\`. \`\${ expr }\` splices any expression in.
 
 **Identifiers** start with a letter or \`_\` and continue with letters, digits, \`_\` **or \`-\`**.
@@ -127,7 +127,7 @@ Three rules, each with its own error:
 is \`name = expression\`; anything else that is followed by a brace is a nested block. Setting
 the same attribute twice is an error.
 
-**The newline rule.** Outside brackets, **a line break ends an expression** — that is what
+**The newline rule.** Outside brackets, **a line break ends an expression** - that is what
 lets attributes be written one per line with no separators. Inside \`(...)\`, \`[...]\` or an
 argument list the rule is suspended, so break there to continue across lines:
 
@@ -138,7 +138,7 @@ local total = (
 )
 
 local b = base
-          + extra      // NOT a continuation — this is a parse error
+          + extra      // NOT a continuation - this is a parse error
 \`\`\`
 
 Trailing commas are allowed in lists, objects and argument lists.`,
@@ -156,7 +156,7 @@ Trailing commas are allowed in lists, objects and argument lists.`,
 
 There is no vector type: **a vector is a list of numbers**, and a block says how many
 components it wants. Where a block wants a vector, **a single number stands for every
-component** — \`scale { factor = 2 }\` is \`scale { factor = [2, 2, 2] }\`.
+component** - \`scale { factor = 2 }\` is \`scale { factor = [2, 2, 2] }\`.
 
 **Operators**, loosest first: \`?:\` · \`||\` · \`&&\` · \`== !=\` · \`< <= > >=\` · \`+ -\` ·
 \`* / %\` · prefix \`-x !x\` · postfix \`a.b a[i] f(x)\`.
@@ -174,21 +174,21 @@ errors**, not \`Infinity\`.
 
 \`<\` \`<=\` \`>\` \`>=\` need both sides to be the same type. \`==\` compares structurally.
 
-**Truthy / falsy** — falsy is \`false\`, \`0\`, \`""\`, \`[]\`, \`null\`. Everything else is truthy,
+**Truthy / falsy** - falsy is \`false\`, \`0\`, \`""\`, \`[]\`, \`null\`. Everything else is truthy,
 including \`{}\`.
 
-**Members** — \`.x\` \`.y\` \`.z\` read index 0, 1, 2 off a list, so \`size.z\` works on a
+**Members** - \`.x\` \`.y\` \`.z\` read index 0, 1, 2 off a list, so \`size.z\` works on a
 3-vector. \`a[i]\` indexes. \`var.NAME\` reads a param.`,
 
   scope: `## Scope and names
 
-- **\`var\` holds params only** — never locals. A local with the same name shadows the bare
+- **\`var\` holds params only** - never locals. A local with the same name shadows the bare
   name but \`var.NAME\` still means the param.
 - **Component params are read by their bare name.** There is no \`var.\` for them.
 - **A component body cannot see the call site.** It is evaluated in a fresh scope rooted at
   the document, so a \`local\` where it is called does not leak in. Document params and other
   components are in scope.
-- **A param default may use earlier params by their bare name**, but never \`var\` — \`var\` is
+- **A param default may use earlier params by their bare name**, but never \`var\` - \`var\` is
   assembled only after every param has resolved.
 - **Top-level locals are ordered**; locals inside a body are not, so a block may use a local
   written below it.
@@ -209,7 +209,7 @@ if cond { ... } else if other { ... } else { ... }
   backwards, so a loop can never spin forever.
 - There is no \`break\`, no \`continue\` and no accumulator. Filter the list instead.
 - A loop over an empty list produces nothing, which is an error where something was
-  required — guard it with \`if\`.
+  required - guard it with \`if\`.
 - For a *value* that depends on a condition, use \`cond ? a : b\`, not \`if\`.
 
 The radial-array idiom, which is most of what loops are for:
@@ -237,7 +237,7 @@ model "assembly" {
 \`\`\`
 
 - Declare parts **directly in a model**, or inside a \`for\`/\`if\` in one. A part nested inside
-  a transform or a boolean is **silently dropped** — no error, it is just gone.
+  a transform or a boolean is **silently dropped** - no error, it is just gone.
 - A part cannot contain another part, cannot be empty, and cannot come out of a component.
 - Geometry written outside any part becomes one default part named after the model.
 - The label is an expression: \`part "leg_\${i}"\`.
@@ -246,7 +246,7 @@ model "assembly" {
   pitfalls: `## The mistakes that cost the most time
 
 1. **Hyphens bind into names.** \`outer-inner\` is one identifier. Write \`outer - inner\`.
-2. **A misspelled attribute is an error, not a silent no-op** — \`box: unknown attribute
+2. **A misspelled attribute is an error, not a silent no-op** - \`box: unknown attribute
    "colour"\`. The one exception is a \`param\` block, which passes anything through.
 3. **A part inside a transform disappears** with no warning. Put the transform inside the
    part.
@@ -260,11 +260,11 @@ model "assembly" {
 9. **\`min\`/\`max\`/\`step\`/\`options\` on a param are advisory** and never enforced. Clamp in
    the model if the bound matters: \`local n = max(3, min(16, var.bolts))\`.
 10. **Empty geometry is silent.** \`extrude { height = 0 }\`, a \`difference\` that removes
-    everything and a backwards \`range\` all produce nothing rather than an error — and then
+    everything and a backwards \`range\` all produce nothing rather than an error - and then
     fail further out with \`model "m" produced no geometry\`.
 11. **A line break ends an expression** outside brackets. Continue inside \`(...)\` or end the
     line on an operator.
-12. **\`rotate\` spells its 2D and 3D attributes differently** — \`angle\` in 2D, \`x\`/\`y\`/\`z\`
+12. **\`rotate\` spells its 2D and 3D attributes differently** - \`angle\` in 2D, \`x\`/\`y\`/\`z\`
     or \`angles\` in 3D.`,
 
   workflow: `## How to write one of these
@@ -274,7 +274,7 @@ model "assembly" {
 2. **Write the profile, then give it thickness.** Most real parts are a 2D outline extruded
    or revolved. Modelling in 2D and converting once is shorter and more robust than
    composing solids.
-3. **Name repeated features as components** — including the *negative* of a feature. A
+3. **Name repeated features as components** - including the *negative* of a feature. A
    \`component "counterbore"\` subtracted in a loop reads far better than four inlined unions.
 4. **One \`part\` per physical piece**, each with a colour. It is what makes a render legible
    and what lets a single piece be exported.
@@ -307,7 +307,7 @@ export function guide(section) {
     return ['# The forma language, in brief', '', ...ORDER.map((name) => SECTIONS[name])].join('\n\n');
   }
   if (!SECTIONS[section]) {
-    throw new Error(`no guide section "${section}" — it is one of ${ORDER.join(', ')}`);
+    throw new Error(`no guide section "${section}" - it is one of ${ORDER.join(', ')}`);
   }
   return SECTIONS[section];
 }

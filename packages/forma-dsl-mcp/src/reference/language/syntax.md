@@ -31,7 +31,7 @@ Decimal, with an optional fraction and an optional exponent.
 There is no hexadecimal, no separator, and no unit suffix. A leading `-` is the unary minus
 operator, not part of the literal.
 
-`2e` and `2em` are **not** numbers with exponents — the lexer backs out of a bare `e` and
+`2e` and `2em` are **not** numbers with exponents - the lexer backs out of a bare `e` and
 lets it start an identifier, so `2e` lexes as the number `2` followed by the name `e`.
 
 ---
@@ -46,7 +46,7 @@ Double quotes only. A string may not contain a literal newline.
 "a tab\there, a quote\", a literal \${ not a splice"
 ```
 
-**Escapes.** Exactly six: `\n`, `\t`, `\r`, `\"`, `\\` and `\$`. Anything else is an error —
+**Escapes.** Exactly six: `\n`, `\t`, `\r`, `\"`, `\\` and `\$`. Anything else is an error -
 `unknown escape \q`. `\$` exists so a literal `${` can be written.
 
 **Interpolation.** `${ ... }` splices in any expression. Braces inside the splice are
@@ -65,7 +65,7 @@ height   wall_thickness   _private   min-width   part2
 ```
 
 > **Hyphens are part of a name.** `a-b` is one identifier, not `a` minus `b`. Write
-> subtraction with spaces: `a - b`. This is the single most common surprise in the lexer —
+> subtraction with spaces: `a - b`. This is the single most common surprise in the lexer -
 > `local gap = outer-inner` fails with `unknown name "outer-inner"`.
 
 ### Keywords
@@ -111,7 +111,7 @@ Labels come in two flavours:
 | `component "name"`, `model "name"` | Static | The name must be a plain string or identifier. `${ }` is rejected: `a label cannot contain ${ }` |
 | `part "name"` | An expression | Evaluated at build time, so a part in a loop can name itself: `part "leg_${i}"` |
 
-Blocks that take no label reject one — `"box" does not take a label`. Two blocks accept a
+Blocks that take no label reject one - `"box" does not take a label`. Two blocks accept a
 label and quietly ignore it: [`align`](../reference/align.md) and
 [component calls](../reference/component.md).
 

@@ -3,8 +3,8 @@
  *
  * The manual is the language's own documentation, copied into the package by
  * `scripts/sync-reference.mjs` rather than paraphrased, so an answer from here is the same
- * answer a person reading the published docs would get. Search is deliberately simple —
- * substring matching over headings and body text, ranked — because the corpus is 28 pages
+ * answer a person reading the published docs would get. Search is deliberately simple -
+ * substring matching over headings and body text, ranked - because the corpus is 29 pages
  * and anything cleverer would be a dependency and a source of surprise.
  */
 import { readFile, readdir } from 'node:fs/promises';
@@ -47,6 +47,7 @@ export const PAGES = [
   { path: 'reference/part.md', title: 'part', about: 'Coloured pieces of the rendered scene' },
   { path: 'reference/functions.md', title: 'Functions', about: 'Every builtin function and constant' },
   { path: 'errors.md', title: 'Errors', about: 'Every error message, what raises it, and what to change' },
+  { path: 'cli.md', title: 'Command line', about: 'The forma command: render to STL, list params and models, exit codes' },
   { path: 'api/render.md', title: 'render', about: 'JavaScript API: compile a document and evaluate a model' },
   { path: 'api/describe-parameters.md', title: 'describeParameters', about: 'JavaScript API: read a document’s params without rendering' },
   { path: 'api/evaluation-context.md', title: 'EvaluationContext', about: 'JavaScript API: the digest cache and WASM ownership' },
@@ -95,7 +96,7 @@ export async function readPage(path) {
   const page = BY_PATH.get(normalised);
   if (!page) {
     throw new Error(
-      `no reference page "${path}" — the pages are ${PAGES.map((each) => each.path).join(', ')}`,
+      `no reference page "${path}" - the pages are ${PAGES.map((each) => each.path).join(', ')}`,
     );
   }
   return { path: page.path, title: page.title, markdown: await readFile(join(ROOT, page.path), 'utf8') };

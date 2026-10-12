@@ -3,7 +3,7 @@
  *
  * Strings are the one thing it does not hand on whole. A `"..."` carrying `${...}` is split
  * here into literal runs and spliced source, because working out where a splice ends means
- * counting braces — which is a job for something reading characters, not for a parser reading
+ * counting braces - which is a job for something reading characters, not for a parser reading
  * tokens.
  *
  * {@link FormaError} lives here rather than next to the evaluator because this is the first
@@ -62,15 +62,15 @@ const isDigit = (c) => c >= '0' && c <= '9';
 /**
  * @param {string} c A single character.
  * @returns {boolean} Whether it is whitespace that carries no meaning. A newline does carry
- *   meaning — it ends an attribute — so it is deliberately not here.
+ *   meaning - it ends an attribute - so it is deliberately not here.
  */
 const isSpace = (c) => c === ' ' || c === '\t' || c === '\r';
 
 /**
  * Walks the source once, keeping the cursor and the accumulated tokens together.
  *
- * A class rather than one long function because the four scanners below — comments,
- * strings, numbers, names — all need the same mutable cursor, and threading it through
+ * A class rather than one long function because the four scanners below - comments,
+ * strings, numbers, names - all need the same mutable cursor, and threading it through
  * arguments made each of them harder to read than the grammar it implements.
  */
 class Lexer {

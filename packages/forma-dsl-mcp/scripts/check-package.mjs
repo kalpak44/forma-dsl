@@ -2,7 +2,7 @@
  * Verifies that the publishable tarball carries the server, the manual, and nothing else.
  *
  * Two failures this catches, both silent in the worst direction: shipping the tests and the
- * scripts to every consumer, and shipping a server whose bundled manual was left behind — in
+ * scripts to every consumer, and shipping a server whose bundled manual was left behind - in
  * which case `forma_reference` fails at the user's first call rather than here.
  */
 import { execFileSync } from 'node:child_process';
@@ -28,7 +28,7 @@ const manual = paths.filter((path) => path.startsWith('src/reference/') && path.
 if (stray.length) console.error(`\nUnexpected files in the tarball:\n  ${stray.join('\n  ')}`);
 if (missing.length) console.error(`\nMissing from the tarball:\n  ${missing.join('\n  ')}`);
 if (manual.length < 20) {
-  console.error(`\nOnly ${manual.length} manual pages in the tarball — run \`npm run sync:reference\`.`);
+  console.error(`\nOnly ${manual.length} manual pages in the tarball - run \`npm run sync:reference\`.`);
 }
 
 if (stray.length || missing.length || manual.length < 20) process.exit(1);

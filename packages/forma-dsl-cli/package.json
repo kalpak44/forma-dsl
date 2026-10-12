@@ -1,0 +1,49 @@
+{
+  "name": "forma-dsl-cli",
+  "version": "0.3.1",
+  "description": "The forma command line: render .forma documents to STL, and list what one declares.",
+  "keywords": [
+    "cli",
+    "forma",
+    "forma-dsl",
+    "cad",
+    "csg",
+    "3d",
+    "parametric",
+    "stl",
+    "headless"
+  ],
+  "homepage": "https://kalpak44.github.io/forma-dsl/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kalpak44/forma-dsl.git",
+    "directory": "packages/forma-dsl-cli"
+  },
+  "bugs": {
+    "url": "https://github.com/kalpak44/forma-dsl/issues"
+  },
+  "author": "Pavel Usanli",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "forma": "./src/bin.js"
+  },
+  "exports": {
+    ".": "./src/cli.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src"
+  ],
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "start": "node src/bin.js",
+    "test": "node --test",
+    "check:package": "node scripts/check-package.mjs"
+  },
+  "dependencies": {
+    "forma-dsl": "^0.3.1"
+  }
+}

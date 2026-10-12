@@ -43,7 +43,7 @@ export const VERSION = createRequire(import.meta.url)('../package.json').version
 const INSTRUCTIONS = `This server knows forma, a declarative DSL for 3D solids, builds it with
 the real geometry kernel, and writes the documents it builds.
 
-Start with \`forma_guide\` — it is the language in one page. Use \`forma_blocks\` for the
+Start with \`forma_guide\` - it is the language in one page. Use \`forma_blocks\` for the
 attributes of the blocks you are about to write, \`forma_examples\` for a working document of
 a similar shape, and \`forma_reference\` when you need the manual.
 
@@ -61,7 +61,7 @@ first of them. Every write reports the directory it landed in.`;
  * Builds the server, with every tool and resource registered.
  *
  * The workspace is optional, and left out is the normal case: the server then takes its
- * directories from whatever the connected client declares as its roots, which is the point —
+ * directories from whatever the connected client declares as its roots, which is the point -
  * the client knows where the user's files belong and the server does not.
  *
  * @param {Workspace} [workspace] The patch of filesystem the tools may touch. Omitted, the

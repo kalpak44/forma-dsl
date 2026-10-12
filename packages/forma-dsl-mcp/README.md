@@ -5,7 +5,7 @@
 [![M8ven Verified](https://m8ven.ai/api/agent-verify/badge?score=100)](https://m8ven.ai/verified/verify?id=d3529b4756004447)
 
 A [Model Context Protocol](https://modelcontextprotocol.io) server that knows
-[forma](https://www.npmjs.com/package/forma-dsl) — the declarative DSL for 3D solids — and
+[forma](https://www.npmjs.com/package/forma-dsl) - the declarative DSL for 3D solids - and
 builds it with the real geometry kernel, so a `.forma` document is measured before anyone is
 told it works.
 
@@ -57,7 +57,7 @@ The server does not choose. It asks the client over MCP's
 writes only inside the directories the client hands over. A relative path is taken against
 the first of them, and every write reports the directory it landed in.
 
-**Every path is confined to those directories** — an absolute path outside them, a `..` that
+**Every path is confined to those directories** - an absolute path outside them, a `..` that
 climbs out, or a symlink pointing out of the tree is refused rather than followed. When the
 client says its roots have changed, the server re-reads them before the next call.
 
@@ -76,7 +76,7 @@ cwd = "/absolute/path/to/your/models"
 A model that has read the language's documentation still writes forma that does not build.
 The difference this server makes is that it **runs the geometry kernel**. Every tool compiles
 the document, solves it with [Manifold](https://github.com/elalish/manifold) and reports back
-the bounding box, the volume, the triangle count and the genus of every part — so the
+the bounding box, the volume, the triangle count and the genus of every part - so the
 question "is this the size that was asked for, and is it actually a solid?" is answered
 before the work is handed over. A part that silently solved to nothing is called out by name,
 and an error comes back with the line, the column and an excerpt with a caret on it.
@@ -84,7 +84,7 @@ and an error comes back with the line, the column and an excerpt with a caret on
 `forma_write` **refuses to write a document that does not render**.
 
 Refusals carry the vocabulary too: an unknown block comes back with every block there is, and
-an unknown attribute with the ones that block reads. That is the backstop, not the teacher —
+an unknown attribute with the ones that block reads. That is the backstop, not the teacher -
 it is enough to correct a misspelling and not enough to learn a language, since it gives the
 name of a block and nothing about what that block means or what it takes. `forma_guide`,
 `forma_blocks` and `forma_reference` are what answer that, and they are bundled so they
@@ -120,24 +120,24 @@ is rendered by the test suite.
 
 The same knowledge in the form a person can attach to a conversation by hand:
 
-- `forma://guide` — the language in brief
-- `forma://catalogue` — every block and function, as JSON
-- `forma://reference/{path}` — one page of the manual
-- `forma://example/{name}` — one worked document
+- `forma://guide` - the language in brief
+- `forma://catalogue` - every block and function, as JSON
+- `forma://reference/{path}` - one page of the manual
+- `forma://example/{name}` - one worked document
 
 ## Asking for a part
 
 Install it in Codex as above, `cd` to wherever you keep your models, and ask:
 
-> **you** — build me a forma file with a tree in it
+> **you** - build me a forma file with a tree in it
 
-> **codex** — Where should I put it?
+> **codex** - Where should I put it?
 
-> **you** — the current folder
+> **you** - the current folder
 
 Codex reads the language before it writes any: `forma_guide` for the shape of a document,
-`forma_blocks` for the attributes of the blocks it is about to use — here `cone`, `translate`
-and `for` — and `forma_examples` for a document of a similar shape. Then it writes, and
+`forma_blocks` for the attributes of the blocks it is about to use - here `cone`, `translate`
+and `for` - and `forma_examples` for a document of a similar shape. Then it writes, and
 `forma_write` builds what it wrote with the real kernel before anything reaches the disk.
 
 Where the vocabulary runs out, the refusals carry it. A guess at a block that does not exist
@@ -145,17 +145,17 @@ comes back with every block that does, and a guess at an attribute with the ones
 reads:
 
 ```
-unknown block "frustum" — the blocks are "align", "for", "if", "part", "box", "circle",
+unknown block "frustum" - the blocks are "align", "for", "if", "part", "box", "circle",
   "cone", "cylinder", "difference", … "union"
 
-cone: unknown attribute "bottom_radius" — cone reads "center", "height", "radius",
+cone: unknown attribute "bottom_radius" - cone reads "center", "height", "radius",
   "segments", "top_radius"
 ```
 
 Then it lands, and the tool answers with the part rather than with a claim about it:
 
 ```
-Wrote `tree.forma` under `/home/you/models` — 537 bytes.
+Wrote `tree.forma` under `/home/you/models` - 537 bytes.
 
 | Part     | Colour  | Opacity | Size (X × Y × Z) | Volume    | Triangles | Genus |
 | `trunk`  | #6b4423 |       1 | 8 × 8 × 30       | 1004.682  |       108 |     0 |
@@ -243,7 +243,7 @@ this tarball, so it works with no network at all. There is no telemetry, no anal
 update check and no account.
 
 It writes only inside the directories your client declares as MCP roots, never replaces a file
-unless told to, and leaves nothing elsewhere — no cache, no config, no logs.
+unless told to, and leaves nothing elsewhere - no cache, no config, no logs.
 
 Your MCP client is a separate program with its own policy. Documents you ask a model to write
 travel wherever that client sends them, which this server neither controls nor sees.
@@ -252,4 +252,4 @@ Full text: [PRIVACY.md](https://github.com/kalpak44/forma-dsl/blob/main/PRIVACY.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).

@@ -1,7 +1,7 @@
 # Control flow
 
 Two constructs, both of which appear where a block appears and produce geometry rather than
-a value. Neither is an expression — for a value that depends on a condition, use
+a value. Neither is an expression - for a value that depends on a condition, use
 [`cond ? a : b`](expressions.md#conditional).
 
 ---
@@ -38,7 +38,7 @@ difference {
 | **Sequence** | Any expression that evaluates to a list. Iterating anything else is an error: `for: expected a list to iterate` |
 | **Names** | One name binds the value. Two names bind the index and then the value |
 | **Scope** | Each iteration gets a fresh child scope holding just those names |
-| **Result** | The concatenation of what every iteration produced — geometry, and any `part`s |
+| **Result** | The concatenation of what every iteration produced - geometry, and any `part`s |
 
 #### Caveats
 
@@ -47,7 +47,7 @@ difference {
   [`if`](#if) when a parameter can legitimately reach zero.
 - `range(a, b)` **excludes** `b`, and produces an empty list rather than looping forever when
   the range runs backwards. See [`range`](../reference/functions.md#range).
-- Iterating a string does not work — strings are not lists here. Use
+- Iterating a string does not work - strings are not lists here. Use
   [`len`](../reference/functions.md#len) and index into it if you need the characters.
 - There is no `break`, no `continue` and no accumulator. A loop that needs to skip items
   should filter the list it iterates, or wrap its body in an `if`.

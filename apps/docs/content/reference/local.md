@@ -13,7 +13,7 @@ local radius = var.diameter / 2
 
 ### `local NAME = expression`
 
-Binds a name to the result of an expression. Locals hold values, never geometry — to name a
+Binds a name to the result of an expression. Locals hold values, never geometry - to name a
 piece of geometry, declare a [`component`](component.md).
 
 #### Parameters
@@ -30,7 +30,7 @@ Nothing. A local binds a name; it produces no geometry.
 #### Caveats
 
 - **Locals are ordered at the top level.** A local may refer to params, to constants and to
-  locals declared *above* it — never below. `local a = b` before `local b = 2` fails with
+  locals declared *above* it - never below. `local a = b` before `local b = 2` fails with
   `unknown name "b"`.
 - **Locals inside a body are not ordered.** Every local in one block body is resolved before
   any of that body's blocks are built, so a block may use a local declared after it. See
@@ -130,7 +130,7 @@ model "frame" {
 
 | Use | When |
 | --- | --- |
-| [`param`](param.md) | The value is an **input** — someone outside the document should be able to change it |
+| [`param`](param.md) | The value is an **input** - someone outside the document should be able to change it |
 | `local` | The value is **derived** from params or is a fixed table, and should never be a control |
 | [`component`](component.md) | You are naming **geometry**, not a value |
 
@@ -152,7 +152,7 @@ local cavity_top = top + 2      // runs past the opening so the neck is not capp
 
 ### `unknown name "b"`
 
-A top-level local referred to something declared below it. Move the declaration up — locals
+A top-level local referred to something declared below it. Move the declaration up - locals
 are resolved strictly in source order:
 
 ```hcl

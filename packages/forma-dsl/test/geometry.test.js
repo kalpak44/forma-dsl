@@ -110,14 +110,14 @@ test('a component this document declared is offered before the builtins', async 
   await assert.rejects(
     render(`component "leg" { cylinder { radius = 1  height = 5 } }
             model "m" { part "p" { legs { } } }`),
-    /unknown block "legs" — the blocks are "leg"/,
+    /unknown block "legs" - the blocks are "leg"/,
   );
 });
 
 test('an unknown attribute names the ones the block does read', async () => {
   await assert.rejects(
     render('model "m" { part "p" { rotate { degrees = 45  box { size = 1 } } } }'),
-    /rotate: unknown attribute "degrees" — rotate reads "x", "y", "z"/,
+    /rotate: unknown attribute "degrees" - rotate reads "x", "y", "z"/,
   );
   await assert.rejects(
     render('model "m" { part "p" { cone { bottom_radius = 4  height = 9 } } }'),

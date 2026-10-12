@@ -2,7 +2,7 @@
  * The globals `src/` is allowed to rely on.
  *
  * The library is meant to run unchanged in a browser and in Node, so it commits to neither
- * environment's type library — pulling in `DOM` or `@types/node` here would let a
+ * environment's type library - pulling in `DOM` or `@types/node` here would let a
  * `window.` or a `process.` compile cleanly and then fail in the other runtime.
  *
  * These are the few globals both actually provide. The list is deliberately the same one

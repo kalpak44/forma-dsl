@@ -2,7 +2,7 @@
  * The demo: the editor, driving itself.
  *
  * It types a document out, solves it with the real library, and then picks up a parameter
- * and drags it — re-solving on every step, exactly as the editor does when you move a
+ * and drags it - re-solving on every step, exactly as the editor does when you move a
  * slider. Nothing is pre-rendered and nothing is a video; the controls under the viewport
  * are live, and taking hold of one hands the whole thing over to the reader.
  */
@@ -371,7 +371,7 @@ export class Demo {
     }
     input?.classList.remove('auto');
     // A parameter can grow the model well past what was framed for its default, so the
-    // camera settles once at the end — during the drag it would be chasing the solid.
+    // camera settles once at the end - during the drag it would be chasing the solid.
     if (run === this.#run && !this.#manual) this.stage?.frame();
   }
 }

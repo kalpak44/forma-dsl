@@ -6,7 +6,7 @@
 A declarative DSL for 3D modeling and scene composition, with reusable components and live
 previews.
 
-Models are written as text — blocks, attributes and expressions in an HCL-like syntax —
+Models are written as text - blocks, attributes and expressions in an HCL-like syntax -
 parsed and solved by the [Manifold](https://github.com/elalish/manifold) CSG kernel compiled
 to WebAssembly. It runs unchanged in Node and in the browser.
 
@@ -97,7 +97,7 @@ Hand-written TypeScript declarations ship with it, so the API is typed from eith
 
 ## Documentation
 
-**[The full reference](https://kalpak44.github.io/forma-dsl/docs/)** — every declaration,
+**[The full reference](https://kalpak44.github.io/forma-dsl/docs/)** - every declaration,
 block, function and error, each with usage and troubleshooting. The
 **[editor](https://kalpak44.github.io/forma-dsl/editor/)** runs the whole thing in the browser:
 type, and the solid updates.
@@ -113,7 +113,7 @@ source ──▶ lexer ──▶ parser ──▶ evaluator ──▶ geometry n
 The evaluator does not call the kernel. It produces a tree of immutable geometry nodes, each
 carrying a 128-bit digest of its own content and its children's digests. Identity is digest
 identity, so a component used twenty times is one node, evaluated once. Nodes are the only
-thing that reaches the kernel, and every result is memoized by digest — which is what makes
+thing that reaches the kernel, and every result is memoized by digest - which is what makes
 an edit cheap, since only the subtrees whose content actually changed are re-evaluated.
 
 WebAssembly objects are not garbage-collected, so an `EvaluationContext` owns everything it
@@ -124,4 +124,4 @@ One runtime dependency, `manifold-3d`.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).

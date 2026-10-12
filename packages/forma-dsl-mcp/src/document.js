@@ -13,19 +13,17 @@ import {
   GeometryNode,
   Program,
   describeParameters,
+  excerpt,
   render,
   toBinarySTL,
 } from 'forma-dsl';
-
-/** How many lines of source to show either side of an error. */
-const CONTEXT_LINES = 2;
 
 /**
  * How much geometry one document may build before the server refuses it.
  *
  * This server exists to build text a model wrote, which is the case the library leaves a
  * budget off for. Nesting limits and `range` each bound one loop; only this bounds two of
- * them nested, and that shape asks for more geometry than the process can finish — on a pipe,
+ * them nested, and that shape asks for more geometry than the process can finish - on a pipe,
  * with no request timeout of its own, that is a server that never answers again.
  *
  * Set far above any honest document: the worked examples build tens of blocks. A model that
@@ -38,7 +36,7 @@ const MAX_NODES = 50_000;
  * that changed.
  *
  * Kept at module scope rather than per-request because that is the whole point of the digest
- * cache — a context that lives for one call caches nothing.
+ * cache - a context that lives for one call caches nothing.
  *
  * @type {EvaluationContext | null}
  */
@@ -57,37 +55,9 @@ export function disposeSharedContext() {
 }
 
 /**
- * Renders a source excerpt with a caret under the column an error points at.
- *
- * An error message with a line number still makes a model count lines. An excerpt does not.
- *
- * @param {string} source The document.
- * @param {{ line: number, column: number } | null | undefined} loc Where the error was raised.
- * @returns {string | undefined} The excerpt, or undefined when there is no position.
- */
-export function excerpt(source, loc) {
-  if (!loc || !Number.isInteger(loc.line)) return undefined;
-
-  const lines = source.split('\n');
-  const first = Math.max(1, loc.line - CONTEXT_LINES);
-  const last = Math.min(lines.length, loc.line + CONTEXT_LINES);
-  const width = String(last).length;
-
-  /** @type {string[]} */
-  const out = [];
-  for (let n = first; n <= last; n++) {
-    out.push(`${String(n).padStart(width)} | ${lines[n - 1]}`);
-    if (n === loc.line) {
-      out.push(`${' '.repeat(width)} | ${' '.repeat(Math.max(0, loc.column - 1))}^`);
-    }
-  }
-  return out.join('\n');
-}
-
-/**
  * Turns a thrown error into the shape a tool result reports.
  *
- * @param {string} stage Which pass raised it — the stage is what tells a caller whether the
+ * @param {string} stage Which pass raised it - the stage is what tells a caller whether the
  *   mistake was a typo, a misunderstanding of meaning, or a degenerate solid.
  * @param {unknown} error What was thrown.
  * @param {string} source The document, for the excerpt.
@@ -119,7 +89,7 @@ const tidy = (value) => Number.parseFloat(value.toFixed(4));
  * What a solved part is, measured.
  *
  * The bounding box and the volume are what let a caller check a model against a requirement
- * it was given — "it has to fit in 100 x 60" is answerable from here without a viewer.
+ * it was given - "it has to fit in 100 x 60" is answerable from here without a viewer.
  *
  * @param {Solid} solid The solved part.
  * @returns {object} Its measurements.
@@ -198,7 +168,7 @@ export async function checkDocument(source, options = {}) {
       ...declared,
       error: {
         stage: 'render',
-        message: 'the document declares no model — add a `model "name" { ... }` block',
+        message: 'the document declares no model - add a `model "name" { ... }` block',
       },
     };
   }
@@ -276,7 +246,7 @@ export async function exportStl(source, options = {}) {
     const wanted = result.parts.find((candidate) => candidate.name === part);
     if (!wanted) {
       const names = result.parts.map((candidate) => `"${candidate.name}"`).join(', ');
-      throw new Error(`no part named "${part}" in model "${result.name}" — it has ${names}`);
+      throw new Error(`no part named "${part}" in model "${result.name}" - it has ${names}`);
     }
     solid = wanted.concrete;
     name = wanted.name;
@@ -285,7 +255,7 @@ export async function exportStl(source, options = {}) {
     name = result.parts[0].name;
   } else {
     // Several parts in one file: STL has no notion of a part, so they are unioned rather
-    // than concatenated — a slicer reading two overlapping shells makes a mess of them.
+    // than concatenated - a slicer reading two overlapping shells makes a mess of them.
     solid = await shared.evaluate(GeometryNode.union(result.parts.map((each) => each.node)));
     name = 'all';
   }

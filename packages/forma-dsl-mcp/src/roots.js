@@ -3,7 +3,7 @@
  *
  * The server does not get to choose the patch of disk it writes to. The MCP `roots`
  * capability is the client's declaration of which directories it is handing over, and asking
- * for it — rather than reading an environment variable the client cannot see — is the whole
+ * for it - rather than reading an environment variable the client cannot see - is the whole
  * of this module. A client that declares nothing gets the directory it launched the server
  * in, which is the one location it did choose.
  */
@@ -17,7 +17,7 @@ import { Workspace } from './workspace.js';
  * The part of the low-level server this module needs.
  *
  * Named structurally rather than as the SDK's `Server`, which is deprecated in favour of
- * `McpServer` — but `McpServer` does not carry `listRoots` or `setNotificationHandler`, so the
+ * `McpServer` - but `McpServer` does not carry `listRoots` or `setNotificationHandler`, so the
  * low-level object is genuinely the right one to take. Describing the three members used is
  * both the honest contract and what lets a test hand this a stub.
  *
