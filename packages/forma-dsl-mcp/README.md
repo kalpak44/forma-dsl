@@ -15,6 +15,10 @@ it.
 
 It speaks over stdio, and there is nothing to configure.
 
+**[The site](https://kalpak44.github.io/forma-dsl/)** ·
+**[Try the editor](https://kalpak44.github.io/forma-dsl/editor/)** ·
+**[Read the reference](https://kalpak44.github.io/forma-dsl/docs/)**
+
 ## Installing it
 
 **Claude Code**
