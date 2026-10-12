@@ -10,7 +10,7 @@ import './styles.css';
 import { initSite } from './site.js';
 import { Hero } from './hero.js';
 import { Demo } from './demo.js';
-import { QUICKSTART } from './quickstart.js';
+import { QUICKSTART_CODE, QUICKSTART_INSTALL } from './quickstart.js';
 import { MCP_SETUP, MCP_SESSION } from './mcp.js';
 import { Console, CLI_SESSION } from './console.js';
 import { segments, paint } from './highlight.js';
@@ -23,9 +23,13 @@ initSite();
  */
 const $ = (id) => document.getElementById(id);
 
-// Both static snippets are highlighted with the same classifier the demo types through, so
+// Every static snippet is highlighted with the same classifier the demo types through, so
 // no code block on the page can drift apart from the others in colour.
-for (const [id, snippet] of [['quickstart', QUICKSTART], ['mcp-setup', MCP_SETUP]]) {
+for (const [id, snippet] of [
+  ['quickstart-install', QUICKSTART_INSTALL],
+  ['quickstart', QUICKSTART_CODE],
+  ['mcp-setup', MCP_SETUP],
+]) {
   const block = $(id)?.querySelector('code');
   if (block) paint(block, segments(snippet), snippet.length);
 }

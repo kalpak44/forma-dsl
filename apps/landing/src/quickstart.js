@@ -1,15 +1,21 @@
 /**
- * The snippet in the install section.
+ * The two snippets in the install section.
  *
- * It lives here rather than in the markup so that it is highlighted by the same classifier
- * the demo uses, and so the copy button copies exactly what is on screen.
+ * Split in two because they are not the same kind of thing. One is a line you paste into a
+ * shell; the other is a JavaScript file. Running them together as one block made the install
+ * read as the first line of the program, and gave the `#` comment above it a meaning it does
+ * not have in JavaScript.
+ *
+ * They live here rather than in the markup so that both are highlighted by the same
+ * classifier the demo types through, and so each copy button copies exactly what is on
+ * screen rather than a second copy of it kept somewhere else.
  */
 
-/** @type {string} The quickstart, as a reader would paste it. */
-export const QUICKSTART = `npm install forma-dsl
+/** @type {string} The one command, on its own. */
+export const QUICKSTART_INSTALL = 'npm install forma-dsl';
 
-# A model, a parameter sweep, and three files for the slicer.
-import { render, toBinarySTL, EvaluationContext } from 'forma-dsl';
+/** @type {string} A model, a parameter sweep, and three files for the slicer. */
+export const QUICKSTART_CODE = `import { render, toBinarySTL, EvaluationContext } from 'forma-dsl';
 import { writeFile } from 'node:fs/promises';
 
 const source = \`

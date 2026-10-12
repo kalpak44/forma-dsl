@@ -229,9 +229,17 @@
             <a href="editor/">the editor</a> runs the whole thing in the browser with no install
             at all.</p>
         </div>
-        <div class="copy-wrap">
-          <button class="copy" id="copy" type="button" data-copy="quickstart">copy</button>
-          <pre class="code" id="quickstart"><code></code></pre>
+        <div class="stack">
+          <div class="copy-wrap">
+            <span class="code-label">shell</span>
+            <button class="copy" id="copy-install" type="button" data-copy="quickstart-install">copy</button>
+            <pre class="code one-line" id="quickstart-install"><code></code></pre>
+          </div>
+          <div class="copy-wrap">
+            <span class="code-label">build.js</span>
+            <button class="copy" id="copy" type="button" data-copy="quickstart">copy</button>
+            <pre class="code" id="quickstart"><code></code></pre>
+          </div>
         </div>
       </div>
     </div>
@@ -334,6 +342,7 @@
         </div>
         <div class="stack">
           <div class="copy-wrap">
+            <span class="code-label">shell</span>
             <button class="copy" id="copy-mcp" type="button" data-copy="mcp-setup">copy</button>
             <pre class="code" id="mcp-setup"><code></code></pre>
           </div>

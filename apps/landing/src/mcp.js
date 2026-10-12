@@ -6,7 +6,10 @@
  * drift apart in colour, and the copy button copies exactly what is on screen.
  */
 
-/** @type {string} Installing the server, and the ask that follows. */
+/**
+ * @type {string} Installing the server, and the ask that follows. What the ask produces is
+ * not repeated here: the terminal beside this block plays it, with numbers a test checks.
+ */
 export const MCP_SETUP = `# Claude Code
 claude mcp add forma -- npx -y forma-dsl-mcp
 
@@ -16,17 +19,6 @@ codex mcp add forma -- npx -y forma-dsl-mcp
 # Then, in the folder you keep models in:
 #
 #   "build me a forma file with a tree in it"
-#
-# It reads the guide and the blocks it needs, writes the document,
-# and forma_write builds it before it reaches the disk:
-#
-#   Wrote \`tree.forma\` - 537 bytes.
-#
-#   | Part     | Size (X x Y x Z) | Volume    | Triangles | Genus |
-#   | trunk    | 8 x 8 x 30       | 1004.682  |       108 |     0 |
-#   | canopy   | 28 x 28 x 30     | 5193.4555 |       358 |     0 |
-#
-#   Overall bounding box: 28 x 28 x 51
 `;
 
 /**
