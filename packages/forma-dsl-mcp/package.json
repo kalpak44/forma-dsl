@@ -47,6 +47,6 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
     "forma-dsl": "^0.4.3",
-    "zod": "^4.1.13"
+    "zod": "^4.6.6"
   }
 }
