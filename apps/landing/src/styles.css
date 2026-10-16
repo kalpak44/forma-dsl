@@ -559,9 +559,15 @@ footer.site .colophon {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  *, *::before, *::after {
-    animation-duration: .001ms !important; animation-iteration-count: 1 !important;
-    transition-duration: .001ms !important;
+  /* Every animation and transition in this stylesheet belongs to one of the selectors below.
+     A `*, *::before, *::after` reset is outranked by all of them, so silencing them from here
+     takes an important annotation, which SonarCloud's CSS analysis reports rather than the
+     conflict it hides. Naming them lets matching specificity and this rule's later place in
+     the source do the same job. Keep the list in step with the motion above. */
+  .skip, nav.site-nav a, #theme, #hero-canvas, .btn, .tab, .caret,
+  .tty-cmd.typing::after, .copy, .reveal {
+    animation-duration: .001ms; animation-iteration-count: 1;
+    transition-duration: .001ms;
   }
   .reveal { opacity: 1; transform: none; }
 }
