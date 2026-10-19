@@ -1,0 +1,149 @@
+// A Christmas tree: a pot, a trunk, a stack of tiers, a spiral of baubles and a star.
+//
+//   forma render examples/christmas-tree.forma -o tree.stl
+//   forma render examples/christmas-tree.forma -p tiers=6 -p baubles=20 -o big-tree.stl
+
+param height {
+  type        = number
+  default     = 180
+  min         = 80
+  max         = 400
+  step        = 10
+  description = "Overall height, pot to the tip of the star"
+}
+
+param tiers {
+  type        = number
+  default     = 4
+  min         = 2
+  max         = 8
+  step        = 1
+  description = "How many skirts of branches are stacked up the trunk"
+}
+
+param baubles {
+  type        = number
+  default     = 14
+  min         = 0
+  max         = 40
+  step        = 1
+  description = "Baubles, placed on a golden-angle spiral. 0 leaves the tree bare"
+}
+
+param foliage_color { type = string  default = "#1f7a3f" }
+param trunk_color   { type = string  default = "#6b4a2b" }
+param pot_color     { type = string  default = "#a8452f" }
+param bauble_color  { type = string  default = "#d4342c" }
+param star_color    { type = string  default = "#f2c230" }
+
+local tier_count = max(2, min(8, var.tiers))
+
+local pot_h     = var.height * 0.11
+local pot_r     = var.height * 0.13
+local trunk_h   = var.height * 0.20
+local trunk_r   = var.height * 0.022
+local star_r    = var.height * 0.075
+
+// Where the branches have to stop so the tip of the star lands exactly at var.height.
+local crown_top = var.height - star_r * 1.45
+
+// Each tier is 1.65 spacings tall, so the stack is (n - 1) spacings plus one tier.
+local spacing   = (crown_top - trunk_h) / (tier_count + 0.65)
+local tier_h    = spacing * 1.65
+local base_r    = var.height * 0.21
+
+// One skirt of branches: a cone that keeps a little of its top so the next one overlaps it.
+component "tier" {
+  param radius = 30
+  param height = 40
+
+  cone {
+    radius     = radius
+    top_radius = radius * 0.22
+    height     = height
+    segments   = 64
+  }
+}
+
+// A six-pointed star, standing up in the XZ plane.
+component "star" {
+  param radius    = 14
+  param thickness = 4
+
+  rotate {
+    x = 90
+    extrude {
+      height = thickness
+      center = true
+      regular_polygon { sides = 3  radius = radius  rotation = 90 }
+      regular_polygon { sides = 3  radius = radius  rotation = 270 }
+    }
+  }
+}
+
+model "christmas_tree" {
+  part "pot" {
+    color = var.pot_color
+    difference {
+      cylinder {
+        bottom_radius = pot_r * 0.78
+        top_radius    = pot_r
+        height        = pot_h
+        segments      = 48
+      }
+      translate {
+        offset = [0, 0, pot_h * 0.35]
+        cylinder {
+          bottom_radius = pot_r * 0.72
+          top_radius    = pot_r * 0.92
+          height        = pot_h
+          segments      = 48
+        }
+      }
+    }
+  }
+
+  part "trunk" {
+    color = var.trunk_color
+    cylinder { radius = trunk_r  height = trunk_h + spacing * 0.5  segments = 32 }
+  }
+
+  for i in range(0, tier_count) {
+    part "tier_${i}" {
+      color = var.foliage_color
+      translate {
+        offset = [0, 0, trunk_h + i * spacing]
+        tier {
+          radius = base_r * (1 - i / tier_count * 0.62)
+          height = tier_h
+        }
+      }
+    }
+  }
+
+  // The golden angle keeps consecutive baubles off each other all the way up.
+  for i in range(0, var.baubles) {
+    part "bauble_${i}" {
+      color = i % 3 == 0 ? var.star_color : var.bauble_color
+      rotate {
+        z = i * 137.5
+        translate {
+          offset = [
+            base_r * (1 - i / var.baubles * 0.62) * 0.74,
+            0,
+            trunk_h + spacing * 0.35 + i / var.baubles * (crown_top - trunk_h - tier_h * 0.5),
+          ]
+          sphere { radius = var.height * 0.022  segments = 32 }
+        }
+      }
+    }
+  }
+
+  part "star" {
+    color = var.star_color
+    translate {
+      offset = [0, 0, crown_top + star_r * 0.45]
+      star { radius = star_r  thickness = var.height * 0.02 }
+    }
+  }
+}

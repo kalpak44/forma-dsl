@@ -1,0 +1,189 @@
+// A toy car, parametrised by colour and by size.
+//
+//   forma render examples/red-car.forma -o car.stl
+//   forma render examples/red-car.forma -p body_color='#1d6fb8' -o blue-car.stl
+
+param body_color {
+  type        = string
+  default     = "#c0392b"
+  options     = ["#c0392b", "#1d6fb8", "#f2c230", "#2e7d4f", "#2b2f33", "#e8eaed"]
+  description = "The paint. Any CSS colour, red by default"
+}
+
+param wheel_color {
+  type        = string
+  default     = "#1f2124"
+  description = "The tyres"
+}
+
+param glass_color {
+  type        = string
+  default     = "#9fd3e8"
+  description = "The window band, drawn half transparent"
+}
+
+param length {
+  type    = number
+  default = 120
+  min     = 80
+  max     = 200
+  step    = 5
+}
+
+param width {
+  type    = number
+  default = 54
+  min     = 36
+  max     = 90
+  step    = 2
+}
+
+param wheel_radius {
+  type    = number
+  default = 13
+  min     = 8
+  max     = 22
+  step    = 1
+}
+
+local len       = var.length
+local wid       = var.width
+local wheel_r   = var.wheel_radius
+local wheel_w   = wid * 0.18
+local clearance = wheel_r * 0.55
+local body_h    = wid * 0.45
+local body_top  = clearance + body_h
+
+local cabin_len = len * 0.48
+local cabin_wid = wid * 0.88
+local sill_h    = 3
+local glass_h   = wid * 0.24
+local roof_h    = 4
+local glass_z   = body_top + sill_h
+local roof_z    = glass_z + glass_h
+
+local wheel_x     = len * 0.3
+local wheel_y     = wid * 0.5 - 1
+local wheel_spots = [
+  [ wheel_x,  wheel_y],
+  [ wheel_x, -wheel_y],
+  [-wheel_x,  wheel_y],
+  [-wheel_x, -wheel_y],
+]
+
+// The shell of the cabin, split so a band of glass can sit between the sill and the roof.
+component "cabin_ring" {
+  param size   = [40, 30]
+  param height = 4
+  param radius = 8
+
+  extrude {
+    height = height
+    rounded_rect { size = size  radius = radius  center = true }
+  }
+}
+
+// A wheel and its hub, lying on its side at the origin.
+component "wheel" {
+  param radius = 13
+  param width  = 10
+
+  rotate {
+    x = 90
+    cylinder { radius = radius  height = width  center = true }
+  }
+}
+
+model "car" {
+  part "body" {
+    color = var.body_color
+    difference {
+      translate {
+        offset = [0, 0, clearance]
+        extrude {
+          height = body_h
+          rounded_rect { size = [len, wid]  radius = wid * 0.22  center = true }
+        }
+      }
+      // Arches, so the wheels are let into the body rather than buried in it.
+      for i, p in wheel_spots {
+        translate {
+          offset = [p.x, p.y, wheel_r]
+          rotate {
+            x = 90
+            cylinder { radius = wheel_r + 2  height = wheel_w + 2  center = true }
+          }
+        }
+      }
+    }
+  }
+
+  part "cabin" {
+    color = var.body_color
+    translate {
+      offset = [-len * 0.06, 0, body_top]
+      cabin_ring { size = [cabin_len, cabin_wid]  height = sill_h  radius = 8 }
+    }
+    translate {
+      offset = [-len * 0.06, 0, roof_z]
+      cabin_ring { size = [cabin_len, cabin_wid]  height = roof_h  radius = 8 }
+    }
+  }
+
+  part "glass" {
+    color   = var.glass_color
+    opacity = 0.45
+    translate {
+      offset = [-len * 0.06, 0, glass_z]
+      cabin_ring {
+        size   = [cabin_len - 3, cabin_wid - 3]
+        height = glass_h
+        radius = 7
+      }
+    }
+  }
+
+  part "lights" {
+    color = "#ffe9a8"
+    for i, s in [-1, 1] {
+      translate {
+        offset = [len * 0.5 - 1, s * wid * 0.28, clearance + body_h * 0.55]
+        rotate {
+          y = 90
+          cylinder { radius = wid * 0.09  height = 4  center = true }
+        }
+      }
+    }
+  }
+
+  part "tail_lights" {
+    color = "#8e1b16"
+    for i, s in [-1, 1] {
+      translate {
+        offset = [-len * 0.5 + 1, s * wid * 0.28, clearance + body_h * 0.6]
+        rotate {
+          y = 90
+          cylinder { radius = wid * 0.07  height = 4  center = true }
+        }
+      }
+    }
+  }
+
+  for i, p in wheel_spots {
+    part "tyre_${i}" {
+      color = var.wheel_color
+      translate {
+        offset = [p.x, p.y, wheel_r]
+        wheel { radius = wheel_r  width = wheel_w }
+      }
+    }
+
+    part "hub_${i}" {
+      color = "#cfd6dd"
+      translate {
+        offset = [p.x, p.y, wheel_r]
+        wheel { radius = wheel_r * 0.45  width = wheel_w + 1.5 }
+      }
+    }
+  }
+}
