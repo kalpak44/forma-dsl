@@ -30,9 +30,14 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^10.12.0",
-    "eslint-plugin-jsdoc": "^65.3.1",
+    "eslint-plugin-jsdoc": "^65.3.6",
     "eslint-plugin-sonarjs": "^4.2.2",
     "globals": "^17.13.0",
     "typescript-eslint": "^8.71.2"
+  },
+  "overrides": {
+    "jsdom": {
+      "undici": "8.11.2"
+    }
   }
 }
