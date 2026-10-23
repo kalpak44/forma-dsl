@@ -1,6 +1,6 @@
 {
   "name": "forma-dsl-cli",
-  "version": "0.4.11",
+  "version": "0.4.12",
   "description": "The forma command line: render .forma documents to STL, and list what one declares.",
   "keywords": [
     "cli",
@@ -44,6 +44,6 @@
     "check:package": "node scripts/check-package.mjs"
   },
   "dependencies": {
-    "forma-dsl": "^0.4.11"
+    "forma-dsl": "^0.4.12"
   }
 }
