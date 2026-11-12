@@ -142,6 +142,7 @@ the package root and typed by hand-written declarations.
 | [`GeometryNode`](api/geometry-node.md) | The immutable, content-addressed geometry IR |
 | [`loadKernel`, `setQuality`, `resetQuality`](api/kernel.md) | Loading and tuning the Manifold module |
 | [`toRenderMesh`, `toBinarySTL`](api/export.md) | Turning a solid into buffers or a file |
+| [`encodeShare`, `decodeShare`](api/export.md#share-links) | Packing a document into a link the editor opens |
 | [`Vector`, `Angle`, `Transform`](api/values.md) | The value types the evaluator works in |
 | [`Program`, `Evaluator`, `parse`, `tokenize`, …](api/low-level.md) | The compiler stages, and the block and function registries |
 
@@ -159,5 +160,5 @@ in one place, grouped by the stage that raises them.
 | Tool | What it is |
 | --- | --- |
 | [Command line](cli.md) | `forma render part.forma -o part.stl` - solving a document in a build, with no browser |
-| [Editor](https://kalpak44.github.io/forma-dsl/editor/) | The same kernel in a browser, with live previews and a control per declared param |
+| [Editor](https://kalpak44.github.io/forma-dsl/editor/) | The same kernel in a browser, with live previews, a control per declared param, and share links that carry the model |
 | [MCP server](https://www.npmjs.com/package/forma-dsl-mcp) | The language as a tool an agent can write, with every document it produces solved before it answers |

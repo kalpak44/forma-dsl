@@ -21,7 +21,9 @@ import {
   Angle,
   Transform,
   Vector,
+  decodeShare,
   describeParameters,
+  encodeShare,
   loadKernel,
   parse,
   render,
@@ -33,6 +35,7 @@ import {
   type ParameterDescriptor,
   type RenderResult,
   type Scene,
+  type SharedDocument,
   type Solid,
 } from '../src/index.js';
 
@@ -117,4 +120,12 @@ function reportsErrors(error: unknown): string {
   return String(error);
 }
 
-void [renders, inspects, scenes, buildsNodes, usesValues, kernel, reportsErrors];
+async function shares(): Promise<void> {
+  const payload: string = await encodeShare({ source: SOURCE, params: { h: 12 } });
+  const back: SharedDocument = await decodeShare(`#${payload}`);
+  const source: string = back.source;
+  const height = (await decodeShare(payload)).params.h;
+  void [source, height];
+}
+
+void [renders, inspects, shares, scenes, buildsNodes, usesValues, kernel, reportsErrors];

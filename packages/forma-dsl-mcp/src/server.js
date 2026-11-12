@@ -53,6 +53,11 @@ every part, which is the only way to know that the model is the size that was as
 has not silently solved to nothing. A document that does not build is refused rather than
 written. Read one back with \`forma_read\`, and export a solid with \`forma_export_stl\`.
 
+To see what a document builds, call \`forma_preview\`: it returns a picture of the model, and
+looking at it is how to find a part in the wrong place, which the measurements cannot show.
+To show the model to a person, \`forma_share_link\` returns a link that opens it in the
+browser editor, with the document carried in the link itself.
+
 Where those files go is the client's decision, not the server's: the tools read and write
 inside the directories the client declares as MCP roots, and a path is taken relative to the
 first of them. Every write reports the directory it landed in.`;

@@ -155,6 +155,46 @@ result.context.dispose();              // …so this is safe
 
 ---
 
+## Share links
+
+### `encodeShare({ source, params? })` · `decodeShare(payload)`
+
+Packs a document - and, optionally, param values chosen for it - into a string short enough
+to put in a URL, and unpacks it again. This is what the editor's **Share** button and the MCP
+server's `forma_share_link` make, and what the editor opens from its address bar.
+
+```js
+import { encodeShare, decodeShare } from 'forma-dsl';
+
+const payload = await encodeShare({ source, params: { height: 30 } });
+const link = `https://kalpak44.github.io/forma-dsl/editor/#${payload}`;
+
+const { source: back, params } = await decodeShare(new URL(link).hash);
+```
+
+| | |
+| --- | --- |
+| **`encodeShare` returns** | `Promise<string>` - `v1.` followed by base64url, safe in a URL as it stands |
+| **`decodeShare` takes** | The payload, with or without its leading `#` |
+| **`decodeShare` returns** | `Promise<{ source: string, params: Record<string, ParameterValue> }>` |
+
+The document is compressed (deflate) before it is encoded, which takes a typical document to
+about a third of its plain base64 length: the worked examples, around 4 KB of source each,
+become links of about 1.7 KB. The payload belongs in the **fragment**, after `#`: a fragment
+is never sent to the server, so the link's length is the browser's concern rather than the
+host's, and the document is not written into anyone's access log.
+
+#### Caveats
+
+- `decodeShare` rejects a payload from a newer format by name (`made by a newer version of
+  forma (format v2)`), a damaged one, and one that unpacks to more than a megabyte - a link is
+  untrusted input, and deflate expands.
+- Links above a few thousand characters survive a browser but not every chat app or issue
+  tracker. For a document that large, share the file.
+- Both use `CompressionStream`, which Node has had since 18 and every current browser has.
+
+---
+
 ## Troubleshooting
 
 ### `EvaluationContext has been disposed`

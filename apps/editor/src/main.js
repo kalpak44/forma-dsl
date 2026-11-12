@@ -2,8 +2,8 @@
  * The editor: what the page is wired to, and what happens between a keystroke and a render.
  *
  * Everything the reader touches is here - the CodeMirror instance, the controls built from
- * whatever `param` declarations the document itself makes, the example picker and the STL
- * download. Rendering is debounced at two different delays, because a slider produces far
+ * whatever `param` declarations the document itself makes, the example picker, the STL
+ * download and the share link. Rendering is debounced at two different delays, because a slider produces far
  * more events than a keyboard does and each one is a cheaper edit.
  *
  * The library is imported from `forma-dsl`, not from its sources, so an export this page
@@ -24,8 +24,9 @@ import { formaLanguage } from './language.js';
 import { Diagnostics } from './diagnostics.js';
 import { Viewer } from './viewer.js';
 import { EXAMPLES } from './examples.js';
+import { LONG_LINK, linkTo, sharedPayload } from './share.js';
 import {
-  render, describeParameters, loadKernel, toBinarySTL, EvaluationContext,
+  render, describeParameters, loadKernel, toBinarySTL, EvaluationContext, encodeShare, decodeShare,
 } from 'forma-dsl';
 
 /**
@@ -36,6 +37,9 @@ const $ = (id) => document.getElementById(id);
 
 const DEFAULT_EXAMPLE = 'Hex key holder';
 const STORAGE_KEY = 'forma:source';
+
+/** Where the reader's own document goes when a share link replaces it. */
+const DRAFT_KEY = 'forma:draft-before-link';
 
 /** How long to wait after a keystroke before rendering. */
 const TYPING_DELAY = 250;
@@ -626,4 +630,125 @@ $('edges').addEventListener('change', (event) => {
 });
 $('frame').addEventListener('click', () => viewer?.frame());
 
-schedule(0);
+// --- share links ------------------------------------------------------------------
+
+/**
+ * Says something above the editor, optionally with the button that brings a draft back.
+ *
+ * @param {string} text What to say.
+ * @param {{ error?: boolean, restore?: boolean }} [options] Whether it is a failure, and
+ *   whether a draft is waiting to be restored.
+ * @returns {void}
+ */
+function notify(text, { error = false, restore = false } = {}) {
+  $('notice-text').textContent = text;
+  $('notice').classList.toggle('error', error);
+  $('notice-restore').hidden = !restore;
+  $('notice').hidden = false;
+}
+
+/**
+ * Replaces the whole document, starting the parameter panel and the camera afresh.
+ *
+ * @param {string} source The new document.
+ * @param {Record<string, ParameterValue>} params The param values to start from.
+ * @returns {void}
+ */
+function replaceDocument(source, params) {
+  state.params = { ...params };
+  state.lastExtent = 0;
+  // The panel only rebuilds when the set of params changes; a link to the document already
+  // open has the same set and different values, and the sliders have to show the new ones.
+  delete $('params').dataset.signature;
+  editor.dispatch({ changes: { from: 0, to: editor.state.doc.length, insert: source } });
+  schedule(0);
+}
+
+/**
+ * Opens the model in the address bar's fragment, if there is one.
+ *
+ * Every edit is saved over the reader's own draft, so the draft is set aside first - a link
+ * someone was sent must not cost them the work they had open. Only the first link of a run
+ * sets it aside: a second, opened before the first was dismissed, would otherwise save the
+ * first shared model over the reader's real draft.
+ *
+ * The fragment is cleared once read. Left in place, a reload would open the shared model
+ * again over whatever the reader had changed since.
+ *
+ * @returns {Promise<void>} Once the link has been opened, or reported.
+ */
+async function openSharedLink() {
+  const payload = sharedPayload(location.hash);
+  if (!payload) return;
+  history.replaceState(null, '', location.pathname + location.search);
+
+  let shared;
+  try {
+    shared = await decodeShare(payload);
+  } catch (error) {
+    notify(`This share link could not be opened: ${error.message}.`, { error: true });
+    return;
+  }
+
+  const current = editor.state.doc.toString();
+  const keeping = !$('notice-restore').hidden;
+  if (!keeping && current !== shared.source) storage.set(DRAFT_KEY, current);
+  const restorable = (keeping || current !== shared.source) && storage.get(DRAFT_KEY) !== null;
+
+  replaceDocument(shared.source, shared.params);
+  notify(
+    restorable ? 'Opened a shared model. Your own draft was kept.' : 'Opened a shared model.',
+    { restore: restorable },
+  );
+}
+
+$('notice-restore').addEventListener('click', () => {
+  const draft = storage.get(DRAFT_KEY);
+  if (draft !== null) replaceDocument(draft, {});
+  $('notice').hidden = true;
+  $('notice-restore').hidden = true;
+});
+
+$('notice-close').addEventListener('click', () => {
+  $('notice').hidden = true;
+  $('notice-restore').hidden = true;
+});
+
+/**
+ * Copies a link that opens the current document with the current param values.
+ *
+ * Falls back to showing the link when the clipboard is refused, which it is on a page
+ * served over plain HTTP or in a browser that asks and is told no.
+ *
+ * @returns {Promise<void>} Once the link has been copied or shown.
+ */
+async function shareModel() {
+  const button = /** @type {HTMLButtonElement} */ ($('share'));
+  const payload = await encodeShare({ source: editor.state.doc.toString(), params: state.params });
+  const link = linkTo(location.href, payload);
+
+  try {
+    await navigator.clipboard.writeText(link);
+  } catch {
+    prompt('Copy this link:', link);
+    return;
+  }
+
+  button.textContent = link.length > LONG_LINK ? 'Copied (long link)' : 'Link copied';
+  button.title = link.length > LONG_LINK
+    ? `${link.length.toLocaleString()} characters - some chat apps cut links this long.`
+    : `${link.length.toLocaleString()} characters.`;
+  setTimeout(() => { button.textContent = 'Share'; }, 2000);
+}
+
+$('share').addEventListener('click', () => {
+  shareModel().catch((error) => notify(`Could not make a link: ${error.message}.`, { error: true }));
+});
+
+// A link pasted into the address bar of an open editor changes only the fragment, which does
+// not reload the page.
+addEventListener('hashchange', () => { openSharedLink(); });
+
+// The link is read before the first render, so a shared model does not render the reader's
+// own draft first and then flash over to it.
+openSharedLink().finally(() => schedule(0));

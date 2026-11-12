@@ -11,6 +11,22 @@ This project follows [semantic versioning](https://semver.org). While the versio
 
 Dates are the day the tag was cut.
 
+## Unreleased
+
+### Added
+
+- **Share links.** `encodeShare` and `decodeShare` in `forma-dsl` pack a document, and the
+  param values chosen for it, into a compressed, versioned payload for a URL fragment - about
+  a third of the length plain base64 would make it. The editor gains a **Share** button that
+  copies such a link, and opens one from its address bar; the draft it replaces is kept, with
+  a button to restore it.
+- **`forma_share_link`** in `forma-dsl-mcp` checks a document and returns a link that opens it
+  in the browser editor, for a model to hand to a person. `FORMA_EDITOR_URL` points it at
+  another editor, such as a local `npm run dev:editor`.
+- **`forma_preview`** in `forma-dsl-mcp` renders a document to a PNG - one view or a grid of
+  up to six - with a software rasteriser, so the model that wrote it can see whether the parts
+  are where it meant them to be. It writes nothing.
+
 ## forma-dsl 0.4.0 · forma-dsl-cli 0.4.0 · forma-dsl-mcp 0.4.0 - 2026-10-12
 
 ### Added

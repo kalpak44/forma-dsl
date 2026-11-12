@@ -266,3 +266,35 @@ export async function exportStl(source, options = {}) {
   shared.collect(result.parts.map((each) => each.node));
   return { bytes, model: result.name, part: name, triangles };
 }
+
+/**
+ * Renders a document and hands back each part's mesh, for drawing.
+ *
+ * The meshes are plain arrays, copied out of the kernel, so they outlive the collection that
+ * follows and the caller holds nothing it has to free.
+ *
+ * @param {string} source The document.
+ * @param {object} [options] What to build.
+ * @param {string | null} [options.model] Which model, or the first one.
+ * @param {Record<string, ParameterValue>} [options.params] Values for the document's params.
+ * @returns {Promise<{ model: string, parts: Array<{ name: string, color: string, opacity: number,
+ *   positions: Float32Array, normals: Float32Array }> }>} The model's name and its parts.
+ * @throws {Error} If the document does not render.
+ */
+export async function sceneMeshes(source, options = {}) {
+  const { model = null, params = {} } = options;
+
+  shared ??= await EvaluationContext.create();
+  const result = await render(source, { model, params, context: shared, maxNodes: MAX_NODES });
+
+  const parts = result.parts.map((part) => ({
+    name: part.name,
+    color: part.color,
+    opacity: part.opacity,
+    positions: part.mesh.positions,
+    normals: part.mesh.normals,
+  }));
+
+  shared.collect(result.parts.map((part) => part.node));
+  return { model: result.name, parts };
+}

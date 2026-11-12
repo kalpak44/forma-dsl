@@ -120,6 +120,16 @@ is rendered by the test suite.
 | `forma_read` | Read a document back, checked |
 | `forma_export_stl` | Render and write a binary STL |
 
+**Looking at it**
+
+| Tool | What it does |
+| --- | --- |
+| `forma_preview` | Render a PNG of the model - one view or a grid of up to six - so the agent can see what it built |
+| `forma_share_link` | A link that opens the document in the browser editor, with the document packed into the link itself |
+
+`forma_share_link` points at the published editor. Set `FORMA_EDITOR_URL` in the server's
+environment to point it elsewhere - `http://localhost:5173/` for `npm run dev:editor`.
+
 ## Resources
 
 The same knowledge in the form a person can attach to a conversation by hand:

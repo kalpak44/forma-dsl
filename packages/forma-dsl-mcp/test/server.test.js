@@ -21,6 +21,7 @@ import { ListRootsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { Workspace } from '../src/workspace.js';
 import { VERSION, createServer } from '../src/server.js';
 import { disposeSharedContext } from '../src/document.js';
+import { decodeShare } from 'forma-dsl';
 
 const MANIFEST = createRequire(import.meta.url)('../package.json');
 
@@ -126,7 +127,7 @@ test('every tool is listed with a description and a schema', async (t) => {
 
   assert.deepEqual(tools.map((tool) => tool.name).sort(), [
     'forma_blocks', 'forma_examples', 'forma_export_stl', 'forma_functions',
-    'forma_guide', 'forma_read', 'forma_reference', 'forma_write',
+    'forma_guide', 'forma_preview', 'forma_read', 'forma_reference', 'forma_share_link', 'forma_write',
   ]);
   for (const tool of tools) {
     assert.ok(tool.description?.length > 40, `${tool.name} needs a description worth reading`);
@@ -614,6 +615,108 @@ test('a workspace can be supplied instead of asking the client for one', async (
   assert.ok(written.includes(directory));
 });
 
+test('a share link opens the editor on the document and the params it was given', async (t) => {
+  const { client } = await connect(t);
+
+  const result = await client.callTool({
+    name: 'forma_share_link',
+    arguments: { source: BRACKET, params: { height: 30 } },
+  });
+
+  assert.notEqual(result.isError, true);
+  const body = text(result);
+  const link = /```\n(\S+)\n```/.exec(body)[1];
+  const url = new URL(link);
+  assert.equal(`${url.origin}${url.pathname}`, 'https://kalpak44.github.io/forma-dsl/editor/');
+  assert.deepEqual(await decodeShare(url.hash), { source: BRACKET, params: { height: 30 } });
+  assert.match(body, /\[Open in the forma editor\]/);
+  assert.match(body, /40 × 20 × 30/, 'the report is of the build the link opens');
+});
+
+test('a share link reads a document off disk, and follows FORMA_EDITOR_URL', async (t) => {
+  const { client } = await connect(t);
+  await client.callTool({ name: 'forma_write', arguments: { path: 'b.forma', source: BRACKET } });
+
+  const before = process.env.FORMA_EDITOR_URL;
+  t.after(() => {
+    if (before === undefined) delete process.env.FORMA_EDITOR_URL;
+    else process.env.FORMA_EDITOR_URL = before;
+  });
+
+  process.env.FORMA_EDITOR_URL = 'http://localhost:5173/';
+  const local = text(await client.callTool({ name: 'forma_share_link', arguments: { path: 'b.forma' } }));
+  assert.match(local, /http:\/\/localhost:5173\/#v1\./);
+
+  process.env.FORMA_EDITOR_URL = 'file:///tmp/editor';
+  const refused = await client.callTool({ name: 'forma_share_link', arguments: { path: 'b.forma' } });
+  assert.equal(refused.isError, true);
+  assert.match(text(refused), /must be an http\(s\) URL/);
+});
+
+test('a share link to a document that does not render is refused unless forced', async (t) => {
+  const { client } = await connect(t);
+  const broken = 'model "m" { box { size = [1, 1 } }';
+
+  const refused = await client.callTool({ name: 'forma_share_link', arguments: { source: broken } });
+  assert.equal(refused.isError, true);
+  assert.match(text(refused), /No link was made/);
+
+  const forced = await client.callTool({ name: 'forma_share_link', arguments: { source: broken, force: true } });
+  assert.notEqual(forced.isError, true);
+  assert.match(text(forced), /#v1\./);
+});
+
+test('a share link says which model the editor will open', async (t) => {
+  const { client } = await connect(t);
+  const two = `${BRACKET}\nmodel "spare" { box { size = [1, 1, 1] } }\n`;
+
+  const body = text(await client.callTool({ name: 'forma_share_link', arguments: { source: two } }));
+  assert.match(body, /The editor opens the first model, `bracket`/);
+});
+
+test('a preview comes back as a PNG, with the measurements beside it', async (t) => {
+  const { client } = await connect(t);
+
+  const result = await client.callTool({
+    name: 'forma_preview',
+    arguments: { source: BRACKET, views: ['iso', 'front', 'right', 'top'], size: 320 },
+  });
+
+  assert.notEqual(result.isError, true);
+  const [image, caption] = result.content;
+  assert.equal(image.type, 'image');
+  assert.equal(image.mimeType, 'image/png');
+  const png = Buffer.from(image.data, 'base64');
+  assert.equal(png.toString('ascii', 1, 4), 'PNG');
+  assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [320, 320]);
+
+  assert.match(caption.text, /320 × 320 PNG/);
+  assert.match(caption.text, /1\. `iso`.*\n2\. `front`.*\n3\. `right`.*\n4\. `top`/);
+  assert.match(caption.text, /40 × 20 × 20/);
+});
+
+test('a preview of a document that does not render is the diagnosis, not an image', async (t) => {
+  const { client } = await connect(t);
+
+  const result = await client.callTool({
+    name: 'forma_preview',
+    arguments: { source: 'model "m" { box { size = [1, 1 } }' },
+  });
+
+  assert.equal(result.isError, true);
+  assert.ok(result.content.every((block) => block.type === 'text'));
+  assert.match(text(result), /Nothing to draw/);
+});
+
+test('a preview refuses a view that does not exist', async (t) => {
+  const { client } = await connect(t);
+  const result = await client.callTool({
+    name: 'forma_preview',
+    arguments: { source: BRACKET, views: ['sideways'] },
+  });
+  assert.equal(result.isError, true);
+});
+
 // The four hints are not optional in the way their schema suggests. `destructiveHint`
 // defaults to true and `idempotentHint` to false, so a tool that states only `readOnlyHint`
 // is advertising itself as destructive and unrepeatable. Six of these tools did exactly that
@@ -623,7 +726,7 @@ test('every tool states all four behaviour hints rather than inheriting a defaul
   const { client } = await connect(t);
   const { tools } = await client.listTools();
 
-  assert.equal(tools.length, 8, 'the server offers eight tools');
+  assert.equal(tools.length, 10, 'the server offers ten tools');
 
   for (const tool of tools) {
     const hints = tool.annotations ?? {};

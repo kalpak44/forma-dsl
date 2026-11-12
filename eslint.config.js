@@ -130,6 +130,9 @@ export default [
         console: 'readonly',
         // Standard in both environments since Node 15, and what `render`'s `signal` is.
         AbortSignal: 'readonly',
+        // Both since Node 18; what the share link compresses with.
+        CompressionStream: 'readonly',
+        DecompressionStream: 'readonly',
       },
     },
     plugins: { jsdoc },

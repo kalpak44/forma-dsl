@@ -40,8 +40,16 @@
   }
 
   main { display: grid; grid-template-columns: minmax(360px, 44%) minmax(0, 1fr); min-height: 0; }
-  .pane { display: grid; grid-template-rows: minmax(0, 1fr) auto; min-width: 0; min-height: 0; border-right: 1px solid var(--line); }
+  .pane { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; min-width: 0; min-height: 0; border-right: 1px solid var(--line); }
   #editor { min-height: 0; overflow: hidden; }
+  #notice {
+    display: flex; align-items: center; gap: 10px; padding: 7px 12px;
+    border-bottom: 1px solid var(--line); background: #141c2b; color: var(--text);
+  }
+  #notice[hidden] { display: none; }
+  #notice.error { background: #1d1216; color: var(--err); }
+  #notice span { flex: 1; }
+  #notice button { padding: 2px 9px; }
   #problem {
     padding: 8px 12px; border-top: 1px solid var(--line); background: #1d1216;
     color: var(--err); font-family: ui-monospace, Menlo, monospace; white-space: pre-wrap;
@@ -82,6 +90,7 @@
     <a href="../docs/">Docs</a>
     <label class="toggle"><input type="checkbox" id="edges"> edges</label>
     <button id="frame">Fit view</button>
+    <button id="share" title="Copy a link that opens this model, with its parameter values">Share</button>
     <button id="export">Export STL</button>
   </header>
 
@@ -91,6 +100,11 @@
 
   <main>
     <section class="pane">
+      <div id="notice" hidden role="status">
+        <span id="notice-text"></span>
+        <button id="notice-restore" hidden>Restore my draft</button>
+        <button id="notice-close" aria-label="Dismiss">✕</button>
+      </div>
       <div id="editor"></div>
       <div id="problem" hidden></div>
     </section>

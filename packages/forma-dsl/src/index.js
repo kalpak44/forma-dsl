@@ -20,6 +20,7 @@ export { EvaluationContext } from './core/context.js';
 export { loadKernel, setQuality, resetQuality } from './core/kernel.js';
 export { toRenderMesh } from './export/mesh.js';
 export { toBinarySTL } from './export/stl.js';
+export { encodeShare, decodeShare } from './export/share.js';
 export { Vector } from './values/vector.js';
 export { Angle } from './values/angle.js';
 export { Transform } from './values/transform.js';

@@ -1,5 +1,5 @@
 /**
- * The three tools the server offers, and how their results are worded.
+ * The tools the server offers, and how their results are worded.
  *
  * Results are Markdown rather than JSON on purpose. Everything here is read by a language
  * model deciding what to write next, and a bounding box in a table is acted on where the
@@ -9,13 +9,15 @@
 /** @import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js' */
 /** @import { Workspace } from './workspace.js' */
 
+import { encodeShare } from 'forma-dsl';
 import { z } from 'zod';
 
 import { CONSTRUCTS, LANGUAGE_CONSTANTS, LANGUAGE_FUNCTIONS, formatConstruct } from './catalogue.js';
 import { EXAMPLES, EXAMPLES_BY_NAME } from './examples.js';
 import { GUIDE_SECTIONS, guide } from './guide.js';
 import { PAGES, readPage, searchReference } from './reference.js';
-import { checkDocument, exportStl } from './document.js';
+import { checkDocument, exportStl, sceneMeshes } from './document.js';
+import { VIEWS, renderPreview } from './preview.js';
 
 /**
  * What a tool that only reads what this package already carries is.
@@ -582,6 +584,169 @@ function registerExportStl(server, workspace) {
 }
 
 /**
+ * Where share links point when the person running the server has not said otherwise: the
+ * editor as published from this repository.
+ */
+const DEFAULT_EDITOR_URL = 'https://kalpak44.github.io/forma-dsl/editor/';
+
+/**
+ * Links longer than this survive a browser but not every chat app or issue tracker. The
+ * editor's Share button warns at the same length.
+ */
+const LONG_LINK = 8000;
+
+/**
+ * The editor share links open in: `FORMA_EDITOR_URL` if set, so a link can point at a local
+ * build (`npm run dev:editor`) or a fork's own deployment.
+ *
+ * @returns {URL} The editor's address.
+ * @throws {Error} If `FORMA_EDITOR_URL` is set to something that is not an http(s) URL.
+ */
+function editorUrl() {
+  const configured = process.env.FORMA_EDITOR_URL?.trim();
+  if (!configured) return new URL(DEFAULT_EDITOR_URL);
+  let url;
+  try {
+    url = new URL(configured);
+  } catch {
+    throw new Error(`FORMA_EDITOR_URL is not a URL: "${configured}"`);
+  }
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+    throw new Error(`FORMA_EDITOR_URL must be an http(s) URL, not "${configured}"`);
+  }
+  return url;
+}
+
+/**
+ * A link that opens a document in the browser editor.
+ *
+ * The document travels in the link itself, so nothing is uploaded and the link works for
+ * anyone it is sent to. Checked first, like a write: a link to a model that does not render
+ * is a link to an error message.
+ *
+ * @param {McpServer} server The server.
+ * @param {Workspace} workspace Where a `path` is read from.
+ * @returns {void}
+ */
+function registerShareLink(server, workspace) {
+  server.registerTool('forma_share_link', {
+    title: 'Make a link that opens a document in the editor',
+    description:
+      'Builds a .forma document and returns a link to the browser editor with the document - '
+      + 'and any param values given - packed into the link itself. Opening it shows the model '
+      + 'in 3D, with sliders for its params, and lets a person rotate it, change it and export '
+      + 'an STL. Nothing is uploaded: the link carries the whole document, so it works for '
+      + 'anyone it is sent to. The editor opens the first model a document declares. A '
+      + 'document that does not render is refused - pass `force: true` to link it anyway.',
+    inputSchema: {
+      source: z.string().optional().describe('The .forma document itself.'),
+      path: z.string().optional()
+        .describe('A .forma file the client has given access to, instead of `source`.'),
+      params: z.record(z.string(), z.any()).optional()
+        .describe('Values for the document\'s params, by name, to open the editor with. Anything not given uses its default.'),
+      force: z.boolean().optional().describe('Make the link even if the document does not render. Default false.'),
+    },
+    annotations: READS_ONLY,
+  }, async (args) => attempt(async () => {
+    const source = await documentFrom(workspace, args);
+    const params = args.params ?? {};
+    const report = await checkDocument(source, { params });
+
+    if (!report.ok && !args.force) {
+      return say(
+        `${formatReport(report)}\n\n**No link was made.** Fix it and call again, `
+        + 'or pass `force: true` to link it as it stands.',
+        true,
+      );
+    }
+
+    const url = editorUrl();
+    url.hash = await encodeShare({ source, params });
+    const link = url.href;
+
+    const lines = [`[Open in the forma editor](${link})`, '', '```', link, '```', ''];
+    lines.push(`${link.length.toLocaleString('en-US')} characters.`);
+    if (link.length > LONG_LINK) {
+      lines.push(
+        'That is long enough that some chat apps and issue trackers will cut it short; '
+        + 'for a document this size, sharing the .forma file itself is safer.',
+      );
+    }
+    if (report.models?.length > 1) {
+      lines.push(`The editor opens the first model, \`${report.models[0]}\`.`);
+    }
+    lines.push('', formatReport(report));
+    return say(lines.join('\n'));
+  }));
+}
+
+/**
+ * A picture of what a document builds.
+ *
+ * Measurements say whether a model is the right size; only a picture says whether its parts
+ * are where they were meant to be. The image comes back in the result, so the model that
+ * wrote the document can look at it as well as the person it is working for.
+ *
+ * @param {McpServer} server The server.
+ * @param {Workspace} workspace Where a `path` is read from.
+ * @returns {void}
+ */
+function registerPreview(server, workspace) {
+  const names = /** @type {[string, ...string[]]} */ (Object.keys(VIEWS));
+
+  server.registerTool('forma_preview', {
+    title: 'Render a picture of a document',
+    description:
+      'Builds a .forma document and returns a PNG of it, rendered from one or more views - '
+      + 'look at it to check that the parts are where you meant them to be, which the '
+      + 'measurements alone cannot tell you. Orthographic, shaded in each part\'s colour, '
+      + 'with outlines and a small X (red) / Y (green) / Z (blue) axis marker in each view; '
+      + 'Z is up. Several views are laid out in a grid, in the order given, each framed on '
+      + `its own. Views: ${names.join(', ')}. Writes nothing.`,
+    inputSchema: {
+      source: z.string().optional().describe('The .forma document itself.'),
+      path: z.string().optional()
+        .describe('A .forma file the client has given access to, instead of `source`.'),
+      model: z.string().optional().describe('Which model to build. Defaults to the first one declared.'),
+      params: z.record(z.string(), z.any()).optional()
+        .describe('Values for the document\'s params, by name. Anything not given uses its default.'),
+      views: z.array(z.enum(names)).min(1).max(6).optional()
+        .describe('Which views, in reading order. Default ["iso"]; ["iso", "front", "right", "top"] for a sheet.'),
+      size: z.number().int().min(128).max(1600).optional()
+        .describe('Width of the whole image in pixels. Default 640.'),
+    },
+    annotations: READS_ONLY,
+  }, async (args) => attempt(async () => {
+    const source = await documentFrom(workspace, args);
+    const options = { model: args.model ?? null, params: args.params ?? {} };
+    const report = await checkDocument(source, options);
+    if (!report.ok) {
+      return say(`${formatReport(report)}\n\n**Nothing to draw.** Fix it and call again.`, true);
+    }
+
+    const views = args.views ?? ['iso'];
+    const { parts } = await sceneMeshes(source, options);
+    const image = renderPreview(parts, { views, size: args.size ?? 640 });
+
+    const layout = views.length === 1
+      ? `View: ${VIEWS[views[0]].label}.`
+      : [
+        `Views, left to right and top to bottom, ${image.columns} to a row:`,
+        ...views.map((name, i) => `${i + 1}. \`${name}\` - ${VIEWS[name].label}`),
+        '',
+        'Each view is framed on its own, so they do not share a scale; read sizes from the table below.',
+      ].join('\n');
+
+    return {
+      content: [
+        { type: /** @type {'image'} */ ('image'), data: image.png.toString('base64'), mimeType: 'image/png' },
+        { type: /** @type {'text'} */ ('text'), text: `${image.width} × ${image.height} PNG. ${layout}\n\n${formatReport(report)}` },
+      ],
+    };
+  }));
+}
+
+/**
  * Registers every tool on a server.
  *
  * One function per tool, so this reads as the list of what the server offers and each tool's
@@ -603,4 +768,8 @@ export function registerTools(server, workspace) {
   registerWrite(server, workspace);
   registerRead(server, workspace);
   registerExportStl(server, workspace);
+
+  // Showing.
+  registerShareLink(server, workspace);
+  registerPreview(server, workspace);
 }

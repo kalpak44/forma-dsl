@@ -36,6 +36,37 @@ declare const console: {
  * here: it throws `reason`, which is a standard `AbortError` unless the caller supplied
  * something of their own.
  */
+/**
+ * Only the members the share link uses: a compression stream written once and read to the
+ * end. Both runtimes have had them since Node 18.
+ */
+interface ByteStreamWriter {
+  write(chunk: Uint8Array): Promise<void>;
+  close(): Promise<void>;
+}
+
+interface ByteStreamReader {
+  read(): Promise<{ done: boolean; value?: Uint8Array }>;
+  cancel(reason?: unknown): Promise<void>;
+}
+
+interface ByteTransform {
+  readonly writable: { getWriter(): ByteStreamWriter };
+  readonly readable: { getReader(): ByteStreamReader };
+}
+
+declare class CompressionStream implements ByteTransform {
+  constructor(format: 'deflate' | 'deflate-raw' | 'gzip');
+  readonly writable: { getWriter(): ByteStreamWriter };
+  readonly readable: { getReader(): ByteStreamReader };
+}
+
+declare class DecompressionStream implements ByteTransform {
+  constructor(format: 'deflate' | 'deflate-raw' | 'gzip');
+  readonly writable: { getWriter(): ByteStreamWriter };
+  readonly readable: { getReader(): ByteStreamReader };
+}
+
 declare class AbortSignal {
   readonly aborted: boolean;
   readonly reason: unknown;

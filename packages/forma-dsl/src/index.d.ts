@@ -386,6 +386,25 @@ export interface RenderMesh {
 export declare function toRenderMesh(manifold: Solid): RenderMesh;
 export declare function toBinarySTL(manifold: Solid, header?: string): Uint8Array;
 
+/** A document as a share link carries it. */
+export interface SharedDocument {
+  source: string;
+  /** Param values chosen for it, by name. Empty when it was shared with its defaults. */
+  params?: Record<string, ParameterValue>;
+}
+
+/**
+ * Packs a document into the payload of a share link: compressed, base64url, versioned. The
+ * result goes after the `#` of the editor's URL.
+ */
+export declare function encodeShare(shared: SharedDocument): Promise<string>;
+
+/**
+ * Unpacks the payload of a share link, with or without its leading `#`. Rejects a payload
+ * that is damaged, from a newer format, or unpacks to more than a megabyte.
+ */
+export declare function decodeShare(payload: string): Promise<Required<SharedDocument>>;
+
 export interface RenderOptions {
   /** Which model to render. Defaults to the first the document declares. */
   model?: string | null;
