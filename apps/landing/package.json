@@ -11,7 +11,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test"
+    "test": "node scripts/test.mjs"
   },
   "dependencies": {
     "forma-dsl": "*"

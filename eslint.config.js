@@ -210,7 +210,7 @@ export default [
   {
     // Build and maintenance scripts, in any workspace: Node-only, and they exist to print
     // things.
-    files: ['packages/*/scripts/**/*.{js,mjs}', 'apps/docs/*.mjs'],
+    files: ['packages/*/scripts/**/*.{js,mjs}', 'apps/*/scripts/**/*.{js,mjs}', 'apps/docs/*.mjs'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
