@@ -648,6 +648,16 @@ function notify(text, { error = false, restore = false } = {}) {
 }
 
 /**
+ * Says that a share link could not be opened.
+ *
+ * @param {Error} error What went wrong.
+ * @returns {void}
+ */
+function reportOpenFailure(error) {
+  notify(`This share link could not be opened: ${error.message}.`, { error: true });
+}
+
+/**
  * Replaces the whole document, starting the parameter panel and the camera afresh.
  *
  * @param {string} source The new document.
@@ -686,7 +696,7 @@ async function openSharedLink() {
   try {
     shared = await decodeShare(payload);
   } catch (error) {
-    notify(`This share link could not be opened: ${error.message}.`, { error: true });
+    reportOpenFailure(error);
     return;
   }
 
@@ -747,8 +757,14 @@ $('share').addEventListener('click', () => {
 
 // A link pasted into the address bar of an open editor changes only the fragment, which does
 // not reload the page.
-addEventListener('hashchange', () => { openSharedLink(); });
+addEventListener('hashchange', () => { openSharedLink().catch(reportOpenFailure); });
 
 // The link is read before the first render, so a shared model does not render the reader's
 // own draft first and then flash over to it.
-openSharedLink().finally(() => schedule(0));
+try {
+  await openSharedLink();
+} catch (error) {
+  reportOpenFailure(error);
+} finally {
+  schedule(0);
+}
