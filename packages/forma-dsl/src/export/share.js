@@ -105,11 +105,13 @@ async function pump(stream, bytes, limit) {
     const { done, value } = await reader.read();
     if (done) break;
     total += value.length;
-    if (total > limit) {
-      await reader.cancel();
-      throw new RangeError(`the shared document is larger than ${limit} bytes, which no link should be`);
-    }
+    if (total > limit) break;
     chunks.push(value);
+  }
+
+  if (total > limit) {
+    await reader.cancel();
+    throw new RangeError(`the shared document is larger than ${limit} bytes, which no link should be`);
   }
 
   const out = new Uint8Array(total);
