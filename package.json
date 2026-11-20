@@ -39,6 +39,6 @@
     "jsdom": {
       "undici": "8.12.4"
     },
-    "minimatch": "^11.0.8"
+    "minimatch": "^11.0.9"
   }
 }
